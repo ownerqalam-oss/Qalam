@@ -9,6 +9,7 @@ interface Draft {
   title: string;
   created_at: string;
   status: string;
+  type: string;
 }
 
 export default function DashboardPage() {
@@ -35,11 +36,7 @@ export default function DashboardPage() {
   }
 
   async function deleteDraft(id: string) {
-    const confirmed = window.confirm(
-      "Delete this draft? This cannot be undone."
-    );
-
-    if (!confirmed) return;
+    if (!window.confirm("Delete this draft?")) return;
 
     const { error } = await supabase
       .from("drafts")
@@ -52,6 +49,17 @@ export default function DashboardPage() {
     }
 
     setDrafts((current) => current.filter((draft) => draft.id !== id));
+  }
+
+  function typeEmoji(type: string) {
+    switch (type) {
+      case "reflection":
+        return "✍️ Reflection";
+      case "poetry":
+        return "📜 Poetry";
+      default:
+        return "📖 Article";
+    }
   }
 
   return (
@@ -67,51 +75,44 @@ export default function DashboardPage() {
         </Link>
       </div>
 
-      <div className="mt-10">
-        <h2 className="mb-6 text-2xl font-semibold">
-          My Drafts
-        </h2>
-
-        <div className="space-y-4">
-          {drafts.map((draft) => (
-            <div
-              key={draft.id}
-              className="flex items-center justify-between rounded-xl border p-5"
+      <div className="mt-10 space-y-4">
+        {drafts.map((draft) => (
+          <div
+            key={draft.id}
+            className="flex items-center justify-between rounded-xl border p-5"
+          >
+            <Link
+              href={`/editor?id=${draft.id}`}
+              className="flex-1"
             >
-              <Link
-                href={`/editor?id=${draft.id}`}
-                className="flex-1"
-              >
-                <div className="flex items-center gap-3">
-              <h3 className="text-xl font-semibold">
-                 {draft.title || "Untitled"}
-                 </h3>
-
-                 <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium capitalize text-gray-600">
-                 {draft.status}
+              <div className="mb-2 flex items-center gap-2">
+                <span className="rounded-full bg-gray-100 px-3 py-1 text-xs">
+                  {typeEmoji(draft.type)}
                 </span>
-            </div>
 
-                <p className="mt-2 text-sm text-gray-500">
-                  {new Date(draft.created_at).toLocaleDateString()}
-                </p>
-              </Link>
+                <span className="rounded-full bg-blue-100 px-3 py-1 text-xs capitalize text-blue-700">
+                  {draft.status}
+                </span>
+              </div>
 
-              <button
-                onClick={() => deleteDraft(draft.id)}
-                className="rounded-lg border border-red-300 px-4 py-2 text-red-600 hover:bg-red-50"
-              >
-                Delete
-              </button>
-            </div>
-          ))}
+              <h3 className="text-xl font-semibold">
+                {draft.title || "Untitled"}
+              </h3>
 
-          {drafts.length === 0 && (
-            <p className="text-gray-500">
-              No drafts yet.
-            </p>
-          )}
-        </div>
+              <p className="mt-2 text-sm text-gray-500">
+                {new Date(draft.created_at).toLocaleDateString()}
+              </p>
+            </Link>
+
+            <button
+              onClick={() => deleteDraft(draft.id)}
+              disabled={draft.status === "submitted"}
+              className="rounded-lg border border-red-300 px-4 py-2 text-red-600 disabled:opacity-50"
+            >
+              Delete
+            </button>
+          </div>
+        ))}
       </div>
     </main>
   );

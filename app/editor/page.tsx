@@ -15,7 +15,10 @@ export default function EditorPage() {
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [type, setType] = useState("article");
+
   const [status, setStatus] = useState("Saved");
+  const [draftStatus, setDraftStatus] = useState("draft");
 
   const [loading, setLoading] = useState(true);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -36,6 +39,8 @@ export default function EditorPage() {
       if (data) {
         setTitle(data.title ?? "");
         setContent(data.content ?? "");
+        setDraftStatus(data.status ?? "draft");
+        setType(data.type ?? "article");
       }
 
       setLoading(false);
@@ -45,6 +50,8 @@ export default function EditorPage() {
   }, [draftId]);
 
   async function saveDraft() {
+    if (draftStatus === "submitted") return;
+
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -59,14 +66,12 @@ export default function EditorPage() {
         .update({
           title,
           content,
+          type,
           updated_at: new Date().toISOString(),
         })
         .eq("id", draftId);
 
-      if (!error) {
-        setStatus("Saved");
-      }
-
+      if (!error) setStatus("Saved");
       return;
     }
 
@@ -76,6 +81,7 @@ export default function EditorPage() {
         user_id: user.id,
         title,
         content,
+        type,
       })
       .select()
       .single();
@@ -87,31 +93,49 @@ export default function EditorPage() {
 
     setDraftId(data.id);
     window.history.replaceState({}, "", `/editor?id=${data.id}`);
-
     setStatus("Saved");
+  }
+
+  async function submitForReview() {
+    if (!draftId) {
+      alert("Please save your draft first.");
+      return;
+    }
+
+    const { error } = await supabase
+      .from("drafts")
+      .update({
+        status: "submitted",
+        submitted_at: new Date().toISOString(),
+      })
+      .eq("id", draftId);
+
+    if (error) {
+      alert(error.message);
+      return;
+    }
+
+    setDraftStatus("submitted");
+    alert("Submitted for review!");
   }
 
   useEffect(() => {
     if (loading) return;
-
+    if (draftStatus === "submitted") return;
     if (!title.trim() && !content.trim()) return;
 
     setStatus("Typing...");
 
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
 
     timeoutRef.current = setTimeout(() => {
       saveDraft();
     }, 2000);
 
     return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
-  }, [title, content]);
+  }, [title, content, type]);
 
   return (
     <main className="mx-auto max-w-4xl px-8 py-12">
@@ -123,26 +147,57 @@ export default function EditorPage() {
           ← Dashboard
         </Link>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
+          <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium capitalize">
+            {draftStatus}
+          </span>
+
           <span className="text-sm text-gray-500">{status}</span>
 
           <button
             onClick={saveDraft}
-            className="rounded-lg bg-black px-5 py-2 text-white"
+            disabled={draftStatus === "submitted"}
+            className="rounded-lg bg-black px-5 py-2 text-white disabled:opacity-50"
           >
-            Save Now
+            Save
+          </button>
+
+          <button
+            onClick={submitForReview}
+            disabled={draftStatus === "submitted" || !draftId}
+            className="rounded-lg bg-green-600 px-5 py-2 text-white disabled:opacity-50"
+          >
+            Submit
           </button>
         </div>
       </div>
 
+      <select
+        value={type}
+        disabled={draftStatus === "submitted"}
+        onChange={(e) => setType(e.target.value)}
+        className="mb-6 rounded-lg border px-4 py-2"
+      >
+        <option value="article">📖 Article</option>
+        <option value="reflection">✍️ Reflection</option>
+        <option value="poetry">📜 Poetry</option>
+      </select>
+
       <input
         value={title}
+        disabled={draftStatus === "submitted"}
         onChange={(e) => setTitle(e.target.value)}
         placeholder="Untitled"
-        className="mb-10 w-full border-none bg-transparent text-6xl font-bold outline-none placeholder:text-gray-300"
+        className="mb-10 w-full border-none bg-transparent text-6xl font-bold outline-none"
       />
 
-      <RichTextEditor value={content} onChange={setContent} />
+      {draftStatus === "submitted" ? (
+        <div className="rounded-xl border border-yellow-300 bg-yellow-50 p-6 text-yellow-800">
+          This article has been submitted for review and can no longer be edited.
+        </div>
+      ) : (
+        <RichTextEditor value={content} onChange={setContent} />
+      )}
     </main>
   );
 }
