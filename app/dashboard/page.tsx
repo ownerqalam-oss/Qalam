@@ -8,6 +8,7 @@ interface Draft {
   id: string;
   title: string;
   created_at: string;
+  status: string;
 }
 
 export default function DashboardPage() {
@@ -81,9 +82,15 @@ export default function DashboardPage() {
                 href={`/editor?id=${draft.id}`}
                 className="flex-1"
               >
-                <h3 className="text-xl font-semibold">
-                  {draft.title || "Untitled"}
-                </h3>
+                <div className="flex items-center gap-3">
+              <h3 className="text-xl font-semibold">
+                 {draft.title || "Untitled"}
+                 </h3>
+
+                 <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium capitalize text-gray-600">
+                 {draft.status}
+                </span>
+            </div>
 
                 <p className="mt-2 text-sm text-gray-500">
                   {new Date(draft.created_at).toLocaleDateString()}

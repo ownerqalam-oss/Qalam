@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { supabase } from "../../lib/supabase";
@@ -8,26 +8,37 @@ import RichTextEditor from "../../components/RichTextEditor";
 
 export default function EditorPage() {
   const searchParams = useSearchParams();
-  const draftId = searchParams.get("id");
+
+  const [draftId, setDraftId] = useState<string | null>(
+    searchParams.get("id")
+  );
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [status, setStatus] = useState("");
+  const [status, setStatus] = useState("Saved");
+
+  const [loading, setLoading] = useState(true);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     async function loadDraft() {
-      if (!draftId) return;
+      if (!draftId) {
+        setLoading(false);
+        return;
+      }
 
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from("drafts")
         .select("*")
         .eq("id", draftId)
         .single();
 
-      if (error || !data) return;
+      if (data) {
+        setTitle(data.title ?? "");
+        setContent(data.content ?? "");
+      }
 
-      setTitle(data.title);
-      setContent(data.content);
+      setLoading(false);
     }
 
     loadDraft();
@@ -48,30 +59,59 @@ export default function EditorPage() {
         .update({
           title,
           content,
+          updated_at: new Date().toISOString(),
         })
         .eq("id", draftId);
 
-      if (error) {
-        alert(error.message);
-        return;
+      if (!error) {
+        setStatus("Saved");
       }
 
-      setStatus("Saved");
-    } else {
-      const { error } = await supabase.from("drafts").insert({
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from("drafts")
+      .insert({
         user_id: user.id,
         title,
         content,
-      });
+      })
+      .select()
+      .single();
 
-      if (error) {
-        alert(error.message);
-        return;
-      }
-
-      setStatus("Saved");
+    if (error) {
+      alert(error.message);
+      return;
     }
+
+    setDraftId(data.id);
+    window.history.replaceState({}, "", `/editor?id=${data.id}`);
+
+    setStatus("Saved");
   }
+
+  useEffect(() => {
+    if (loading) return;
+
+    if (!title.trim() && !content.trim()) return;
+
+    setStatus("Typing...");
+
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
+    timeoutRef.current = setTimeout(() => {
+      saveDraft();
+    }, 2000);
+
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, [title, content]);
 
   return (
     <main className="mx-auto max-w-4xl px-8 py-12">
@@ -90,7 +130,7 @@ export default function EditorPage() {
             onClick={saveDraft}
             className="rounded-lg bg-black px-5 py-2 text-white"
           >
-            Save
+            Save Now
           </button>
         </div>
       </div>
@@ -102,10 +142,7 @@ export default function EditorPage() {
         className="mb-10 w-full border-none bg-transparent text-6xl font-bold outline-none placeholder:text-gray-300"
       />
 
-      <RichTextEditor
-        value={content}
-        onChange={setContent}
-      />
+      <RichTextEditor value={content} onChange={setContent} />
     </main>
   );
 }
