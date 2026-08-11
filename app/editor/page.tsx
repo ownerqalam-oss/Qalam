@@ -9,18 +9,21 @@ import RichTextEditor from "../../components/RichTextEditor";
 export default function EditorPage() {
   const searchParams = useSearchParams();
 
-  const [draftId, setDraftId] = useState<string | null>(
-    searchParams.get("id")
-  );
+  const initialId = searchParams.get("id");
+  const initialType = searchParams.get("type") ?? "article";
+
+  const [draftId, setDraftId] = useState<string | null>(initialId);
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [type, setType] = useState("article");
+  const [type, setType] = useState(initialType);
+  const [tags, setTags] = useState("");
 
   const [status, setStatus] = useState("Saved");
   const [draftStatus, setDraftStatus] = useState("draft");
 
   const [loading, setLoading] = useState(true);
+
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -39,8 +42,9 @@ export default function EditorPage() {
       if (data) {
         setTitle(data.title ?? "");
         setContent(data.content ?? "");
-        setDraftStatus(data.status ?? "draft");
         setType(data.type ?? "article");
+        setTags(data.tags?.join(", ") ?? "");
+        setDraftStatus(data.status ?? "draft");
       }
 
       setLoading(false);
@@ -65,13 +69,18 @@ export default function EditorPage() {
         .from("drafts")
         .update({
           title,
-          content,
-          type,
+            content,
+            type,
+         tags: tags
+    .split(",")
+    .map(tag => tag.trim())
+    .filter(Boolean),
           updated_at: new Date().toISOString(),
         })
         .eq("id", draftId);
 
       if (!error) setStatus("Saved");
+
       return;
     }
 
@@ -82,7 +91,11 @@ export default function EditorPage() {
         title,
         content,
         type,
-      })
+        tags: tags
+            .split(",")
+            .map(tag => tag.trim())
+            .filter(Boolean),
+        })
       .select()
       .single();
 
@@ -92,7 +105,13 @@ export default function EditorPage() {
     }
 
     setDraftId(data.id);
-    window.history.replaceState({}, "", `/editor?id=${data.id}`);
+
+    window.history.replaceState(
+      {},
+      "",
+      `/editor?id=${data.id}`
+    );
+
     setStatus("Saved");
   }
 
@@ -121,7 +140,9 @@ export default function EditorPage() {
 
   useEffect(() => {
     if (loading) return;
+
     if (draftStatus === "submitted") return;
+
     if (!title.trim() && !content.trim()) return;
 
     setStatus("Typing...");
@@ -135,7 +156,7 @@ export default function EditorPage() {
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
-  }, [title, content, type]);
+  }, [title, content, , tags]);
 
   return (
     <main className="mx-auto max-w-4xl px-8 py-12">
@@ -148,11 +169,13 @@ export default function EditorPage() {
         </Link>
 
         <div className="flex items-center gap-3">
-          <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium capitalize">
+          <span className="rounded-full bg-gray-100 px-3 py-1 text-xs capitalize">
             {draftStatus}
           </span>
 
-          <span className="text-sm text-gray-500">{status}</span>
+          <span className="text-sm text-gray-500">
+            {status}
+          </span>
 
           <button
             onClick={saveDraft}
@@ -164,7 +187,7 @@ export default function EditorPage() {
 
           <button
             onClick={submitForReview}
-            disabled={draftStatus === "submitted" || !draftId}
+            disabled={!draftId || draftStatus === "submitted"}
             className="rounded-lg bg-green-600 px-5 py-2 text-white disabled:opacity-50"
           >
             Submit
@@ -181,8 +204,15 @@ export default function EditorPage() {
         <option value="article">📖 Article</option>
         <option value="reflection">✍️ Reflection</option>
         <option value="poetry">📜 Poetry</option>
+        <option value="story">📚 Short Story</option>
       </select>
-
+        <input
+        value={tags}
+        onChange={(e) => setTags(e.target.value)}
+        disabled={draftStatus === "submitted"}
+        placeholder="Tags (e.g. History, Palestine, Seerah)"
+        className="mb-6 w-full rounded-lg border border-gray-300 px-4 py-2 outline-none focus:border-black"
+        />
       <input
         value={title}
         disabled={draftStatus === "submitted"}
@@ -196,7 +226,10 @@ export default function EditorPage() {
           This article has been submitted for review and can no longer be edited.
         </div>
       ) : (
-        <RichTextEditor value={content} onChange={setContent} />
+        <RichTextEditor
+          value={content}
+          onChange={setContent}
+        />
       )}
     </main>
   );

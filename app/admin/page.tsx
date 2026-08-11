@@ -1,13 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { supabase } from "../../lib/supabase";
 
 interface Draft {
   id: string;
   title: string;
-  status: string;
+  type: string;
   created_at: string;
+  submitted_at: string | null;
 }
 
 export default function AdminPage() {
@@ -29,39 +31,17 @@ export default function AdminPage() {
     }
   }
 
-  async function approve(id: string) {
-    const { error } = await supabase
-      .from("drafts")
-      .update({
-        status: "published",
-        published_at: new Date().toISOString(),
-        reviewed_at: new Date().toISOString(),
-      })
-      .eq("id", id);
-
-    if (error) {
-      alert(error.message);
-      return;
+  function typeLabel(type: string) {
+    switch (type) {
+      case "story":
+        return "📚 Short Story";
+      case "poetry":
+        return "📜 Poetry";
+      case "reflection":
+        return "✍️ Reflection";
+      default:
+        return "📖 Article";
     }
-
-    loadDrafts();
-  }
-
-  async function reject(id: string) {
-    const { error } = await supabase
-      .from("drafts")
-      .update({
-        status: "draft",
-        reviewed_at: new Date().toISOString(),
-      })
-      .eq("id", id);
-
-    if (error) {
-      alert(error.message);
-      return;
-    }
-
-    loadDrafts();
   }
 
   return (
@@ -72,42 +52,39 @@ export default function AdminPage() {
 
       <div className="space-y-6">
         {drafts.map((draft) => (
-          <div
+          <Link
             key={draft.id}
-            className="flex items-center justify-between rounded-xl border p-6"
+            href={`/admin/review/${draft.id}`}
+            className="block rounded-xl border p-6 transition hover:border-black hover:shadow-sm"
           >
-            <div>
-              <h2 className="text-xl font-semibold">
-                {draft.title || "Untitled"}
-              </h2>
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="mb-2 flex items-center gap-2">
+                  <span className="rounded-full bg-gray-100 px-3 py-1 text-xs">
+                    {typeLabel(draft.type)}
+                  </span>
 
-              <p className="mt-2 text-sm text-gray-500">
-                Submitted for review
-              </p>
+                  <span className="rounded-full bg-yellow-100 px-3 py-1 text-xs">
+                    Submitted
+                  </span>
+                </div>
+
+                <h2 className="text-2xl font-semibold">
+                  {draft.title || "Untitled"}
+                </h2>
+
+                <p className="mt-2 text-sm text-gray-500">
+                  Click to review →
+                </p>
+              </div>
             </div>
-
-            <div className="flex gap-3">
-              <button
-                onClick={() => approve(draft.id)}
-                className="rounded-lg bg-green-600 px-5 py-2 text-white"
-              >
-                Approve
-              </button>
-
-              <button
-                onClick={() => reject(draft.id)}
-                className="rounded-lg bg-red-600 px-5 py-2 text-white"
-              >
-                Reject
-              </button>
-            </div>
-          </div>
+          </Link>
         ))}
 
         {drafts.length === 0 && (
-          <p className="text-gray-500">
+          <div className="rounded-xl border p-8 text-center text-gray-500">
             No submitted articles.
-          </p>
+          </div>
         )}
       </div>
     </main>

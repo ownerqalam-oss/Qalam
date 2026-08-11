@@ -1,81 +1,118 @@
-export default function Home() {
+"use client";
+
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { supabase } from "../../lib/supabase";
+
+interface Article {
+  id: string;
+  title: string;
+  tagline: string | null;
+  type: string;
+  tags: string[] | null;
+  published_at: string;
+}
+
+export default function JournalPage() {
+  const [articles, setArticles] = useState<Article[]>([]);
+
+  useEffect(() => {
+    loadArticles();
+  }, []);
+
+  async function loadArticles() {
+    const { data, error } = await supabase
+      .from("drafts")
+      .select("*")
+      .eq("status", "published")
+      .order("published_at", { ascending: false });
+
+    if (!error && data) {
+      setArticles(data);
+    }
+  }
+
+  function sectionTitle(type: string) {
+    switch (type) {
+      case "story":
+        return "📚 Short Stories";
+      case "poetry":
+        return "📜 Poetry";
+      case "reflection":
+        return "✍️ Reflections";
+      default:
+        return "📖 Articles";
+    }
+  }
+
+  const types = ["article", "story", "poetry", "reflection"];
+
   return (
-    <main>
-      {/* Hero */}
-      <section className="mx-auto flex min-h-[70vh] max-w-5xl flex-col items-center justify-center px-6 text-center">
-        <p className="mb-4 text-sm uppercase tracking-[0.3em] text-gray-500">
-          Reviving the Pen
-        </p>
+    <main className="mx-auto max-w-6xl px-6 py-12">
+      <h1 className="mb-3 text-5xl font-bold">Journal</h1>
 
-        <h1 className="text-6xl font-bold tracking-tight">
-          Qalam
-        </h1>
+      <p className="mb-12 text-gray-600">
+        Discover thoughtful writing from the Qalam community.
+      </p>
 
-        <p className="mt-6 max-w-2xl text-lg text-gray-600">
-          A home for Muslim writers and readers. Essays, articles, poetry and
-          stories rooted in sincerity.
-        </p>
+      {types.map((type) => {
+        const posts = articles.filter((a) => a.type === type);
 
-        <div className="mt-10 flex gap-4">
-          <a
-            href="/journal"
-            className="rounded-md bg-black px-6 py-3 text-white"
-          >
-            Read the Journal
-          </a>
+        if (posts.length === 0) return null;
 
-          <a
-            href="/login"
-            className="rounded-md border border-gray-300 px-6 py-3"
-          >
-            Write
-          </a>
+        return (
+          <section key={type} className="mb-16">
+            <h2 className="mb-6 text-3xl font-bold">
+              {sectionTitle(type)}
+            </h2>
+
+            <div className="space-y-4">
+              {posts.map((post) => (
+                <Link
+                  key={post.id}
+                  href={`/journal/${post.id}`}
+                  className="block rounded-xl border p-6 transition hover:border-black"
+                >
+                  <h3 className="text-2xl font-semibold">
+                    {post.title}
+                  </h3>
+
+                  {post.tagline && (
+                    <p className="mt-2 text-gray-600">
+                      {post.tagline}
+                    </p>
+                  )}
+
+                  {post.tags && post.tags.length > 0 && (
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {post.tags.map((tag) => (
+                        <span
+                          key={tag}
+                          className="rounded-full bg-gray-100 px-3 py-1 text-sm"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  <p className="mt-4 text-sm text-gray-500">
+                    {post.published_at
+                      ? new Date(post.published_at).toLocaleDateString()
+                      : ""}
+                  </p>
+                </Link>
+              ))}
+            </div>
+          </section>
+        );
+      })}
+
+      {articles.length === 0 && (
+        <div className="rounded-xl border p-10 text-center text-gray-500">
+          No published articles yet.
         </div>
-      </section>
-
-      {/* Editor's Choice */}
-      <section className="mx-auto max-w-5xl px-6 py-16">
-        <h2 className="mb-6 text-3xl font-bold">
-          Editor's Choice
-        </h2>
-
-        <div className="rounded-xl border p-8">
-          <p className="text-gray-500">Coming Soon</p>
-        </div>
-      </section>
-
-      {/* Latest Writing */}
-      <section className="mx-auto max-w-5xl px-6 py-16">
-        <h2 className="mb-6 text-3xl font-bold">
-          Latest Writing
-        </h2>
-
-        <div className="grid gap-6 md:grid-cols-2">
-          <div className="rounded-xl border p-6">Articles</div>
-          <div className="rounded-xl border p-6">Essays</div>
-          <div className="rounded-xl border p-6">Poetry</div>
-          <div className="rounded-xl border p-6">Stories</div>
-        </div>
-      </section>
-
-      {/* Become a Writer */}
-      <section className="mx-auto max-w-5xl px-6 py-20 text-center">
-        <h2 className="text-3xl font-bold">
-          Become a Writer
-        </h2>
-
-        <p className="mx-auto mt-4 max-w-2xl text-gray-600">
-          Qalam is currently invite-only for writers. If you've been invited,
-          continue writing. If not, enjoy the journal and follow our journey.
-        </p>
-
-        <a
-          href="/login"
-          className="mt-8 inline-block rounded-md border px-6 py-3"
-        >
-          Write for Qalam
-        </a>
-      </section>
+      )}
     </main>
   );
 }

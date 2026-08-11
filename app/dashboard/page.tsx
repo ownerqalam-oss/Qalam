@@ -59,6 +59,8 @@ export default function DashboardPage() {
         return "📜 Poetry";
       default:
         return "📖 Article";
+        case "story":
+      return "📚 Short Story";
     }
   }
 
@@ -67,12 +69,12 @@ export default function DashboardPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-4xl font-bold">Dashboard</h1>
 
-        <Link
-          href="/editor"
-          className="rounded-lg bg-black px-5 py-3 text-white"
-        >
-          New Draft
-        </Link>
+       <Link
+  href="/new"
+  className="rounded-lg bg-black px-5 py-3 text-white"
+>
+  New Draft
+</Link>
       </div>
 
       <div className="mt-10 space-y-4">
