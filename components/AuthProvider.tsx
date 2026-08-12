@@ -1,45 +1,74 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
-import { supabase } from "../lib/supabase";
-import { Session } from "@supabase/supabase-js";
+import { usePathname } from "next/navigation";
+import { supabase } from "../lib/supabase/client";
 
 type AuthContextType = {
-  session: Session | null;
+  authenticated: boolean;
+  admin: boolean;
   loading: boolean;
 };
 
 const AuthContext = createContext<AuthContextType>({
-  session: null,
+  authenticated: false,
+  admin: false,
   loading: true,
 });
 
-export function AuthProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const [session, setSession] = useState<Session | null>(null);
+type AuthStatus = {
+  authenticated: boolean;
+  admin: boolean;
+};
+
+async function loadAuthStatus(): Promise<AuthStatus> {
+  const response = await fetch("/auth/dev-session", { cache: "no-store" });
+  if (!response.ok) throw new Error("Auth status request failed");
+  return response.json() as Promise<AuthStatus>;
+}
+
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  const [authenticated, setAuthenticated] = useState(false);
+  const [admin, setAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-      setLoading(false);
-    });
+    let active = true;
+    loadAuthStatus()
+      .then((status) => {
+        if (!active) return;
+        setAuthenticated(status.authenticated);
+        setAdmin(status.admin);
+      })
+      .catch(() => {
+        if (!active) return;
+        setAuthenticated(false);
+        setAdmin(false);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => { active = false; };
+  }, [pathname]);
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setLoading(false);
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+      loadAuthStatus().then((status) => {
+        setAuthenticated(status.authenticated);
+        setAdmin(status.admin);
+        setLoading(false);
+      }).catch(() => {
+        setAuthenticated(false);
+        setAdmin(false);
+        setLoading(false);
+      });
     });
-
     return () => subscription.unsubscribe();
   }, []);
 
   return (
-    <AuthContext.Provider value={{ session, loading }}>
+    <AuthContext.Provider value={{ authenticated, admin, loading }}>
       {children}
     </AuthContext.Provider>
   );

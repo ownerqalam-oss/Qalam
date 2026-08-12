@@ -16,8 +16,6 @@ export default function RichTextEditor({
   onChange,
 }: RichTextEditorProps) {
 
-    console.log("RichTextEditor rendered");
-
   const editor = useEditor({
     immediatelyRender: false,
 

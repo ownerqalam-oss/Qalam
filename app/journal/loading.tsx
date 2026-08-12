@@ -1,0 +1,1 @@
+export default function Loading() { return <main className="mx-auto max-w-4xl animate-pulse px-6 py-12"><div className="h-12 w-48 rounded bg-gray-200" /><div className="mt-10 space-y-4">{[1, 2, 3].map((item) => <div key={item} className="h-40 rounded-xl border bg-white/50" />)}</div></main>; }

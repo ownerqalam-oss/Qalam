@@ -1,0 +1,8 @@
+import { InvitationForm } from "../../../components/InvitationForm";
+import { createClient } from "../../../lib/supabase/server";
+
+export default async function InvitationsPage() {
+  const supabase = await createClient();
+  const { data: invitations } = await supabase.from("invitations").select("id, email, status, created_at, sent_at, accepted_at, error_message").order("created_at", { ascending: false }).limit(100);
+  return <main className="mx-auto max-w-5xl px-5 py-10 sm:px-8"><p className="text-sm font-medium uppercase tracking-[0.25em] text-[#42614A]">Administration</p><h1 className="mt-3 text-4xl font-bold">Writer invitations</h1><p className="mt-3 text-gray-600">Invite a writer and retain a server-side audit trail.</p><InvitationForm /><div className="mt-10 overflow-x-auto rounded-xl border"><table className="w-full min-w-[640px] text-left text-sm"><thead className="bg-gray-50"><tr><th className="p-4">Email</th><th className="p-4">Status</th><th className="p-4">Created</th><th className="p-4">Details</th></tr></thead><tbody>{invitations?.map((invitation) => <tr key={invitation.id} className="border-t"><td className="p-4 font-medium">{invitation.email}</td><td className="p-4 capitalize">{invitation.status}</td><td className="p-4">{new Date(invitation.created_at).toLocaleString()}</td><td className="max-w-xs p-4 text-gray-500">{invitation.error_message ?? (invitation.accepted_at ? "Accepted" : invitation.sent_at ? "Email sent" : "Pending")}</td></tr>)}{!invitations?.length && <tr><td colSpan={4} className="p-8 text-center text-gray-500">No invitations yet.</td></tr>}</tbody></table></div></main>;
+}

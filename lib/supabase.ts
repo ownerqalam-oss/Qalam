@@ -1,6 +1,3 @@
-import { createClient } from "@supabase/supabase-js";
-
-export const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+// Compatibility export for existing Client Components. New code should import
+// from lib/supabase/client or lib/supabase/server explicitly.
+export { createClient, supabase } from "./supabase/client";

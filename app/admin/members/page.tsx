@@ -1,0 +1,9 @@
+import { Avatar } from "../../../components/Avatar";
+import { ModerationForm } from "../../../components/ModerationForm";
+import { createClient } from "../../../lib/supabase/server";
+
+export default async function MembersPage() {
+  const supabase = await createClient();
+  const { data: profiles, error } = await supabase.from("profiles").select("id, username, display_name, avatar_path, onboarding_completed_at, suspended_at").order("created_at", { ascending: false });
+  return <main className="mx-auto max-w-5xl px-5 py-10 sm:px-8"><p className="text-sm font-medium uppercase tracking-[0.25em] text-[#42614A]">Administration</p><h1 className="mt-3 text-4xl font-bold">Members</h1><p className="mt-3 text-gray-600">Every suspension and reactivation requires a reason and creates an audit record.</p>{error && <p className="mt-8 rounded-lg bg-red-50 p-3 text-red-700">Members could not be loaded.</p>}<div className="mt-10 space-y-4">{profiles?.map((profile) => { const name = profile.display_name ?? profile.username ?? "Incomplete profile"; const suspended = Boolean(profile.suspended_at); return <div key={profile.id} className="grid gap-4 rounded-xl border p-5 sm:grid-cols-[auto_1fr_18rem] sm:items-start"><Avatar path={profile.avatar_path} name={name} size="sm" /><div className="min-w-0"><h2 className="font-semibold">{name}</h2><p className="text-sm text-gray-500">{profile.username ? `@${profile.username}` : "Onboarding incomplete"}</p><span className={`mt-2 inline-block rounded-full px-3 py-1 text-xs ${suspended ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"}`}>{suspended ? "Suspended" : "Active"}</span></div><ModerationForm targetType="profile" targetId={profile.id} action={suspended ? "reactivate" : "suspend"} /></div>; })}{!profiles?.length && !error && <p className="rounded-xl border p-8 text-center text-gray-500">No members yet.</p>}</div></main>;
+}
