@@ -17,60 +17,101 @@ export default function Navbar() {
   }
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-gray-100 bg-white/90 backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-8">
-        <Link href="/" className="transition hover:opacity-80">
-          <Image
-          src="/logo2.png"
-          alt="Qalam"
-          width={210}
-          height={70}
-          className="h-14 w-auto"
-          priority
-        />
-        </Link>
+    <nav className="bg-[#F7F1E8]">
+      <div className="mx-auto max-w-[1400px] px-10">
+        <div className="flex h-[105px] items-center justify-between border-b border-[#DCD4C9]">
 
-        <div className="flex items-center gap-8 text-[15px] font-medium text-gray-700">
-          <Link
-            href="/journal"
-            className="transition hover:text-[#053400]"
-          >
-            Journal
+          {/* Logo */}
+          <Link href="/" className="shrink-0">
+            <Image
+              src="/logo2.png"
+              alt="Qalam"
+              width={210}
+              height={70}
+              className="h-auto w-[175px]"
+              priority
+            />
           </Link>
 
-          <Link
-            href="/about"
-            className="transition hover:text-[#053400]"
-          >
-            About
-          </Link>
+          {/* Main navigation */}
+          <div className="flex items-center gap-9 text-[13px] font-medium text-[#46382F]">
 
-          {!loading && session && (
+            <Link
+              href="/journal"
+              className="rounded-full bg-[#053400] px-7 py-2.5 text-white"
+            >
+              JOURNAL
+            </Link>
+
+            <Link
+              href="/explore"
+              className="transition hover:text-[#053400]"
+            >
+              EXPLORE
+            </Link>
+
+            <Link
+              href="/writers"
+              className="transition hover:text-[#053400]"
+            >
+              WRITERS
+            </Link>
+
             <Link
               href="/dashboard"
               className="transition hover:text-[#053400]"
             >
-              Dashboard
+              DASHBOARD
             </Link>
-          )}
-        </div>
 
-        {!loading &&
-          (session ? (
-            <button
-              onClick={handleLogout}
-              className="rounded-full border border-[#053400] px-5 py-2 text-[#053400] transition hover:bg-[#053400] hover:text-white"
-            >
-              Logout
-            </button>
-          ) : (
-            <Link
-              href="/login"
-              className="rounded-full bg-[#053400] px-6 py-2 text-white transition hover:bg-[#0B4D2B]"
-            >
-              Write
-            </Link>
-          ))}
+          </div>
+
+          {/* Right side */}
+          <div className="flex items-center gap-5">
+
+            {/* Search */}
+            <div className="hidden items-center gap-3 text-[12px] text-[#9A9188] md:flex">
+              <span>SEARCH</span>
+              <span className="text-[18px] text-[#46382F]">⌕</span>
+            </div>
+
+            {!loading && session ? (
+              <>
+                <button
+                  onClick={handleLogout}
+                  className="text-[13px] font-medium text-[#053400]"
+                >
+                  LOG OUT
+                </button>
+
+                <Link
+                  href="/write"
+                  className="rounded-full bg-[#053400] px-7 py-2.5 text-[13px] font-medium text-white transition hover:bg-[#0B4D2B]"
+                >
+                  WRITE
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="text-[13px] font-medium text-[#053400]"
+                >
+                  SIGN IN
+                </Link>
+
+                <Link
+                  href="/write"
+                  className="rounded-full bg-[#053400] px-7 py-2.5 text-[13px] font-medium text-white transition hover:bg-[#0B4D2B]"
+                >
+                  WRITE
+                </Link>
+              </>
+            )}
+
+          </div>
+
+        </div>
       </div>
     </nav>
   );

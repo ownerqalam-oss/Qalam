@@ -1,157 +1,231 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Image from "next/image";
-import { ayahs } from "../lib/ayahs";
-import { Amiri } from "next/font/google";
+import { Poppins, Inter } from "next/font/google";
 
-const amiri = Amiri({
-  weight: ["400", "700"],
-  subsets: ["arabic"],
+const poppins = Poppins({
+  weight: ["400", "500", "600", "700"],
+  subsets: ["latin"],
 });
 
+const inter = Inter({
+  weight: ["400", "500", "600"],
+  subsets: ["latin"],
+});
+
+const genres = [
+  {
+    title: "Articles",
+    description:
+      "Thoughtful writing on faith, society, culture and the questions that shape how we see the world.",
+  },
+  {
+    title: "Poetry",
+    description:
+      "Poetry exploring faith, love, longing, identity and the quiet moments of life.",
+  },
+  {
+    title: "Short Stories",
+    description:
+      "Stories rooted in the human experience, exploring life, faith, struggle and imagination.",
+  },
+  {
+    title: "Reflections",
+    description:
+      "Personal reflections on faith, life, growth and the experiences that bring us closer to Allah.",
+  },
+];
+
 export default function Home() {
-  const [currentAyah, setCurrentAyah] = useState(0);
-
-useEffect(() => {
-  const interval = setInterval(() => {
-    setCurrentAyah((prev) => (prev + 1) % ayahs.length);
-  }, 7000);
-
-  return () => clearInterval(interval);
-}, []);
   return (
-    <main>
-      {/* Hero */}
-      <section className="mx-auto flex min-h-[75vh] max-w-5xl flex-col items-center justify-center px-6 text-center">
-        <Image
-          src="/logo2.png"
-          alt="Qalam Logo"
-          width={420}
-          height={150}
-          priority
-          className="mb-8"
-        />
-
-        <p className="text-xs font-medium uppercase tracking-[0.45em] text-gray-500">
-          REVIVING THE PEN
-        </p>
-
-        <h1 className="mt-6 text-4xl font-semibold text-[#053400] md:text-5xl">
-          A place to write.
-          <br />
-          Rooted in Allah.
-        </h1>
-
-        <p className="mt-8 max-w-xl text-lg leading-8 text-gray-600">
-          A home for Muslim writers and readers, sharing articles, poetry,
-          reflections and short stories written with sincerity.
-        </p>
-
-        <div className="mt-12 flex flex-wrap justify-center gap-4">
-          <a
-            href="/journal"
-            className="rounded-full bg-[#053400] px-8 py-3 text-white transition hover:bg-[#0B4D2B]"
-          >
-            Read the Journal
-          </a>
-
-          <a
-            href="/login"
-            className="rounded-full border border-[#053400] px-8 py-3 text-[#053400] transition hover:bg-[#053400] hover:text-white"
-          >
-            Write
-          </a>
-        </div>
-      </section>
-
-      {/* Surah Al-Qalam */}
-        <section className="mx-auto max-w-4xl px-6 py-20 text-center">
-          <p
-            className={`${amiri.className} text-5xl leading-loose text-[#053400] transition-all duration-700 md:text-6xl`}
-            dir="rtl"
-          >
-            {ayahs[currentAyah].arabic}
-          </p>
-
-          <p className="mx-auto mt-8 max-w-2xl text-lg italic text-gray-700 transition-all duration-700">
-            {ayahs[currentAyah].english}
-          </p>
-
-          <p className="mt-3 text-sm uppercase tracking-[0.2em] text-gray-500 transition-all duration-700">
-            {ayahs[currentAyah].reference}
-          </p>
-        </section>
+    <main className="min-h-screen bg-[#F7F1E8] text-[#46382F]">
 
 
-      {/* Editor's Choice */}
-      <section className="mx-auto max-w-5xl px-6 py-16">
-        <h2 className="mb-8 text-4xl font-bold">
-          Editor's Choice
-        </h2>
 
-        <div className="rounded-3xl border border-gray-200 bg-white p-10 shadow-sm">
-          <p className="text-sm uppercase tracking-[0.3em] text-[#053400]">
-            Featured
-          </p>
 
-          <h3 className="mt-3 text-3xl font-semibold">
-            Coming Soon
-          </h3>
+      {/* HERO */}
+      <section className="mx-auto max-w-[1180px] px-8">
 
-          <p className="mt-4 max-w-2xl text-gray-600">
-            Soon you'll find carefully selected writing chosen by the Qalam
-            editorial team.
-          </p>
-        </div>
-      </section>
+        <div className="grid min-h-[470px] grid-cols-2 items-center border-b border-[#DCD4C9]">
 
-      {/* Latest Writing */}
-      <section className="mx-auto max-w-5xl px-6 py-16">
-        <h2 className="mb-8 text-4xl font-bold">
-          Latest Writing
-        </h2>
+          {/* Illustration */}
+          <div className="flex items-center justify-center">
+            <Image
+              src="/qalam-hero.png"
+              alt="Quill and inkpot"
+              width={620}
+              height={500}
+              priority
+              className="w-[500px] h-auto"
+            />
+          </div>
 
-        <div className="grid gap-6 md:grid-cols-2">
-          {[
-            "Articles",
-            "Reflections",
-            "Poetry",
-            "Short Stories",
-          ].map((category) => (
-            <div
-              key={category}
-              className="rounded-2xl border border-gray-200 p-8 transition hover:-translate-y-1 hover:shadow-lg"
+          {/* Hero copy */}
+          <div className="pl-8">
+
+            <p
+              className={`${inter.className} text-[11px] font-medium uppercase tracking-[0.45em] text-[#42614A]`}
             >
-              <h3 className="text-2xl font-semibold">{category}</h3>
+              REVIVING THE PEN
+            </p>
 
-              <p className="mt-3 text-gray-500">
-                Discover thoughtful writing from our community.
+            <h1
+              className={`${poppins.className} mt-5 max-w-[570px] text-[56px] font-medium leading-[1.08] tracking-[-2px] text-[#053400]`}
+            >
+              A place to write,
+              <br />
+              rooted in Allah
+            </h1>
+
+            <p
+              className={`${inter.className} mt-7 max-w-[520px] text-[16px] leading-[1.65] text-[#62574F]`}
+            >
+              A home for Muslim writers and readers, sharing articles,
+              poetry, reflections and short stories written with sincerity.
+            </p>
+
+            <a
+              href="/write"
+              className={`${inter.className} mt-8 inline-flex items-center gap-3 rounded-full bg-[#053400] px-6 py-3 text-[12px] font-medium text-white transition hover:bg-[#0B4D2B]`}
+            >
+              START WRITING NOW
+              <span className="text-base">→</span>
+            </a>
+
+          </div>
+        </div>
+      </section>
+
+
+      {/* GENRES */}
+      <section className="mx-auto max-w-[1180px] px-8">
+
+        <div className="grid grid-cols-4 border-b border-[#DCD4C9]">
+
+          {genres.map((genre, index) => (
+            <a
+              key={genre.title}
+              href={`/journal?genre=${genre.title.toLowerCase()}`}
+              className={`px-7 py-8 transition hover:bg-[#F1EAE0] ${
+                index !== 0
+                  ? "border-l border-[#DCD4C9]"
+                  : ""
+              }`}
+            >
+
+              <h2
+                className={`${poppins.className} text-[24px] font-medium text-[#46382F]`}
+              >
+                {genre.title}
+              </h2>
+
+              <p
+                className={`${inter.className} mt-3 text-[13px] leading-[1.6] text-[#70655C]`}
+              >
+                {genre.description}
+              </p>
+
+            </a>
+          ))}
+
+        </div>
+      </section>
+
+
+      {/* LATEST FROM JOURNAL */}
+      <section className="mx-auto max-w-[1180px] px-8">
+
+        <div className="border-b border-[#DCD4C9]">
+
+          <div className="flex items-center justify-between py-8">
+
+            <h2
+              className={`${poppins.className} text-[30px] font-medium text-[#46382F]`}
+            >
+              Latest from the journal
+            </h2>
+
+            <a
+              href="/journal"
+              className={`${inter.className} text-[13px] font-medium text-[#46382F] transition hover:text-[#053400]`}
+            >
+              VIEW ALL →
+            </a>
+
+          </div>
+
+
+          {/* Article list */}
+          <div className="divide-y divide-[#DCD4C9]">
+
+            {/* 
+              Your existing published articles will go here.
+              We are deliberately not inventing article content.
+            */}
+
+            <div className="py-8">
+              <p
+                className={`${inter.className} text-[14px] text-[#81766D]`}
+              >
+                No published writing yet.
               </p>
             </div>
-          ))}
+
+          </div>
+
         </div>
+
       </section>
 
-      {/* Become a Writer */}
-      <section className="mx-auto max-w-4xl px-6 py-24 text-center">
-        <h2 className="text-4xl font-bold">
-          Become a Writer
-        </h2>
 
-        <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-gray-600">
-          Qalam is currently invite-only for writers. If you've been invited,
-          continue your writing journey. Otherwise, enjoy the journal and
-          follow our journey as we grow.
-        </p>
+      {/* FOOTER */}
+      <footer className="mx-auto max-w-[1180px] px-8">
 
-        <a
-          href="/login"
-          className="mt-10 inline-block rounded-full bg-[#053400] px-8 py-3 text-white transition hover:bg-[#0B4D2B]"
-        >
-          Write for Qalam
-        </a>
-      </section>
+        <div className="flex flex-col justify-between gap-8 py-14 md:flex-row md:items-center">
+
+          <div className="flex items-center gap-6">
+
+            <Image
+              src="/logo2.png"
+              alt="Qalam"
+              width={120}
+              height={50}
+              className="w-[110px] h-auto"
+            />
+
+            <p
+              className={`${inter.className} text-[13px] text-[#81766D]`}
+            >
+              They can silce your toungue,
+ but not your pen
+            </p>
+
+          </div>
+
+          <div
+            className={`${inter.className} flex gap-7 text-[13px] text-[#81766D]`}
+          >
+            <a href="/about" className="hover:text-[#053400]">
+              About
+            </a>
+
+            <a href="/journal" className="hover:text-[#053400]">
+              Journal
+            </a>
+
+            <a href="/writers" className="hover:text-[#053400]">
+              Writers
+            </a>
+
+            <a href="/contact" className="hover:text-[#053400]">
+              Contact
+            </a>
+          </div>
+
+        </div>
+
+      </footer>
+
     </main>
   );
 }
