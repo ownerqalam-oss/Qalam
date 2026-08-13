@@ -3,7 +3,25 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { Poppins, Inter } from "next/font/google";
 import { supabase } from "../../../lib/supabase";
+
+const poppins = Poppins({
+  weight: ["400", "500", "600", "700"],
+  subsets: ["latin"],
+});
+
+const inter = Inter({
+  weight: ["400", "500", "600"],
+  subsets: ["latin"],
+});
+
+interface Profile {
+  id: string;
+  display_name: string | null;
+  bio: string | null;
+  avatar_url: string | null;
+}
 
 interface Article {
   id: string;
@@ -13,28 +31,50 @@ interface Article {
   type: string;
   tags: string[] | null;
   published_at: string | null;
+  user_id: string;
 }
 
 export default function ArticlePage() {
   const { id } = useParams();
 
   const [article, setArticle] = useState<Article | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadArticle();
-  }, []);
+    if (id) {
+      loadArticle();
+    }
+  }, [id]);
 
   async function loadArticle() {
-    const { data, error } = await supabase
+    const { data: articleData, error: articleError } = await supabase
       .from("drafts")
       .select("*")
       .eq("id", id)
       .eq("status", "published")
       .single();
 
-    if (!error && data) {
-      setArticle(data);
+    if (articleError || !articleData) {
+      console.error("Error loading article:", articleError);
+      setLoading(false);
+      return;
+    }
+
+    setArticle(articleData);
+
+    const { data: profileData, error: profileError } = await supabase
+      .from("profiles")
+      .select("id, display_name, bio, avatar_url")
+      .eq("id", articleData.user_id)
+      .single();
+
+    if (profileError) {
+      console.error("Error loading writer profile:", profileError);
+    }
+
+    if (profileData) {
+      setProfile(profileData);
     }
 
     setLoading(false);
@@ -42,75 +82,175 @@ export default function ArticlePage() {
 
   if (loading) {
     return (
-      <main className="mx-auto max-w-3xl px-6 py-20">
-        Loading...
+      <main className="min-h-screen bg-[#F7F1E8] px-6 py-20 text-[#46382F]">
+        <div className="mx-auto max-w-3xl">
+          <p className={`${inter.className} text-sm text-[#81766D]`}>
+            Loading...
+          </p>
+        </div>
       </main>
     );
   }
 
   if (!article) {
     return (
-      <main className="mx-auto max-w-3xl px-6 py-20">
-        <h1 className="mb-4 text-4xl font-bold">
-          Article not found
-        </h1>
+      <main className="min-h-screen bg-[#F7F1E8] px-6 py-20 text-[#46382F]">
+        <div className="mx-auto max-w-3xl">
+          <h1 className={`${poppins.className} mb-4 text-4xl font-medium`}>
+            Article not found
+          </h1>
 
-        <Link
-          href="/journal"
-          className="text-blue-600"
-        >
-          ← Back to Journal
-        </Link>
+          <Link
+            href="/journal"
+            className={`${inter.className} text-[#053400] hover:underline`}
+          >
+            ← Back to Journal
+          </Link>
+        </div>
       </main>
     );
   }
 
   return (
-    <main className="mx-auto max-w-3xl px-6 py-16">
-      <Link
-        href="/journal"
-        className="mb-10 inline-block text-gray-500 hover:text-black"
-      >
-        ← Back to Journal
-      </Link>
+    <main className="min-h-screen bg-[#F7F1E8] text-[#46382F]">
+      <article className="mx-auto max-w-4xl px-6 py-16 md:px-10 md:py-20">
 
-      <div className="mb-4 flex flex-wrap gap-2">
-        <span className="rounded-full bg-gray-100 px-3 py-1 text-sm capitalize">
-          {article.type}
-        </span>
+        {/* BACK TO JOURNAL */}
+        <Link
+          href="/journal"
+          className={`${inter.className} mb-12 inline-block text-sm text-[#81766D] transition hover:text-[#053400]`}
+        >
+          ← Back to Journal
+        </Link>
 
-        {article.tags?.map((tag) => (
+        {/* CATEGORY */}
+        <div className="mb-5 flex flex-wrap gap-2">
           <span
-            key={tag}
-            className="rounded-full bg-gray-100 px-3 py-1 text-sm"
+            className={`${inter.className} rounded-full bg-[#E9E2D8] px-3 py-1 text-xs font-medium uppercase tracking-wide text-[#42614A]`}
           >
-            {tag}
+            {article.type === "story"
+              ? "Short Story"
+              : article.type}
           </span>
-        ))}
-      </div>
 
-      <h1 className="mb-4 text-5xl font-bold">
-        {article.title}
-      </h1>
+          {article.tags?.map((tag) => (
+            <span
+              key={tag}
+              className={`${inter.className} rounded-full bg-[#E9E2D8] px-3 py-1 text-xs text-[#70655C]`}
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
 
-      {article.tagline && (
-        <p className="mb-8 text-xl text-gray-600">
-          {article.tagline}
-        </p>
-      )}
+        {/* TITLE */}
+        <h1
+          className={`${poppins.className} max-w-4xl text-[44px] font-medium leading-[1.12] tracking-[-1.5px] text-[#46382F] md:text-[58px]`}
+        >
+          {article.title}
+        </h1>
 
-      {article.published_at && (
-        <p className="mb-10 text-sm text-gray-500">
-          {new Date(article.published_at).toLocaleDateString()}
-        </p>
-      )}
+        {/* TAGLINE */}
+        {article.tagline && (
+          <p
+            className={`${inter.className} mt-6 max-w-3xl text-lg leading-8 text-[#70655C] md:text-xl`}
+          >
+            {article.tagline}
+          </p>
+        )}
 
-      <article
-        className="prose prose-lg max-w-none"
-        dangerouslySetInnerHTML={{
-          __html: article.content,
-        }}
-      />
+        {/* WRITER */}
+        <div className="mt-8 flex items-center gap-4 border-b border-[#DCD4C9] pb-10">
+
+          {/* AVATAR */}
+          {profile?.avatar_url ? (
+            <img
+              src={profile.avatar_url}
+              alt={profile.display_name || "Writer"}
+              className="h-12 w-12 rounded-full object-cover"
+            />
+          ) : (
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#053400] text-white">
+              <span className={`${poppins.className} text-lg`}>
+                {profile?.display_name?.charAt(0).toUpperCase() || "Q"}
+              </span>
+            </div>
+          )}
+
+          {/* NAME + DATE */}
+          <div>
+            <p
+              className={`${poppins.className} text-[15px] font-medium text-[#46382F]`}
+            >
+              {profile?.display_name || "Qalam Writer"}
+            </p>
+
+            {article.published_at && (
+              <p
+                className={`${inter.className} mt-1 text-xs uppercase tracking-[0.12em] text-[#81766D]`}
+              >
+                {new Date(article.published_at).toLocaleDateString("en-GB", {
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                })}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* ARTICLE CONTENT */}
+        <div
+          className={`${inter.className} prose prose-lg mt-12 max-w-none text-[#46382F]`}
+          dangerouslySetInnerHTML={{
+            __html: article.content,
+          }}
+        />
+
+        {/* WRITER BIO */}
+        {profile?.bio && (
+          <div className="mt-16 border-t border-[#DCD4C9] pt-10">
+            <div className="flex items-start gap-5">
+
+              {profile.avatar_url ? (
+                <img
+                  src={profile.avatar_url}
+                  alt={profile.display_name || "Writer"}
+                  className="h-16 w-16 rounded-full object-cover"
+                />
+              ) : (
+                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[#053400] text-white">
+                  <span className={`${poppins.className} text-xl`}>
+                    {profile.display_name?.charAt(0).toUpperCase() || "Q"}
+                  </span>
+                </div>
+              )}
+
+              <div>
+                <p
+                  className={`${inter.className} mb-1 text-xs font-medium uppercase tracking-[0.18em] text-[#42614A]`}
+                >
+                  Written by
+                </p>
+
+                <h2
+                  className={`${poppins.className} text-xl font-medium text-[#46382F]`}
+                >
+                  {profile.display_name || "Qalam Writer"}
+                </h2>
+
+                <p
+                  className={`${inter.className} mt-2 max-w-2xl text-sm leading-6 text-[#70655C]`}
+                >
+                  {profile.bio}
+                </p>
+              </div>
+
+            </div>
+          </div>
+        )}
+
+      </article>
     </main>
   );
 }

@@ -1,7 +1,10 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { Poppins, Inter } from "next/font/google";
+import { supabase } from "../lib/supabase";
 
 const poppins = Poppins({
   weight: ["400", "500", "600", "700"],
@@ -35,8 +38,39 @@ const genres = [
       "Personal reflections on faith, life, growth and the experiences that bring us closer to Allah.",
   },
 ];
+interface Article {
+  id: string;
+  title: string;
+  tagline: string | null;
+  type: string;
+  published_at: string | null;
+}
 
 export default function Home() {
+    const [articles, setArticles] = useState<Article[]>([]);
+
+   useEffect(() => {
+    async function loadLatestArticles() {
+      const { data, error } = await supabase
+        .from("drafts")
+        .select("*")
+        .eq("status", "published")
+        .order("published_at", { ascending: false });
+
+      if (error) {
+        console.error("Error loading homepage articles:", error);
+        return;
+      }
+
+      if (data) {
+        setArticles(data.slice(0, 3));
+      }
+    }
+
+    loadLatestArticles();
+  }, []);
+  
+
   return (
     <main className="min-h-screen bg-[#F7F1E8] text-[#46382F]">
 
@@ -133,49 +167,107 @@ export default function Home() {
 
 
       {/* LATEST FROM JOURNAL */}
-      <section className="mx-auto max-w-[1180px] px-8">
+<section className="mx-auto max-w-[1400px] px-10">
 
-        <div className="border-b border-[#DCD4C9]">
+  <div className="border-b border-[#DCD4C9]">
 
-          <div className="flex items-center justify-between py-8">
+    <div className="flex items-center justify-between py-8">
 
-            <h2
-              className={`${poppins.className} text-[30px] font-medium text-[#46382F]`}
-            >
-              Latest from the journal
-            </h2>
+      <h2
+        className={`${poppins.className} text-[30px] font-medium text-[#46382F]`}
+      >
+        Latest from the journal
+      </h2>
 
-            <a
-              href="/journal"
-              className={`${inter.className} text-[13px] font-medium text-[#46382F] transition hover:text-[#053400]`}
-            >
-              VIEW ALL →
-            </a>
+      <Link
+        href="/journal"
+        className={`${inter.className} text-[13px] font-medium text-[#46382F] transition hover:text-[#053400]`}
+      >
+        VIEW ALL →
+      </Link>
 
-          </div>
+    </div>
 
+    {articles.length === 0 ? (
 
-          {/* Article list */}
-          <div className="divide-y divide-[#DCD4C9]">
+      <div className="py-10">
+        <p
+          className={`${inter.className} text-[14px] text-[#81766D]`}
+        >
+          No published writing yet.
+        </p>
+      </div>
 
-            {/* 
-              Your existing published articles will go here.
-              We are deliberately not inventing article content.
-            */}
+    ) : (
 
-            <div className="py-8">
-              <p
-                className={`${inter.className} text-[14px] text-[#81766D]`}
+      <div className="divide-y divide-[#DCD4C9]">
+
+        {articles.map((article) => (
+
+          <Link
+            key={article.id}
+            href={`/journal/${article.id}`}
+            className="group block py-8 transition"
+          >
+
+            <div className="flex items-start justify-between gap-10">
+
+              <div className="max-w-4xl">
+
+                <p
+                  className={`${inter.className} text-[11px] font-medium uppercase tracking-[0.2em] text-[#42614A]`}
+                >
+                  {article.type === "story"
+                    ? "SHORT STORY"
+                    : article.type.toUpperCase()}
+                </p>
+
+                <h3
+                  className={`${poppins.className} mt-2 text-[26px] font-medium text-[#46382F] transition group-hover:text-[#053400]`}
+                >
+                  {article.title}
+                </h3>
+
+                {article.tagline && (
+                  <p
+                    className={`${inter.className} mt-2 text-[14px] leading-6 text-[#70655C]`}
+                  >
+                    {article.tagline}
+                  </p>
+                )}
+
+              </div>
+
+              <span
+                className={`${inter.className} hidden shrink-0 pt-5 text-[13px] text-[#81766D] md:block`}
               >
-                No published writing yet.
-              </p>
+                {article.published_at
+                  ? new Date(article.published_at).toLocaleDateString(
+                      "en-GB",
+                      {
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric",
+                      }
+                    )
+                  : ""}
+              </span>
+
             </div>
 
-          </div>
+          </Link>
 
-        </div>
+        ))}
 
-      </section>
+      </div>
+
+    )}
+
+  </div>
+
+</section>
+
+
 
 
       {/* FOOTER */}
@@ -196,7 +288,7 @@ export default function Home() {
             <p
               className={`${inter.className} text-[13px] text-[#81766D]`}
             >
-              They can silce your toungue,
+              They can silence your toungue,
  but not your pen
             </p>
 
