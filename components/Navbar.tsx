@@ -3,15 +3,18 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { supabase } from "../lib/supabase";
 import { useAuth } from "./AuthProvider";
+import { createClient } from "../lib/supabase/client";
 
 export default function Navbar() {
   const { session, loading } = useAuth();
   const router = useRouter();
 
   async function handleLogout() {
+    const supabase = createClient();
+
     await supabase.auth.signOut();
+
     router.push("/");
     router.refresh();
   }
@@ -91,7 +94,7 @@ export default function Navbar() {
                   WRITE
                 </Link>
               </>
-            ) : (
+            ) : !loading ? (
               <>
                 <Link
                   href="/login"
@@ -107,6 +110,8 @@ export default function Navbar() {
                   WRITE
                 </Link>
               </>
+            ) : (
+              <div className="h-9 w-20" />
             )}
 
           </div>
