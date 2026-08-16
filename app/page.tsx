@@ -139,7 +139,7 @@ export default function Home() {
           <div className="animate-fade-in-up order-2 flex flex-col items-center justify-center gap-6 py-8 md:order-1">
             <p
               dir="rtl"
-              className={`${amiri.className} text-[110px] leading-none text-[#053400] sm:text-[140px] md:text-[170px]`}
+              className={`${amiri.className} animate-verse text-[110px] leading-none text-[#053400] sm:text-[140px] md:text-[170px]`}
             >
               قلم
             </p>
@@ -155,8 +155,16 @@ export default function Home() {
                 stroke="currentColor"
                 strokeWidth="2.5"
                 strokeLinecap="round"
+                pathLength="1"
+                className="animate-draw-line"
               />
-              <circle cx="290" cy="12" r="4" fill="currentColor" />
+              <circle
+                cx="290"
+                cy="12"
+                r="4"
+                fill="currentColor"
+                className="animate-ink-drop"
+              />
             </svg>
           </div>
 
