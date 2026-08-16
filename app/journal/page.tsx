@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Poppins, Inter } from "next/font/google";
 import { supabase } from "../../lib/supabase/client";
+import { estimateReadingTime } from "../../lib/readingTime";
 
 const poppins = Poppins({
   weight: ["400", "500", "600", "700"],
@@ -19,13 +20,23 @@ interface Article {
   id: string;
   title: string;
   tagline: string | null;
+  content: string;
   type: string;
   tags: string[] | null;
   published_at: string;
+  user_id: string;
+  is_anonymous: boolean;
+}
+
+interface Writer {
+  id: string;
+  display_name: string | null;
+  avatar_url: string | null;
 }
 
 export default function JournalPage() {
   const [articles, setArticles] = useState<Article[]>([]);
+  const [writers, setWriters] = useState<Writer[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -41,9 +52,32 @@ export default function JournalPage() {
 
     if (!error && data) {
       setArticles(data);
+
+      const authorIds = Array.from(
+        new Set(
+          data
+            .filter((article) => !article.is_anonymous)
+            .map((article) => article.user_id)
+        )
+      );
+
+      if (authorIds.length > 0) {
+        const { data: writerData } = await supabase
+          .from("profiles")
+          .select("id, display_name, avatar_url")
+          .in("id", authorIds);
+
+        if (writerData) {
+          setWriters(writerData);
+        }
+      }
     }
 
     setLoading(false);
+  }
+
+  function getWriter(userId: string) {
+    return writers.find((writer) => writer.id === userId);
   }
 
   function sectionTitle(type: string) {
@@ -113,55 +147,81 @@ export default function JournalPage() {
                   </h2>
                 </div>
 
-                <div className="divide-y divide-[#DCD4C9]">
-                  {posts.map((post) => (
-                    <Link
-                      key={post.id}
-                      href={`/journal/${post.id}`}
-                      className="group block py-7"
-                    >
-                      <h3
-                        className={`${poppins.className} text-2xl font-medium text-[#46382F] transition group-hover:text-[#053400]`}
+                <div className="space-y-4">
+                  {posts.map((post) => {
+                    const writer = post.is_anonymous
+                      ? null
+                      : getWriter(post.user_id);
+
+                    return (
+                      <Link
+                        key={post.id}
+                        href={`/journal/${post.id}`}
+                        className="group block rounded-xl border border-[#DCD4C9] bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-[#053400]/30 hover:shadow-md"
                       >
-                        {post.title}
-                      </h3>
-
-                      {post.tagline && (
-                        <p
-                          className={`${inter.className} mt-2 text-[15px] leading-6 text-[#70655C]`}
+                        <h3
+                          className={`${poppins.className} text-2xl font-medium text-[#46382F] transition group-hover:text-[#053400]`}
                         >
-                          {post.tagline}
-                        </p>
-                      )}
+                          {post.title}
+                        </h3>
 
-                      <div className="mt-3 flex flex-wrap items-center gap-2">
-                        {post.tags?.map((tag) => (
-                          <span
-                            key={tag}
-                            className={`${inter.className} rounded-full bg-[#E9E2D8] px-3 py-1 text-xs text-[#70655C]`}
+                        {post.tagline && (
+                          <p
+                            className={`${inter.className} mt-2 text-[15px] leading-6 text-[#70655C]`}
                           >
-                            {tag}
-                          </span>
-                        ))}
+                            {post.tagline}
+                          </p>
+                        )}
 
-                        <span
-                          className={`${inter.className} text-xs text-[#81766D] ${
-                            post.tags && post.tags.length > 0 ? "ml-2" : ""
-                          }`}
-                        >
-                          {post.published_at
-                            ? new Date(
-                                post.published_at
-                              ).toLocaleDateString("en-GB", {
-                                day: "numeric",
-                                month: "short",
-                                year: "numeric",
-                              })
-                            : ""}
-                        </span>
-                      </div>
-                    </Link>
-                  ))}
+                        {post.tags && post.tags.length > 0 && (
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            {post.tags.map((tag) => (
+                              <span
+                                key={tag}
+                                className={`${inter.className} rounded-full bg-[#E9E2D8] px-3 py-1 text-xs text-[#70655C]`}
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* BYLINE */}
+                        <div className="mt-4 flex items-center gap-2.5">
+                          {writer?.avatar_url ? (
+                            <img
+                              src={writer.avatar_url}
+                              alt={writer.display_name || "Writer"}
+                              className="h-7 w-7 rounded-full object-cover"
+                            />
+                          ) : (
+                            <div
+                              className={`${poppins.className} flex h-7 w-7 items-center justify-center rounded-full bg-[#053400] text-[11px] font-medium text-white`}
+                            >
+                              {(writer?.display_name || "Q")[0].toUpperCase()}
+                            </div>
+                          )}
+
+                          <span
+                            className={`${inter.className} text-[13px] text-[#70655C]`}
+                          >
+                            {writer?.display_name || "Qalam Writer"}
+                            <span className="text-[#B8AF9F]"> · </span>
+                            {post.published_at
+                              ? new Date(
+                                  post.published_at
+                                ).toLocaleDateString("en-GB", {
+                                  day: "numeric",
+                                  month: "short",
+                                })
+                              : ""}
+                            <span className="text-[#B8AF9F]"> · </span>
+                            {estimateReadingTime(post.content)} min read
+                          </span>
+                        </div>
+                      </Link>
+                    );
+                  })}
                 </div>
               </section>
             );

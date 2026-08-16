@@ -429,7 +429,7 @@ export default function DashboardPage() {
 
               <div
                 key={draft.id}
-                className="flex items-center justify-between rounded-xl border border-[#DCD4C9] bg-white p-5 transition hover:border-[#053400]"
+                className="flex items-center justify-between rounded-xl border border-[#DCD4C9] bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-[#053400]/30 hover:shadow-md"
               >
 
                 <Link

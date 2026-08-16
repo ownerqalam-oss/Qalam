@@ -88,7 +88,7 @@ export default function AdminPage() {
             <Link
               key={draft.id}
               href={`/admin/review/${draft.id}`}
-              className="block rounded-xl border border-[#DCD4C9] bg-white p-6 transition hover:border-[#053400]"
+              className="block rounded-xl border border-[#DCD4C9] bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-[#053400]/30 hover:shadow-md"
             >
               <div className="mb-2 flex items-center gap-2">
                 <span

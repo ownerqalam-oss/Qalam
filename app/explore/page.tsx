@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Poppins, Inter } from "next/font/google";
 import { supabase } from "../../lib/supabase/client";
+import { estimateReadingTime } from "../../lib/readingTime";
 
 const poppins = Poppins({
   weight: ["400", "500", "600", "700"],
@@ -18,6 +19,7 @@ const inter = Inter({
 interface Article {
   id: string;
   title: string;
+  content: string;
   type: string;
   user_id: string;
 }
@@ -55,7 +57,7 @@ export default function ExplorePage() {
       error: articleError,
     } = await supabase
       .from("drafts")
-      .select("id, title, type, user_id")
+      .select("id, title, content, type, user_id")
       .eq("status", "published");
 
     if (articleError) {
@@ -292,7 +294,7 @@ export default function ExplorePage() {
                       : "No published writing yet."}
                   </p>
                 ) : (
-                  <div className="divide-y divide-[#DCD4C9]">
+                  <div className="space-y-3">
 
                     {filteredArticles.map((article) => {
                       const writer = getWriter(article.user_id);
@@ -300,7 +302,7 @@ export default function ExplorePage() {
                       return (
                         <div
                           key={article.id}
-                          className="group flex items-start justify-between gap-8 py-7"
+                          className="group flex items-start justify-between gap-8 rounded-xl border border-[#DCD4C9] bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-[#053400]/30 hover:shadow-md"
                         >
 
                           {/* ARTICLE */}
@@ -321,6 +323,12 @@ export default function ExplorePage() {
                             >
                               {article.title}
                             </h3>
+
+                            <span
+                              className={`${inter.className} mt-1 block text-xs text-[#9A9188]`}
+                            >
+                              {estimateReadingTime(article.content)} min read
+                            </span>
                           </Link>
 
                           {/* WRITER */}
@@ -413,7 +421,7 @@ export default function ExplorePage() {
                       <Link
                         key={writer.id}
                         href={`/writers/${writer.id}`}
-                        className="group border border-[#DCD4C9] p-6 transition hover:border-[#053400]"
+                        className="group rounded-xl border border-[#DCD4C9] bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-[#053400]/30 hover:shadow-md"
                       >
 
                         <div className="flex items-center gap-4">

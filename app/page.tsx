@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Poppins, Inter } from "next/font/google";
 import { supabase } from "../lib/supabase/client";
+import { estimateReadingTime } from "../lib/readingTime";
 
 const poppins = Poppins({
   weight: ["400", "500", "600", "700"],
@@ -50,12 +51,22 @@ interface Article {
   id: string;
   title: string;
   tagline: string | null;
+  content: string;
   type: string;
   published_at: string | null;
+  user_id: string;
+  is_anonymous: boolean;
+}
+
+interface Writer {
+  id: string;
+  display_name: string | null;
+  avatar_url: string | null;
 }
 
 export default function Home() {
   const [articles, setArticles] = useState<Article[]>([]);
+  const [writers, setWriters] = useState<Writer[]>([]);
   const [loadingArticles, setLoadingArticles] = useState(true);
 
   useEffect(() => {
@@ -73,7 +84,27 @@ export default function Home() {
       }
 
       if (data) {
-        setArticles(data.slice(0, 3));
+        const latest = data.slice(0, 3);
+        setArticles(latest);
+
+        const authorIds = Array.from(
+          new Set(
+            latest
+              .filter((article) => !article.is_anonymous)
+              .map((article) => article.user_id)
+          )
+        );
+
+        if (authorIds.length > 0) {
+          const { data: writerData } = await supabase
+            .from("profiles")
+            .select("id, display_name, avatar_url")
+            .in("id", authorIds);
+
+          if (writerData) {
+            setWriters(writerData);
+          }
+        }
       }
 
       setLoadingArticles(false);
@@ -81,6 +112,10 @@ export default function Home() {
 
     loadLatestArticles();
   }, []);
+
+  function getWriter(userId: string) {
+    return writers.find((writer) => writer.id === userId);
+  }
 
   return (
     <main className="min-h-screen bg-[#F7F1E8] text-[#46382F]">
@@ -128,7 +163,7 @@ export default function Home() {
 
             <a
               href="/write"
-              className={`${inter.className} mt-7 inline-flex items-center gap-3 rounded-full bg-[#053400] px-6 py-3 text-[12px] font-medium text-white transition hover:bg-[#0B4D2B]`}
+              className={`${inter.className} mt-7 inline-flex items-center gap-3 rounded-full bg-[#053400] px-6 py-3 text-[12px] font-medium text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-[#0B4D2B] hover:shadow-md`}
             >
               START WRITING NOW
               <span className="text-base">→</span>
@@ -148,7 +183,7 @@ export default function Home() {
             <a
               key={genre.title}
               href={`/journal?genre=${genre.title.toLowerCase()}`}
-              className={`px-5 py-6 transition hover:bg-[#F1EAE0] md:px-8 md:py-8 ${GENRE_BORDER_CLASSES[index]}`}
+              className={`px-5 py-6 transition hover:bg-white hover:shadow-sm md:px-8 md:py-8 ${GENRE_BORDER_CLASSES[index]}`}
             >
 
               <h2
@@ -218,63 +253,87 @@ export default function Home() {
 
           ) : (
 
-            <div className="divide-y divide-[#DCD4C9]">
+            <div className="space-y-4 py-6">
 
-              {articles.map((article) => (
+              {articles.map((article) => {
+                const writer = article.is_anonymous
+                  ? null
+                  : getWriter(article.user_id);
 
-                <Link
-                  key={article.id}
-                  href={`/journal/${article.id}`}
-                  className="group block py-8 transition"
-                >
+                return (
+                  <Link
+                    key={article.id}
+                    href={`/journal/${article.id}`}
+                    className="group block rounded-xl border border-[#DCD4C9] bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-[#053400]/30 hover:shadow-md md:p-8"
+                  >
 
-                  <div className="flex items-start justify-between gap-10">
+                    <div className="flex items-start justify-between gap-10">
 
-                    <div className="max-w-4xl">
+                      <div className="max-w-4xl">
 
-                      <p
-                        className={`${inter.className} text-[11px] font-medium uppercase tracking-[0.2em] text-[#42614A]`}
-                      >
-                        {article.type === "story"
-                          ? "SHORT STORY"
-                          : article.type.toUpperCase()}
-                      </p>
-
-                      <h3
-                        className={`${poppins.className} mt-2 text-[27px] font-medium text-[#46382F] transition group-hover:text-[#053400]`}
-                      >
-                        {article.title}
-                      </h3>
-
-                      {article.tagline && (
                         <p
-                          className={`${inter.className} mt-2 text-[14px] leading-6 text-[#70655C]`}
+                          className={`${inter.className} text-[11px] font-medium uppercase tracking-[0.2em] text-[#42614A]`}
                         >
-                          {article.tagline}
+                          {article.type === "story"
+                            ? "SHORT STORY"
+                            : article.type.toUpperCase()}
                         </p>
-                      )}
+
+                        <h3
+                          className={`${poppins.className} mt-2 text-[22px] font-medium text-[#46382F] transition group-hover:text-[#053400] md:text-[27px]`}
+                        >
+                          {article.title}
+                        </h3>
+
+                        {article.tagline && (
+                          <p
+                            className={`${inter.className} mt-2 text-[14px] leading-6 text-[#70655C]`}
+                          >
+                            {article.tagline}
+                          </p>
+                        )}
+
+                        {/* BYLINE */}
+                        <div className="mt-4 flex items-center gap-2.5">
+                          {writer?.avatar_url ? (
+                            <img
+                              src={writer.avatar_url}
+                              alt={writer.display_name || "Writer"}
+                              className="h-7 w-7 rounded-full object-cover"
+                            />
+                          ) : (
+                            <div
+                              className={`${poppins.className} flex h-7 w-7 items-center justify-center rounded-full bg-[#053400] text-[11px] font-medium text-white`}
+                            >
+                              {(writer?.display_name || "Q")[0].toUpperCase()}
+                            </div>
+                          )}
+
+                          <span
+                            className={`${inter.className} text-[13px] text-[#70655C]`}
+                          >
+                            {writer?.display_name || "Qalam Writer"}
+                            <span className="text-[#B8AF9F]"> · </span>
+                            {article.published_at
+                              ? new Date(
+                                  article.published_at
+                                ).toLocaleDateString("en-GB", {
+                                  day: "numeric",
+                                  month: "short",
+                                })
+                              : ""}
+                            <span className="text-[#B8AF9F]"> · </span>
+                            {estimateReadingTime(article.content)} min read
+                          </span>
+                        </div>
+
+                      </div>
 
                     </div>
 
-                    <span
-                      className={`${inter.className} hidden shrink-0 pt-5 text-[13px] text-[#81766D] md:block`}
-                    >
-                      {article.published_at
-                        ? new Date(
-                            article.published_at
-                          ).toLocaleDateString("en-GB", {
-                            day: "numeric",
-                            month: "short",
-                            year: "numeric",
-                          })
-                        : ""}
-                    </span>
-
-                  </div>
-
-                </Link>
-
-              ))}
+                  </Link>
+                );
+              })}
 
             </div>
 

@@ -40,7 +40,7 @@ export default function NewPage() {
             <Link
               key={option.type}
               href={`/editor?type=${option.type}`}
-              className="group block rounded-xl border border-[#DCD4C9] bg-white p-6 transition hover:border-[#053400]"
+              className="group block rounded-xl border border-[#DCD4C9] bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-[#053400]/30 hover:shadow-md"
             >
               <h2
                 className={`${poppins.className} text-xl font-medium text-[#46382F] transition group-hover:text-[#053400]`}
