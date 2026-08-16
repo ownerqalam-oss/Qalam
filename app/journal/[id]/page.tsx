@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { Poppins, Inter } from "next/font/google";
-import { supabase } from "../../../lib/supabase";
+import { supabase } from "../../../lib/supabase/client";
 
 const poppins = Poppins({
   weight: ["400", "500", "600", "700"],

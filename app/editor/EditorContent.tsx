@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { supabase } from "../../lib/supabase";
+import { supabase } from "../../lib/supabase/client";
 import RichTextEditor from "../../components/RichTextEditor";
 
 export default function EditorContent() {
