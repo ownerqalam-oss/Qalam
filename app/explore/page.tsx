@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Poppins, Inter } from "next/font/google";
 import { supabase } from "../../lib/supabase/client";
 import { estimateReadingTime } from "../../lib/readingTime";
+import { getGenreColor } from "../../lib/genreColors";
 
 const poppins = Poppins({
   weight: ["400", "500", "600", "700"],
@@ -298,11 +299,12 @@ export default function ExplorePage() {
 
                     {filteredArticles.map((article) => {
                       const writer = getWriter(article.user_id);
+                      const genreColor = getGenreColor(article.type);
 
                       return (
                         <div
                           key={article.id}
-                          className="group flex items-start justify-between gap-8 rounded-xl border border-[#DCD4C9] bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-[#053400]/30 hover:shadow-md"
+                          className={`group flex items-start justify-between gap-8 rounded-xl border border-[#DCD4C9] border-t-4 ${genreColor.cardBorder} bg-[#FFFDF8] p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md`}
                         >
 
                           {/* ARTICLE */}
@@ -310,13 +312,13 @@ export default function ExplorePage() {
                             href={`/journal/${article.id}`}
                             className="min-w-0 flex-1"
                           >
-                            <p
-                              className={`${inter.className} text-[11px] font-medium uppercase tracking-[0.2em] text-[#42614A]`}
+                            <span
+                              className={`${inter.className} inline-block rounded-full ${genreColor.badgeBg} px-3 py-1 text-[11px] font-medium uppercase tracking-[0.15em] ${genreColor.badgeText}`}
                             >
                               {article.type === "story"
-                                ? "SHORT STORY"
-                                : article.type.toUpperCase()}
-                            </p>
+                                ? "Short Story"
+                                : article.type}
+                            </span>
 
                             <h3
                               className={`${poppins.className} mt-2 text-2xl font-medium text-[#46382F] transition group-hover:text-[#053400]`}

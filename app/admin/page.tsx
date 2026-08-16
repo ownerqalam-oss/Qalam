@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Poppins, Inter } from "next/font/google";
 import { supabase } from "../../lib/supabase/client";
 import { isAdminEmail } from "../../lib/admin";
+import { getGenreColor } from "../../lib/genreColors";
 
 const poppins = Poppins({
   weight: ["400", "500", "600", "700"],
@@ -84,15 +85,18 @@ export default function AdminPage() {
         </h1>
 
         <div className="space-y-4">
-          {drafts.map((draft) => (
+          {drafts.map((draft) => {
+            const genreColor = getGenreColor(draft.type);
+
+            return (
             <Link
               key={draft.id}
               href={`/admin/review/${draft.id}`}
-              className="block rounded-xl border border-[#DCD4C9] bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-[#053400]/30 hover:shadow-md"
+              className={`block rounded-xl border border-[#DCD4C9] border-t-4 ${genreColor.cardBorder} bg-[#FFFDF8] p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md`}
             >
               <div className="mb-2 flex items-center gap-2">
                 <span
-                  className={`${inter.className} rounded-full bg-[#E9E2D8] px-3 py-1 text-xs uppercase tracking-wide text-[#42614A]`}
+                  className={`${inter.className} rounded-full ${genreColor.badgeBg} px-3 py-1 text-xs uppercase tracking-wide ${genreColor.badgeText}`}
                 >
                   {typeLabel(draft.type)}
                 </span>
@@ -114,7 +118,8 @@ export default function AdminPage() {
                 Click to review →
               </p>
             </Link>
-          ))}
+            );
+          })}
 
           {drafts.length === 0 && (
             <div className="rounded-xl border border-dashed border-[#DCD4C9] p-10 text-center">

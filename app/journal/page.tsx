@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Poppins, Inter } from "next/font/google";
 import { supabase } from "../../lib/supabase/client";
 import { estimateReadingTime } from "../../lib/readingTime";
+import { getGenreColor } from "../../lib/genreColors";
 
 const poppins = Poppins({
   weight: ["400", "500", "600", "700"],
@@ -137,6 +138,8 @@ export default function JournalPage() {
 
             if (posts.length === 0) return null;
 
+            const genreColor = getGenreColor(type);
+
             return (
               <section key={type} className="mb-16">
                 <div className="mb-6 flex items-center justify-between border-b border-[#DCD4C9] pb-5">
@@ -157,7 +160,7 @@ export default function JournalPage() {
                       <Link
                         key={post.id}
                         href={`/journal/${post.id}`}
-                        className="group block rounded-xl border border-[#DCD4C9] bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-[#053400]/30 hover:shadow-md"
+                        className={`group block rounded-xl border border-[#DCD4C9] border-t-4 ${genreColor.cardBorder} bg-[#FFFDF8] p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md`}
                       >
                         <h3
                           className={`${poppins.className} text-2xl font-medium text-[#46382F] transition group-hover:text-[#053400]`}

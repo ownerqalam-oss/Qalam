@@ -8,6 +8,7 @@ import { supabase } from "../../lib/supabase/client";
 import { useToast } from "../../components/ToastProvider";
 import ConfirmDialog from "../../components/ConfirmDialog";
 import AyahLoader from "../../components/AyahLoader";
+import { getGenreColor } from "../../lib/genreColors";
 
 const poppins = Poppins({
   weight: ["400", "500", "600", "700"],
@@ -422,11 +423,13 @@ export default function DashboardPage() {
 
             </div>
           ) : (
-            drafts.map((draft) => (
+            drafts.map((draft) => {
+              const genreColor = getGenreColor(draft.type);
 
+              return (
               <div
                 key={draft.id}
-                className="flex items-center justify-between rounded-xl border border-[#DCD4C9] bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-[#053400]/30 hover:shadow-md"
+                className={`flex items-center justify-between rounded-xl border border-[#DCD4C9] border-t-4 ${genreColor.cardBorder} bg-[#FFFDF8] p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md`}
               >
 
                 <Link
@@ -437,7 +440,7 @@ export default function DashboardPage() {
                   <div className="mb-2 flex items-center gap-2">
 
                     <span
-                      className={`${inter.className} rounded-full bg-[#E9E2D8] px-3 py-1 text-xs uppercase tracking-wide text-[#42614A]`}
+                      className={`${inter.className} rounded-full ${genreColor.badgeBg} px-3 py-1 text-xs uppercase tracking-wide ${genreColor.badgeText}`}
                     >
                       {typeLabel(draft.type)}
                     </span>
@@ -489,8 +492,8 @@ export default function DashboardPage() {
                 </button>
 
               </div>
-
-            ))
+              );
+            })
           )}
 
         </div>
