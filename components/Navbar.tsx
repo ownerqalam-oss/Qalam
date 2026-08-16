@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "./AuthProvider";
 import { supabase } from "../lib/supabase/client";
 
@@ -17,7 +17,12 @@ const NAV_LINKS = [
 export default function Navbar() {
   const { session, loading } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
+
+  function isActive(href: string) {
+    return pathname === href || pathname.startsWith(`${href}/`);
+  }
 
   async function handleLogout() {
     setMenuOpen(false);
@@ -48,33 +53,19 @@ export default function Navbar() {
           {/* Main navigation */}
           <div className="hidden items-center gap-9 text-[13px] font-medium text-[#46382F] md:flex">
 
-            <Link
-              href="/journal"
-              className="rounded-full bg-[#053400] px-7 py-2.5 text-white"
-            >
-              JOURNAL
-            </Link>
-
-            <Link
-              href="/explore"
-              className="transition hover:text-[#053400]"
-            >
-              EXPLORE
-            </Link>
-
-            <Link
-              href="/writers"
-              className="transition hover:text-[#053400]"
-            >
-              WRITERS
-            </Link>
-
-            <Link
-              href="/dashboard"
-              className="transition hover:text-[#053400]"
-            >
-              DASHBOARD
-            </Link>
+            {NAV_LINKS.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={
+                  isActive(link.href)
+                    ? "rounded-full bg-[#053400] px-7 py-2.5 text-white transition"
+                    : "transition hover:text-[#053400]"
+                }
+              >
+                {link.label}
+              </Link>
+            ))}
 
           </div>
 
@@ -98,7 +89,7 @@ export default function Navbar() {
 
                 <Link
                   href="/write"
-                  className="rounded-full bg-[#053400] px-4 py-2 text-[12px] font-medium text-white transition hover:bg-[#0B4D2B] md:px-7 md:py-2.5 md:text-[13px]"
+                  className="rounded-full bg-[#053400] px-4 py-2 text-[12px] font-medium text-white transition hover:bg-[#0B4D2B] active:scale-95 md:px-7 md:py-2.5 md:text-[13px]"
                 >
                   WRITE
                 </Link>
@@ -114,7 +105,7 @@ export default function Navbar() {
 
                 <Link
                   href="/write"
-                  className="rounded-full bg-[#053400] px-4 py-2 text-[12px] font-medium text-white transition hover:bg-[#0B4D2B] md:px-7 md:py-2.5 md:text-[13px]"
+                  className="rounded-full bg-[#053400] px-4 py-2 text-[12px] font-medium text-white transition hover:bg-[#0B4D2B] active:scale-95 md:px-7 md:py-2.5 md:text-[13px]"
                 >
                   WRITE
                 </Link>
@@ -160,7 +151,11 @@ export default function Navbar() {
                 key={link.href}
                 href={link.href}
                 onClick={() => setMenuOpen(false)}
-                className="rounded-lg px-3 py-3 text-sm font-medium text-[#46382F] transition hover:bg-white"
+                className={`rounded-lg px-3 py-3 text-sm font-medium transition ${
+                  isActive(link.href)
+                    ? "bg-[#053400] text-white"
+                    : "text-[#46382F] hover:bg-[#F1E7D3]"
+                }`}
               >
                 {link.label}
               </Link>
@@ -170,7 +165,7 @@ export default function Navbar() {
               {!loading && session ? (
                 <button
                   onClick={handleLogout}
-                  className="w-full rounded-lg px-3 py-3 text-left text-sm font-medium text-[#053400] transition hover:bg-white"
+                  className="w-full rounded-lg px-3 py-3 text-left text-sm font-medium text-[#053400] transition hover:bg-[#F1E7D3]"
                 >
                   LOG OUT
                 </button>
@@ -178,7 +173,7 @@ export default function Navbar() {
                 <Link
                   href="/login"
                   onClick={() => setMenuOpen(false)}
-                  className="block rounded-lg px-3 py-3 text-sm font-medium text-[#053400] transition hover:bg-white"
+                  className="block rounded-lg px-3 py-3 text-sm font-medium text-[#053400] transition hover:bg-[#F1E7D3]"
                 >
                   SIGN IN
                 </Link>

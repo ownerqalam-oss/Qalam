@@ -181,7 +181,7 @@ export default function ReviewPage() {
         <div className="mt-12 flex gap-4">
           <button
             onClick={publish}
-            className={`${inter.className} rounded-full bg-[#053400] px-6 py-3 text-sm font-medium text-white transition hover:bg-[#0B4D2B]`}
+            className={`${inter.className} rounded-full bg-[#053400] px-6 py-3 text-sm font-medium text-white transition hover:bg-[#0B4D2B] active:scale-95`}
           >
             Publish
           </button>

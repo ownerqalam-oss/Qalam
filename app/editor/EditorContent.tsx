@@ -268,7 +268,7 @@ export default function EditorContent() {
             <button
               onClick={submitForReview}
               disabled={!draftId || draftStatus === "submitted"}
-              className={`${inter.className} rounded-full bg-[#053400] px-5 py-2 text-sm font-medium text-white transition hover:bg-[#0B4D2B] disabled:opacity-50`}
+              className={`${inter.className} rounded-full bg-[#053400] px-5 py-2 text-sm font-medium text-white transition hover:bg-[#0B4D2B] active:scale-95 disabled:opacity-50`}
             >
               Submit
             </button>

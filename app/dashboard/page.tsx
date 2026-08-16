@@ -310,14 +310,14 @@ export default function DashboardPage() {
 
           <Link
             href="/new"
-            className={`${inter.className} rounded-full bg-[#053400] px-6 py-3 text-[13px] font-medium text-white transition hover:bg-[#0B4D2B]`}
+            className={`${inter.className} rounded-full bg-[#053400] px-6 py-3 text-[13px] font-medium text-white transition hover:bg-[#0B4D2B] active:scale-95`}
           >
             New Draft
           </Link>
         </div>
 
         {/* PROFILE */}
-        <section className="mt-10 rounded-2xl border border-[#DCD4C9] bg-white p-6">
+        <section className="mt-10 rounded-2xl border border-[#DCD4C9] bg-[#F1E7D3] p-6">
 
           <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
 
@@ -416,20 +416,21 @@ export default function DashboardPage() {
 
               <Link
                 href="/new"
-                className={`${inter.className} mt-4 inline-block rounded-full bg-[#053400] px-6 py-3 text-sm font-medium text-white transition hover:bg-[#0B4D2B]`}
+                className={`${inter.className} mt-4 inline-block rounded-full bg-[#053400] px-6 py-3 text-sm font-medium text-white transition hover:bg-[#0B4D2B] active:scale-95`}
               >
                 Start Writing
               </Link>
 
             </div>
           ) : (
-            drafts.map((draft) => {
+            drafts.map((draft, index) => {
               const genreColor = getGenreColor(draft.type);
 
               return (
               <div
                 key={draft.id}
-                className={`flex items-center justify-between rounded-xl border border-[#DCD4C9] border-t-4 ${genreColor.cardBorder} bg-[#FFFDF8] p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md`}
+                style={{ animationDelay: `${index * 70}ms` }}
+                className={`animate-fade-in-up flex items-center justify-between rounded-xl border border-[#DCD4C9] border-t-4 ${genreColor.cardBorder} bg-[#F1E7D3] p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md`}
               >
 
                 <Link

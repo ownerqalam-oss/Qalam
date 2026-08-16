@@ -297,14 +297,15 @@ export default function ExplorePage() {
                 ) : (
                   <div className="space-y-3">
 
-                    {filteredArticles.map((article) => {
+                    {filteredArticles.map((article, index) => {
                       const writer = getWriter(article.user_id);
                       const genreColor = getGenreColor(article.type);
 
                       return (
                         <div
                           key={article.id}
-                          className={`group flex items-start justify-between gap-8 rounded-xl border border-[#DCD4C9] border-t-4 ${genreColor.cardBorder} bg-[#FFFDF8] p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md`}
+                          style={{ animationDelay: `${index * 70}ms` }}
+                          className={`animate-fade-in-up group flex items-start justify-between gap-8 rounded-xl border border-[#DCD4C9] border-t-4 ${genreColor.cardBorder} bg-[#F1E7D3] p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md`}
                         >
 
                           {/* ARTICLE */}
@@ -423,7 +424,7 @@ export default function ExplorePage() {
                       <Link
                         key={writer.id}
                         href={`/writers/${writer.id}`}
-                        className="group rounded-xl border border-[#DCD4C9] bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-[#053400]/30 hover:shadow-md"
+                        className="group rounded-xl border border-[#DCD4C9] bg-[#F1E7D3] p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-[#053400]/30 hover:shadow-md"
                       >
 
                         <div className="flex items-center gap-4">

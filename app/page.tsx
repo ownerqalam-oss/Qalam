@@ -131,7 +131,7 @@ export default function Home() {
         <div className="flex flex-col items-center border-b border-[#DCD4C9] py-10 md:grid md:min-h-[440px] md:grid-cols-2 md:py-0">
 
           {/* Illustration */}
-          <div className="order-2 flex items-center justify-center md:order-1">
+          <div className="animate-fade-in-up order-2 flex items-center justify-center md:order-1">
             <Image
               src="/qalam-hero.png"
               alt="Quill and inkpot"
@@ -146,13 +146,15 @@ export default function Home() {
           <div className="order-1 text-center md:order-2 md:pl-10 md:text-left lg:pl-14">
 
             <p
-              className={`${inter.className} text-[11px] font-medium uppercase tracking-[0.45em] text-[#42614A]`}
+              style={{ animationDelay: "80ms" }}
+              className={`${inter.className} animate-fade-in-up text-[11px] font-medium uppercase tracking-[0.45em] text-[#42614A]`}
             >
               REVIVING THE PEN
             </p>
 
             <h1
-              className={`${poppins.className} mt-5 text-[36px] font-medium leading-[1.08] tracking-[-1px] text-[#053400] sm:text-[46px] md:max-w-[620px] md:text-[58px] md:leading-[1.04] md:tracking-[-2.5px]`}
+              style={{ animationDelay: "140ms" }}
+              className={`${poppins.className} animate-fade-in-up mt-5 text-[36px] font-medium leading-[1.08] tracking-[-1px] text-[#053400] sm:text-[46px] md:max-w-[620px] md:text-[58px] md:leading-[1.04] md:tracking-[-2.5px]`}
             >
               A place to write,
               <br />
@@ -160,7 +162,8 @@ export default function Home() {
             </h1>
 
             <p
-              className={`${inter.className} mx-auto mt-7 max-w-[420px] text-[16px] leading-[1.55] text-[#62574F] md:mx-0 md:max-w-[570px] md:text-[17px]`}
+              style={{ animationDelay: "220ms" }}
+              className={`${inter.className} animate-fade-in-up mx-auto mt-7 max-w-[420px] text-[16px] leading-[1.55] text-[#62574F] md:mx-0 md:max-w-[570px] md:text-[17px]`}
             >
               A home for Muslim writers and readers, sharing articles, poetry,
               reflections and short stories written with sincerity.
@@ -168,7 +171,8 @@ export default function Home() {
 
             <a
               href="/write"
-              className={`${inter.className} mt-7 inline-flex items-center gap-3 rounded-full bg-[#053400] px-6 py-3 text-[12px] font-medium text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-[#0B4D2B] hover:shadow-md`}
+              style={{ animationDelay: "300ms" }}
+              className={`${inter.className} animate-fade-in-up mt-7 inline-flex items-center gap-3 rounded-full bg-[#053400] px-6 py-3 text-[12px] font-medium text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-[#0B4D2B] hover:shadow-md active:scale-95`}
             >
               START WRITING NOW
               <span className="text-base">→</span>
@@ -191,7 +195,7 @@ export default function Home() {
             <a
               key={genre.title}
               href={`/journal?genre=${genre.title.toLowerCase()}`}
-              className={`px-5 py-6 transition hover:bg-white hover:shadow-sm md:px-8 md:py-8 ${GENRE_BORDER_CLASSES[index]}`}
+              className={`px-5 py-6 transition hover:bg-[#F1E7D3] hover:shadow-sm md:px-8 md:py-8 ${GENRE_BORDER_CLASSES[index]}`}
             >
 
               <span
@@ -268,7 +272,7 @@ export default function Home() {
 
             <div className="space-y-4 py-6">
 
-              {articles.map((article) => {
+              {articles.map((article, index) => {
                 const writer = article.is_anonymous
                   ? null
                   : getWriter(article.user_id);
@@ -279,7 +283,8 @@ export default function Home() {
                   <Link
                     key={article.id}
                     href={`/journal/${article.id}`}
-                    className={`group block rounded-xl border border-[#DCD4C9] border-t-4 ${genreColor.cardBorder} bg-[#FFFDF8] p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md md:p-8`}
+                    style={{ animationDelay: `${index * 70}ms` }}
+                    className={`animate-fade-in-up group block rounded-xl border border-[#DCD4C9] border-t-4 ${genreColor.cardBorder} bg-[#F1E7D3] p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md md:p-8`}
                   >
 
                     <div className="flex items-start justify-between gap-10">

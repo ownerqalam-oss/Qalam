@@ -151,7 +151,7 @@ export default function JournalPage() {
                 </div>
 
                 <div className="space-y-4">
-                  {posts.map((post) => {
+                  {posts.map((post, index) => {
                     const writer = post.is_anonymous
                       ? null
                       : getWriter(post.user_id);
@@ -160,7 +160,8 @@ export default function JournalPage() {
                       <Link
                         key={post.id}
                         href={`/journal/${post.id}`}
-                        className={`group block rounded-xl border border-[#DCD4C9] border-t-4 ${genreColor.cardBorder} bg-[#FFFDF8] p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md`}
+                        style={{ animationDelay: `${index * 70}ms` }}
+                        className={`animate-fade-in-up group block rounded-xl border border-[#DCD4C9] border-t-4 ${genreColor.cardBorder} bg-[#F1E7D3] p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md`}
                       >
                         <h3
                           className={`${poppins.className} text-2xl font-medium text-[#46382F] transition group-hover:text-[#053400]`}

@@ -85,14 +85,15 @@ export default function AdminPage() {
         </h1>
 
         <div className="space-y-4">
-          {drafts.map((draft) => {
+          {drafts.map((draft, index) => {
             const genreColor = getGenreColor(draft.type);
 
             return (
             <Link
               key={draft.id}
               href={`/admin/review/${draft.id}`}
-              className={`block rounded-xl border border-[#DCD4C9] border-t-4 ${genreColor.cardBorder} bg-[#FFFDF8] p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md`}
+              style={{ animationDelay: `${index * 70}ms` }}
+              className={`animate-fade-in-up block rounded-xl border border-[#DCD4C9] border-t-4 ${genreColor.cardBorder} bg-[#F1E7D3] p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md`}
             >
               <div className="mb-2 flex items-center gap-2">
                 <span
