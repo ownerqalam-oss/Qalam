@@ -6,6 +6,8 @@ import { useParams } from "next/navigation";
 import { Poppins, Inter } from "next/font/google";
 import { supabase } from "../../../lib/supabase/client";
 import { useToast } from "../../../components/ToastProvider";
+import ConfirmDialog from "../../../components/ConfirmDialog";
+import { isAdminEmail } from "../../../lib/admin";
 
 const poppins = Poppins({
   weight: ["400", "500", "600", "700"],
@@ -37,6 +39,19 @@ interface Article {
   cover_image_url: string | null;
 }
 
+interface CommentRow {
+  id: number;
+  content: string;
+  created_at: string;
+  user_id: string;
+}
+
+interface CommentAuthor {
+  id: string;
+  display_name: string | null;
+  avatar_url: string | null;
+}
+
 export default function ArticlePage() {
   const { id } = useParams();
   const { showToast } = useToast();
@@ -46,14 +61,26 @@ export default function ArticlePage() {
   const [loading, setLoading] = useState(true);
 
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(
+    null
+  );
   const [likeCount, setLikeCount] = useState(0);
   const [liked, setLiked] = useState(false);
   const [bookmarked, setBookmarked] = useState(false);
+
+  const [comments, setComments] = useState<CommentRow[]>([]);
+  const [commentAuthors, setCommentAuthors] = useState<CommentAuthor[]>([]);
+  const [commentText, setCommentText] = useState("");
+  const [postingComment, setPostingComment] = useState(false);
+  const [commentToDelete, setCommentToDelete] = useState<number | null>(
+    null
+  );
 
   useEffect(() => {
     if (id) {
       loadArticle();
       loadEngagement();
+      loadComments();
     }
   }, [id]);
 
@@ -72,6 +99,7 @@ export default function ArticlePage() {
     if (!user) return;
 
     setCurrentUserId(user.id);
+    setCurrentUserEmail(user.email ?? null);
 
     const { data: likeRow } = await supabase
       .from("likes")
@@ -90,6 +118,87 @@ export default function ArticlePage() {
       .maybeSingle();
 
     setBookmarked(!!bookmarkRow);
+  }
+
+  async function loadComments() {
+    const { data: commentData, error } = await supabase
+      .from("comments")
+      .select("id, content, created_at, user_id")
+      .eq("draft_id", id)
+      .order("created_at", { ascending: true });
+
+    if (error) {
+      console.error("Error loading comments:", error);
+      return;
+    }
+
+    if (!commentData) return;
+
+    setComments(commentData);
+
+    const authorIds = Array.from(
+      new Set(commentData.map((comment) => comment.user_id))
+    );
+
+    if (authorIds.length === 0) return;
+
+    const { data: authorData } = await supabase
+      .from("profiles")
+      .select("id, display_name, avatar_url")
+      .in("id", authorIds);
+
+    if (authorData) {
+      setCommentAuthors(authorData);
+    }
+  }
+
+  function getCommentAuthor(userId: string) {
+    return commentAuthors.find((author) => author.id === userId);
+  }
+
+  async function postComment(e: React.FormEvent) {
+    e.preventDefault();
+
+    if (!currentUserId) {
+      showToast("Sign in to comment.", "error");
+      return;
+    }
+
+    if (!commentText.trim()) return;
+
+    setPostingComment(true);
+
+    const { error } = await supabase.from("comments").insert({
+      draft_id: id,
+      user_id: currentUserId,
+      content: commentText.trim(),
+    });
+
+    if (error) {
+      showToast(error.message, "error");
+      setPostingComment(false);
+      return;
+    }
+
+    setCommentText("");
+    setPostingComment(false);
+    loadComments();
+  }
+
+  async function deleteComment(commentId: number) {
+    const { error } = await supabase
+      .from("comments")
+      .delete()
+      .eq("id", commentId);
+
+    if (error) {
+      showToast(error.message, "error");
+      return;
+    }
+
+    setComments((current) =>
+      current.filter((comment) => comment.id !== commentId)
+    );
   }
 
   async function toggleLike() {
@@ -489,7 +598,124 @@ export default function ArticlePage() {
           </div>
         )}
 
+        {/* COMMENTS */}
+        <div className="mt-16 border-t border-[#DCD4C9] pt-10">
+          <h2
+            className={`${poppins.className} text-2xl font-medium text-[#053400]`}
+          >
+            {comments.length === 0
+              ? "Comments"
+              : `${comments.length} ${
+                  comments.length === 1 ? "Comment" : "Comments"
+                }`}
+          </h2>
+
+          {/* FORM */}
+          <form onSubmit={postComment} className="mt-6">
+            <textarea
+              value={commentText}
+              onChange={(e) => setCommentText(e.target.value)}
+              placeholder={
+                currentUserId
+                  ? "Share your thoughts..."
+                  : "Sign in to join the conversation."
+              }
+              disabled={!currentUserId || postingComment}
+              rows={3}
+              className={`${inter.className} w-full resize-none rounded-lg border border-[#DCD4C9] bg-white px-4 py-3 text-sm text-[#46382F] outline-none focus:border-[#053400] disabled:opacity-60`}
+            />
+
+            <button
+              type="submit"
+              disabled={!currentUserId || postingComment || !commentText.trim()}
+              className={`${inter.className} mt-3 rounded-full bg-[#053400] px-6 py-2.5 text-sm font-medium text-white transition hover:bg-[#0B4D2B] active:scale-95 disabled:opacity-50`}
+            >
+              {postingComment ? "Posting..." : "Post Comment"}
+            </button>
+          </form>
+
+          {/* LIST */}
+          <div className="mt-10 space-y-6">
+            {comments.map((comment) => {
+              const author = getCommentAuthor(comment.user_id);
+              const canDelete =
+                comment.user_id === currentUserId ||
+                isAdminEmail(currentUserEmail);
+
+              return (
+                <div key={comment.id} className="flex items-start gap-4">
+                  {author?.avatar_url ? (
+                    <img
+                      src={author.avatar_url}
+                      alt={author.display_name || "Writer"}
+                      className="h-9 w-9 shrink-0 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div
+                      className={`${poppins.className} flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#053400] text-xs font-medium text-white`}
+                    >
+                      {(author?.display_name || "Q")[0].toUpperCase()}
+                    </div>
+                  )}
+
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <p
+                        className={`${poppins.className} text-sm font-medium text-[#46382F]`}
+                      >
+                        {author?.display_name || "Qalam Writer"}
+                      </p>
+
+                      <span
+                        className={`${inter.className} text-xs text-[#9A9188]`}
+                      >
+                        {new Date(comment.created_at).toLocaleDateString(
+                          "en-GB",
+                          { day: "numeric", month: "short" }
+                        )}
+                      </span>
+                    </div>
+
+                    <p
+                      className={`${inter.className} mt-1 text-sm leading-6 text-[#46382F]`}
+                    >
+                      {comment.content}
+                    </p>
+
+                    {canDelete && (
+                      <button
+                        onClick={() => setCommentToDelete(comment.id)}
+                        className={`${inter.className} mt-1 text-xs text-red-600 transition hover:underline`}
+                      >
+                        Delete
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+
+            {comments.length === 0 && (
+              <p className={`${inter.className} text-sm text-[#81766D]`}>
+                No comments yet. Be the first to share your thoughts.
+              </p>
+            )}
+          </div>
+        </div>
+
       </article>
+
+      <ConfirmDialog
+        open={commentToDelete !== null}
+        title="Delete this comment?"
+        message="This can't be undone."
+        confirmLabel="Delete"
+        onCancel={() => setCommentToDelete(null)}
+        onConfirm={() => {
+          if (commentToDelete !== null) deleteComment(commentToDelete);
+          setCommentToDelete(null);
+        }}
+      />
     </main>
   );
 }
