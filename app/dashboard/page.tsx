@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Poppins, Inter } from "next/font/google";
 import { supabase } from "../../lib/supabase/client";
+import { useToast } from "../../components/ToastProvider";
+import ConfirmDialog from "../../components/ConfirmDialog";
 
 const poppins = Poppins({
   weight: ["400", "500", "600", "700"],
@@ -34,12 +36,14 @@ interface Profile {
 
 export default function DashboardPage() {
   const router = useRouter();
+  const { showToast } = useToast();
 
   const [drafts, setDrafts] = useState<Draft[]>([]);
   const [profile, setProfile] = useState<Profile | null>(null);
 
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [draftToDelete, setDraftToDelete] = useState<string | null>(null);
 
   useEffect(() => {
     loadDashboard();
@@ -169,12 +173,12 @@ export default function DashboardPage() {
       if (!file) return;
 
       if (!file.type.startsWith("image/")) {
-        alert("Please select an image.");
+        showToast("Please select an image.", "error");
         return;
       }
 
       if (file.size > 5 * 1024 * 1024) {
-        alert("Image must be smaller than 5MB.");
+        showToast("Image must be smaller than 5MB.", "error");
         return;
       }
 
@@ -185,7 +189,7 @@ export default function DashboardPage() {
       } = await supabase.auth.getUser();
 
       if (!user) {
-        alert("You must be logged in.");
+        showToast("You must be logged in.", "error");
         setUploading(false);
         return;
       }
@@ -205,7 +209,7 @@ export default function DashboardPage() {
           "Upload error:",
           JSON.stringify(uploadError, null, 2)
         );
-        alert(uploadError.message);
+        showToast(uploadError.message, "error");
         setUploading(false);
         return;
       }
@@ -230,7 +234,7 @@ export default function DashboardPage() {
           "Profile update error:",
           JSON.stringify(profileError, null, 2)
         );
-        alert(profileError.message);
+        showToast(profileError.message, "error");
         setUploading(false);
         return;
       }
@@ -244,25 +248,23 @@ export default function DashboardPage() {
           : current
       );
 
-      alert("Profile picture updated!");
+      showToast("Profile picture updated!", "success");
     } catch (error) {
       console.error("Avatar upload error:", error);
-      alert("Something went wrong uploading your picture.");
+      showToast("Something went wrong uploading your picture.", "error");
     }
 
     setUploading(false);
   }
 
   async function deleteDraft(id: string) {
-    if (!window.confirm("Delete this draft?")) return;
-
     const { error } = await supabase
       .from("drafts")
       .delete()
       .eq("id", id);
 
     if (error) {
-      alert(error.message);
+      showToast(error.message, "error");
       return;
     }
 
@@ -482,7 +484,7 @@ export default function DashboardPage() {
                 </Link>
 
                 <button
-                  onClick={() => deleteDraft(draft.id)}
+                  onClick={() => setDraftToDelete(draft.id)}
                   disabled={draft.status === "submitted"}
                   className={`${inter.className} rounded-full border border-red-300 px-4 py-2 text-sm text-red-600 transition hover:bg-red-50 disabled:opacity-50 disabled:hover:bg-transparent`}
                 >
@@ -497,6 +499,18 @@ export default function DashboardPage() {
         </div>
 
       </div>
+
+      <ConfirmDialog
+        open={draftToDelete !== null}
+        title="Delete this draft?"
+        message="This can't be undone."
+        confirmLabel="Delete"
+        onCancel={() => setDraftToDelete(null)}
+        onConfirm={() => {
+          if (draftToDelete) deleteDraft(draftToDelete);
+          setDraftToDelete(null);
+        }}
+      />
     </main>
   );
 }

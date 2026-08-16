@@ -3,9 +3,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../lib/supabase/client";
+import { useToast } from "../../components/ToastProvider";
 
 export default function CompleteProfilePage() {
   const router = useRouter();
+  const { showToast } = useToast();
 
   const [displayName, setDisplayName] = useState("");
   const [bio, setBio] = useState("");
@@ -16,7 +18,7 @@ export default function CompleteProfilePage() {
     e.preventDefault();
 
     if (!displayName.trim()) {
-      alert("Please enter your name.");
+      showToast("Please enter your name.", "error");
       return;
     }
 
@@ -28,7 +30,7 @@ export default function CompleteProfilePage() {
       } = await supabase.auth.getUser();
 
       if (!user) {
-        alert("You must be logged in.");
+        showToast("You must be logged in.", "error");
         setLoading(false);
         return;
       }
@@ -38,13 +40,13 @@ export default function CompleteProfilePage() {
       // Upload profile picture if one was selected
       if (avatar) {
         if (!avatar.type.startsWith("image/")) {
-          alert("Please select an image.");
+          showToast("Please select an image.", "error");
           setLoading(false);
           return;
         }
 
         if (avatar.size > 5 * 1024 * 1024) {
-          alert("Profile picture must be smaller than 5MB.");
+          showToast("Profile picture must be smaller than 5MB.", "error");
           setLoading(false);
           return;
         }
@@ -61,7 +63,7 @@ export default function CompleteProfilePage() {
 
         if (uploadError) {
           console.error("Avatar upload error:", uploadError);
-          alert(uploadError.message);
+          showToast(uploadError.message, "error");
           setLoading(false);
           return;
         }
@@ -96,7 +98,7 @@ export default function CompleteProfilePage() {
 
       if (profileError) {
         console.error("Profile update error:", profileError);
-        alert(profileError.message);
+        showToast(profileError.message, "error");
         setLoading(false);
         return;
       }
@@ -104,7 +106,7 @@ export default function CompleteProfilePage() {
       router.push("/dashboard");
     } catch (error) {
       console.error("Profile setup error:", error);
-      alert("Something went wrong.");
+      showToast("Something went wrong.", "error");
       setLoading(false);
     }
   }

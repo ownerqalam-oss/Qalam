@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { Poppins, Inter } from "next/font/google";
 import { supabase } from "../../lib/supabase/client";
 import RichTextEditor from "../../components/RichTextEditor";
+import { useToast } from "../../components/ToastProvider";
 
 const poppins = Poppins({
   weight: ["400", "500", "600", "700"],
@@ -19,6 +20,7 @@ const inter = Inter({
 
 export default function EditorContent() {
   const searchParams = useSearchParams();
+  const { showToast } = useToast();
 
   const initialId = searchParams.get("id");
   const initialType = searchParams.get("type") ?? "article";
@@ -113,7 +115,7 @@ export default function EditorContent() {
         .eq("id", draftId);
 
       if (error) {
-        alert(error.message);
+        showToast(error.message, "error");
         setStatus("Error");
         return;
       }
@@ -139,7 +141,7 @@ export default function EditorContent() {
       .single();
 
     if (error) {
-      alert(error.message);
+      showToast(error.message, "error");
       setStatus("Error");
       return;
     }
@@ -160,7 +162,7 @@ export default function EditorContent() {
    */
   async function submitForReview() {
     if (!draftId) {
-      alert("Please save your draft first.");
+      showToast("Please save your draft first.", "error");
       return;
     }
 
@@ -173,12 +175,12 @@ export default function EditorContent() {
       .eq("id", draftId);
 
     if (error) {
-      alert(error.message);
+      showToast(error.message, "error");
       return;
     }
 
     setDraftStatus("submitted");
-    alert("Submitted for review!");
+    showToast("Submitted for review!", "success");
   }
 
   /*

@@ -6,6 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import { Poppins, Inter } from "next/font/google";
 import { supabase } from "../../../../lib/supabase/client";
 import { isAdminEmail } from "../../../../lib/admin";
+import { useToast } from "../../../../components/ToastProvider";
 
 const poppins = Poppins({
   weight: ["400", "500", "600", "700"],
@@ -31,6 +32,7 @@ interface Draft {
 export default function ReviewPage() {
   const { id } = useParams();
   const router = useRouter();
+  const { showToast } = useToast();
 
   const [draft, setDraft] = useState<Draft | null>(null);
   const [loading, setLoading] = useState(true);
@@ -71,11 +73,11 @@ export default function ReviewPage() {
     });
 
     if (error) {
-      alert(error.message);
+      showToast(error.message, "error");
       return;
     }
 
-    alert("Article published!");
+    showToast("Article published!", "success");
     router.push("/admin");
   }
 
@@ -83,7 +85,7 @@ export default function ReviewPage() {
     if (!draft) return;
 
     if (!rejectReason.trim()) {
-      alert("Please explain why this is being rejected.");
+      showToast("Please explain why this is being rejected.", "error");
       return;
     }
 
@@ -93,11 +95,11 @@ export default function ReviewPage() {
     });
 
     if (error) {
-      alert(error.message);
+      showToast(error.message, "error");
       return;
     }
 
-    alert("Sent back to the writer with feedback.");
+    showToast("Sent back to the writer with feedback.", "success");
     router.push("/admin");
   }
 

@@ -56,6 +56,7 @@ interface Article {
 
 export default function Home() {
   const [articles, setArticles] = useState<Article[]>([]);
+  const [loadingArticles, setLoadingArticles] = useState(true);
 
   useEffect(() => {
     async function loadLatestArticles() {
@@ -67,12 +68,15 @@ export default function Home() {
 
       if (error) {
         console.error("Error loading homepage articles:", error);
+        setLoadingArticles(false);
         return;
       }
 
       if (data) {
         setArticles(data.slice(0, 3));
       }
+
+      setLoadingArticles(false);
     }
 
     loadLatestArticles();
@@ -191,7 +195,18 @@ export default function Home() {
 
 
           {/* Articles */}
-          {articles.length === 0 ? (
+          {loadingArticles ? (
+
+            <div className="space-y-4 py-4">
+              {[0, 1].map((i) => (
+                <div
+                  key={i}
+                  className="h-20 animate-pulse rounded-lg bg-[#EFE8DC]"
+                />
+              ))}
+            </div>
+
+          ) : articles.length === 0 ? (
 
             <div className="py-10">
               <p

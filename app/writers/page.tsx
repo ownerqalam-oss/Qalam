@@ -60,9 +60,14 @@ export default function WritersPage() {
 
         {/* WRITERS */}
         {loading ? (
-          <p className="text-[#81766D]">
-            Loading writers...
-          </p>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {[0, 1, 2].map((i) => (
+              <div
+                key={i}
+                className="h-[132px] animate-pulse border border-[#DCD4C9] bg-[#EFE8DC]"
+              />
+            ))}
+          </div>
         ) : writers.length === 0 ? (
           <div className="border-y border-[#DCD4C9] py-12">
             <p className="text-[#81766D]">

@@ -231,12 +231,13 @@ export default function ExplorePage() {
 
         {/* LOADING */}
         {loading && (
-          <div className="py-16">
-            <p
-              className={`${inter.className} text-sm text-[#81766D]`}
-            >
-              Loading Explore...
-            </p>
+          <div className="space-y-4 py-10">
+            {[0, 1, 2].map((i) => (
+              <div
+                key={i}
+                className="h-20 animate-pulse rounded-lg bg-[#EFE8DC]"
+              />
+            ))}
           </div>
         )}
 

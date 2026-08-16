@@ -4,11 +4,13 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../lib/supabase/client";
+import { useToast } from "../../components/ToastProvider";
 
 const INVITE_CODE = "QALAM2026";
 
 export default function SignupPage() {
   const router = useRouter();
+  const { showToast } = useToast();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -20,17 +22,17 @@ export default function SignupPage() {
     e.preventDefault();
 
     if (inviteCode.trim().toUpperCase() !== INVITE_CODE) {
-      alert("Invalid invitation code.");
+      showToast("Invalid invitation code.", "error");
       return;
     }
 
     if (password !== confirmPassword) {
-      alert("Passwords do not match.");
+      showToast("Passwords do not match.", "error");
       return;
     }
 
     if (password.length < 6) {
-      alert("Password must be at least 6 characters.");
+      showToast("Password must be at least 6 characters.", "error");
       return;
     }
 
@@ -43,13 +45,13 @@ export default function SignupPage() {
 
     if (error) {
       setLoading(false);
-      alert(error.message);
+      showToast(error.message, "error");
       return;
     }
 
     if (!data.user) {
       setLoading(false);
-      alert("Account could not be created.");
+      showToast("Account could not be created.", "error");
       return;
     }
 
@@ -62,8 +64,9 @@ export default function SignupPage() {
       return;
     }
 
-    alert(
-      "Account created successfully! Please check your email to verify your account."
+    showToast(
+      "Account created! Please check your email to verify your account.",
+      "success"
     );
 
     router.push("/login");
