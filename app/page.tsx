@@ -16,6 +16,13 @@ const inter = Inter({
   subsets: ["latin"],
 });
 
+const GENRE_BORDER_CLASSES = [
+  "",
+  "border-l border-[#DCD4C9]",
+  "border-t border-[#DCD4C9] md:border-t-0 md:border-l",
+  "border-l border-t border-[#DCD4C9] md:border-t-0",
+];
+
 const genres = [
   {
     title: "Articles",
@@ -77,22 +84,22 @@ export default function Home() {
       {/* HERO */}
       <section className="mx-auto w-full max-w-[1540px] px-6 md:px-10 lg:px-12">
 
-        <div className="grid min-h-[440px] grid-cols-2 items-center border-b border-[#DCD4C9]">
+        <div className="flex flex-col items-center border-b border-[#DCD4C9] py-10 md:grid md:min-h-[440px] md:grid-cols-2 md:py-0">
 
           {/* Illustration */}
-          <div className="flex items-center justify-center">
+          <div className="order-2 flex items-center justify-center md:order-1">
             <Image
               src="/qalam-hero.png"
               alt="Quill and inkpot"
               width={700}
               height={560}
               priority
-              className="w-[620px] max-w-full h-auto"
+              className="h-auto w-[280px] max-w-full sm:w-[380px] md:w-[620px]"
             />
           </div>
 
           {/* Hero copy */}
-          <div className="pl-10 lg:pl-14">
+          <div className="order-1 text-center md:order-2 md:pl-10 md:text-left lg:pl-14">
 
             <p
               className={`${inter.className} text-[11px] font-medium uppercase tracking-[0.45em] text-[#42614A]`}
@@ -101,7 +108,7 @@ export default function Home() {
             </p>
 
             <h1
-              className={`${poppins.className} mt-5 max-w-[620px] text-[58px] font-medium leading-[1.04] tracking-[-2.5px] text-[#053400]`}
+              className={`${poppins.className} mt-5 text-[36px] font-medium leading-[1.08] tracking-[-1px] text-[#053400] sm:text-[46px] md:max-w-[620px] md:text-[58px] md:leading-[1.04] md:tracking-[-2.5px]`}
             >
               A place to write,
               <br />
@@ -109,7 +116,7 @@ export default function Home() {
             </h1>
 
             <p
-              className={`${inter.className} mt-7 max-w-[570px] text-[17px] leading-[1.55] text-[#62574F]`}
+              className={`${inter.className} mx-auto mt-7 max-w-[420px] text-[16px] leading-[1.55] text-[#62574F] md:mx-0 md:max-w-[570px] md:text-[17px]`}
             >
               A home for Muslim writers and readers, sharing articles, poetry,
               reflections and short stories written with sincerity.
@@ -131,19 +138,17 @@ export default function Home() {
       {/* GENRES */}
       <section className="mx-auto w-full max-w-[1540px] px-6 md:px-10 lg:px-12">
 
-        <div className="grid grid-cols-4 border-b border-[#DCD4C9]">
+        <div className="grid grid-cols-2 border-b border-[#DCD4C9] md:grid-cols-4">
 
           {genres.map((genre, index) => (
             <a
               key={genre.title}
               href={`/journal?genre=${genre.title.toLowerCase()}`}
-              className={`px-8 py-8 transition hover:bg-[#F1EAE0] ${
-                index !== 0 ? "border-l border-[#DCD4C9]" : ""
-              }`}
+              className={`px-5 py-6 transition hover:bg-[#F1EAE0] md:px-8 md:py-8 ${GENRE_BORDER_CLASSES[index]}`}
             >
 
               <h2
-                className={`${poppins.className} text-[25px] font-medium text-[#46382F]`}
+                className={`${poppins.className} text-[18px] font-medium text-[#46382F] md:text-[25px]`}
               >
                 {genre.title}
               </h2>
