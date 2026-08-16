@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { Poppins, Inter } from "next/font/google";
 import { supabase } from "../../../lib/supabase/client";
+import { useToast } from "../../../components/ToastProvider";
 
 const poppins = Poppins({
   weight: ["400", "500", "600", "700"],
@@ -31,17 +32,86 @@ interface Article {
 
 export default function WriterPage() {
   const { id } = useParams();
+  const { showToast } = useToast();
 
   const [profile, setProfile] = useState<Profile | null>(null);
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAvatar, setShowAvatar] = useState(false);
 
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [followerCount, setFollowerCount] = useState(0);
+  const [isFollowing, setIsFollowing] = useState(false);
+
   useEffect(() => {
     if (id) {
       loadWriter();
+      loadFollowState();
     }
   }, [id]);
+
+  async function loadFollowState() {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    const { count } = await supabase
+      .from("follows")
+      .select("*", { count: "exact", head: true })
+      .eq("following_id", id);
+
+    setFollowerCount(count ?? 0);
+
+    if (!user) return;
+
+    setCurrentUserId(user.id);
+
+    const { data: followRow } = await supabase
+      .from("follows")
+      .select("id")
+      .eq("follower_id", user.id)
+      .eq("following_id", id)
+      .maybeSingle();
+
+    setIsFollowing(!!followRow);
+  }
+
+  async function toggleFollow() {
+    if (!currentUserId) {
+      showToast("Sign in to follow this writer.", "error");
+      return;
+    }
+
+    if (isFollowing) {
+      setIsFollowing(false);
+      setFollowerCount((count) => count - 1);
+
+      const { error } = await supabase
+        .from("follows")
+        .delete()
+        .eq("follower_id", currentUserId)
+        .eq("following_id", id);
+
+      if (error) {
+        setIsFollowing(true);
+        setFollowerCount((count) => count + 1);
+        showToast(error.message, "error");
+      }
+    } else {
+      setIsFollowing(true);
+      setFollowerCount((count) => count + 1);
+
+      const { error } = await supabase
+        .from("follows")
+        .insert({ follower_id: currentUserId, following_id: id });
+
+      if (error) {
+        setIsFollowing(false);
+        setFollowerCount((count) => count - 1);
+        showToast(error.message, "error");
+      }
+    }
+  }
 
   async function loadWriter() {
     setLoading(true);
@@ -193,7 +263,25 @@ export default function WriterPage() {
               >
                 {profile.display_name || "Qalam Writer"}
               </h1>
+
+              <p className={`${inter.className} mt-2 text-sm text-[#81766D]`}>
+                {followerCount} {followerCount === 1 ? "follower" : "followers"}
+              </p>
             </div>
+
+            {currentUserId !== id && (
+              <button
+                onClick={toggleFollow}
+                aria-pressed={isFollowing}
+                className={`${inter.className} ml-auto shrink-0 rounded-full px-6 py-2.5 text-sm font-medium transition active:scale-95 ${
+                  isFollowing
+                    ? "border border-[#DCD4C9] text-[#46382F] hover:border-[#053400]"
+                    : "bg-[#053400] text-white hover:bg-[#0B4D2B]"
+                }`}
+              >
+                {isFollowing ? "Following" : "Follow"}
+              </button>
+            )}
           </div>
 
           {profile.bio && (
