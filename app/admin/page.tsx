@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { supabase } from "../../lib/supabase/client";
+import { isAdminEmail } from "../../lib/admin";
 
 interface Draft {
   id: string;
@@ -13,6 +15,7 @@ interface Draft {
 }
 
 export default function AdminPage() {
+  const router = useRouter();
   const [drafts, setDrafts] = useState<Draft[]>([]);
 
   useEffect(() => {
@@ -20,6 +23,15 @@ export default function AdminPage() {
   }, []);
 
   async function loadDrafts() {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!isAdminEmail(user?.email)) {
+      router.push("/dashboard");
+      return;
+    }
+
     const { data, error } = await supabase
       .from("drafts")
       .select("*")

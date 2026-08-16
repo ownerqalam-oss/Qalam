@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { isAdminEmail } from "./lib/admin";
 
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({
@@ -38,6 +39,15 @@ export async function proxy(request: NextRequest) {
     !user
   ) {
     return NextResponse.redirect(new URL("/login", request.url));
+  }
+
+  // Admin pages require an admin account, not just any login
+  if (
+    pathname.startsWith("/admin") &&
+    user &&
+    !isAdminEmail(user.email)
+  ) {
+    return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
   // Logged-in users don't need login/signup

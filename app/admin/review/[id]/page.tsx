@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "../../../../lib/supabase/client";
+import { isAdminEmail } from "../../../../lib/admin";
 
 interface Draft {
   id: string;
@@ -28,6 +29,15 @@ export default function ReviewPage() {
   }, []);
 
   async function loadDraft() {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!isAdminEmail(user?.email)) {
+      router.push("/dashboard");
+      return;
+    }
+
     const { data, error } = await supabase
       .from("drafts")
       .select("*")
