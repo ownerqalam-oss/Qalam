@@ -7,6 +7,7 @@ import { supabase } from "../../lib/supabase/client";
 import { estimateReadingTime } from "../../lib/readingTime";
 import { getGenreColor } from "../../lib/genreColors";
 import InkFlourish from "../../components/InkFlourish";
+import CoverImage from "../../components/CoverImage";
 
 const poppins = Poppins({
   weight: ["400", "500", "600", "700"],
@@ -28,6 +29,7 @@ interface Article {
   published_at: string;
   user_id: string;
   is_anonymous: boolean;
+  cover_image_url: string | null;
 }
 
 interface Writer {
@@ -166,6 +168,16 @@ export default function JournalPage() {
                         style={{ animationDelay: `${index * 70}ms` }}
                         className={`animate-fade-in-up group block rounded-xl border border-[#DCD4C9] border-t-4 ${genreColor.cardBorder} bg-[#E9E2D8] p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md`}
                       >
+                      <div className="flex items-start gap-5">
+
+                      <CoverImage
+                        src={post.cover_image_url}
+                        type={post.type}
+                        alt={post.title}
+                        className="h-20 w-20 shrink-0 rounded-lg sm:h-24 sm:w-24"
+                      />
+
+                      <div className="min-w-0 flex-1">
                         <h3
                           className={`${poppins.className} text-2xl font-medium text-[#46382F] transition group-hover:text-[#053400]`}
                         >
@@ -226,6 +238,8 @@ export default function JournalPage() {
                             {estimateReadingTime(post.content)} min read
                           </span>
                         </div>
+                      </div>
+                      </div>
                       </Link>
                     );
                   })}

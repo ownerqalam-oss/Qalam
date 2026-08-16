@@ -8,6 +8,7 @@ import { supabase } from "../lib/supabase/client";
 import { estimateReadingTime } from "../lib/readingTime";
 import { getGenreColor } from "../lib/genreColors";
 import InkFlourish from "../components/InkFlourish";
+import CoverImage from "../components/CoverImage";
 
 const poppins = Poppins({
   weight: ["400", "500", "600", "700"],
@@ -67,6 +68,7 @@ interface Article {
   published_at: string | null;
   user_id: string;
   is_anonymous: boolean;
+  cover_image_url: string | null;
 }
 
 interface Writer {
@@ -319,9 +321,16 @@ export default function Home() {
                     className={`animate-fade-in-up group block rounded-xl border border-[#DCD4C9] border-t-4 ${genreColor.cardBorder} bg-[#E9E2D8] p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md md:p-8`}
                   >
 
-                    <div className="flex items-start justify-between gap-10">
+                    <div className="flex items-start gap-5 md:gap-8">
 
-                      <div className="max-w-4xl">
+                      <CoverImage
+                        src={article.cover_image_url}
+                        type={article.type}
+                        alt={article.title}
+                        className="h-20 w-20 shrink-0 rounded-lg sm:h-24 sm:w-24"
+                      />
+
+                      <div className="min-w-0 flex-1">
 
                         <span
                           className={`${inter.className} inline-block rounded-full ${genreColor.badgeBg} px-3 py-1 text-[11px] font-medium uppercase tracking-[0.15em] ${genreColor.badgeText}`}

@@ -7,6 +7,7 @@ import { supabase } from "../../lib/supabase/client";
 import { estimateReadingTime } from "../../lib/readingTime";
 import { getGenreColor } from "../../lib/genreColors";
 import InkFlourish from "../../components/InkFlourish";
+import CoverImage from "../../components/CoverImage";
 
 const poppins = Poppins({
   weight: ["400", "500", "600", "700"],
@@ -24,6 +25,7 @@ interface Article {
   content: string;
   type: string;
   user_id: string;
+  cover_image_url: string | null;
 }
 
 interface Writer {
@@ -59,7 +61,7 @@ export default function ExplorePage() {
       error: articleError,
     } = await supabase
       .from("drafts")
-      .select("id, title, content, type, user_id")
+      .select("id, title, content, type, user_id, cover_image_url")
       .eq("status", "published");
 
     if (articleError) {
@@ -308,8 +310,15 @@ export default function ExplorePage() {
                         <div
                           key={article.id}
                           style={{ animationDelay: `${index * 70}ms` }}
-                          className={`animate-fade-in-up group flex items-start justify-between gap-8 rounded-xl border border-[#DCD4C9] border-t-4 ${genreColor.cardBorder} bg-[#E9E2D8] p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md`}
+                          className={`animate-fade-in-up group flex items-start gap-5 rounded-xl border border-[#DCD4C9] border-t-4 ${genreColor.cardBorder} bg-[#E9E2D8] p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md md:gap-8`}
                         >
+
+                          <CoverImage
+                            src={article.cover_image_url}
+                            type={article.type}
+                            alt={article.title}
+                            className="h-20 w-20 shrink-0 rounded-lg sm:h-24 sm:w-24"
+                          />
 
                           {/* ARTICLE */}
                           <Link

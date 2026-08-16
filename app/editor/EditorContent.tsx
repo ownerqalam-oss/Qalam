@@ -33,6 +33,8 @@ export default function EditorContent() {
   const [type, setType] = useState(initialType);
   const [tags, setTags] = useState("");
   const [isAnonymous, setIsAnonymous] = useState(false);
+  const [coverImageUrl, setCoverImageUrl] = useState<string | null>(null);
+  const [uploadingCover, setUploadingCover] = useState(false);
 
   const [status, setStatus] = useState("Saved");
   const [draftStatus, setDraftStatus] = useState("draft");
@@ -72,6 +74,7 @@ export default function EditorContent() {
         setDraftStatus(data.status ?? "draft");
         setIsAnonymous(data.is_anonymous ?? false);
         setFeedback(data.feedback ?? null);
+        setCoverImageUrl(data.cover_image_url ?? null);
       }
 
       setLoading(false);
@@ -111,6 +114,7 @@ export default function EditorContent() {
           type,
           tags: tagArray,
           is_anonymous: isAnonymous,
+          cover_image_url: coverImageUrl,
           updated_at: new Date().toISOString(),
         })
         .eq("id", draftId);
@@ -137,6 +141,7 @@ export default function EditorContent() {
         type,
         tags: tagArray,
         is_anonymous: isAnonymous,
+        cover_image_url: coverImageUrl,
       })
       .select()
       .single();
@@ -185,6 +190,62 @@ export default function EditorContent() {
   }
 
   /*
+   * Upload cover image
+   */
+  async function uploadCoverImage(
+    event: React.ChangeEvent<HTMLInputElement>
+  ) {
+    const file = event.target.files?.[0];
+
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      showToast("Please select an image.", "error");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      showToast("Cover image must be smaller than 5MB.", "error");
+      return;
+    }
+
+    setUploadingCover(true);
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      showToast("You must be logged in.", "error");
+      setUploadingCover(false);
+      return;
+    }
+
+    const filePath = `${user.id}/cover-${Date.now()}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("avatars")
+      .upload(filePath, file, {
+        cacheControl: "3600",
+        upsert: false,
+        contentType: file.type,
+      });
+
+    if (uploadError) {
+      showToast(uploadError.message, "error");
+      setUploadingCover(false);
+      return;
+    }
+
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from("avatars").getPublicUrl(filePath);
+
+    setCoverImageUrl(`${publicUrl}?t=${Date.now()}`);
+    setUploadingCover(false);
+  }
+
+  /*
    * Auto-save
    */
   useEffect(() => {
@@ -215,6 +276,7 @@ export default function EditorContent() {
     type,
     tags,
     isAnonymous,
+    coverImageUrl,
     loading,
     draftStatus,
   ]);
@@ -308,6 +370,54 @@ export default function EditorContent() {
           placeholder="Tags (e.g. History, Palestine, Seerah)"
           className={`${inter.className} mb-6 w-full rounded-lg border border-[#DCD4C9] bg-white px-4 py-2 text-sm outline-none focus:border-[#053400]`}
         />
+
+
+        {/* COVER IMAGE */}
+        <div className="mb-6">
+          <label
+            htmlFor="cover-upload"
+            className={`relative flex h-48 w-full items-center justify-center overflow-hidden rounded-xl border border-dashed border-[#DCD4C9] bg-white transition hover:border-[#053400] ${
+              draftStatus === "submitted" || uploadingCover
+                ? "pointer-events-none opacity-50"
+                : "cursor-pointer"
+            }`}
+          >
+            {coverImageUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={coverImageUrl}
+                alt="Cover"
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <span className={`${inter.className} text-sm text-[#81766D]`}>
+                {uploadingCover
+                  ? "Uploading..."
+                  : "Add a cover image (optional)"}
+              </span>
+            )}
+          </label>
+
+          <input
+            id="cover-upload"
+            type="file"
+            accept="image/*"
+            onChange={uploadCoverImage}
+            className="hidden"
+            disabled={draftStatus === "submitted" || uploadingCover}
+          />
+
+          {coverImageUrl && (
+            <button
+              type="button"
+              onClick={() => setCoverImageUrl(null)}
+              disabled={draftStatus === "submitted"}
+              className={`${inter.className} mt-2 text-xs text-red-600 transition hover:underline disabled:opacity-50`}
+            >
+              Remove cover image
+            </button>
+          )}
+        </div>
 
 
         {/* TITLE */}

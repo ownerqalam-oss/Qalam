@@ -33,6 +33,7 @@ interface Article {
   published_at: string | null;
   user_id: string;
   is_anonymous: boolean;
+  cover_image_url: string | null;
 }
 
 export default function ArticlePage() {
@@ -141,6 +142,15 @@ export default function ArticlePage() {
         >
           ← Back to Journal
         </Link>
+
+        {/* COVER IMAGE */}
+        {article.cover_image_url && (
+          <img
+            src={article.cover_image_url}
+            alt={article.title}
+            className="mb-10 h-[220px] w-full rounded-2xl object-cover md:h-[360px]"
+          />
+        )}
 
         {/* CATEGORY */}
         <div className="mb-5 flex flex-wrap gap-2">
