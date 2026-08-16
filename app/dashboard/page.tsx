@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { supabase } from "../../lib/supabase/client";
 
 interface Draft {
@@ -20,7 +21,8 @@ interface Profile {
 }
 
 export default function DashboardPage() {
-  
+  const router = useRouter();
+
   const [drafts, setDrafts] = useState<Draft[]>([]);
   const [profile, setProfile] = useState<Profile | null>(null);
 
@@ -88,15 +90,10 @@ export default function DashboardPage() {
        * PROFILE DOES NOT EXIST
        * Create it automatically.
        */
+      let resolvedProfile: Profile | null = profileData ?? null;
+
       if (!profileData) {
         console.log("No profile found. Creating profile...");
-
-        const newProfile: Profile = {
-          id: user.id,
-          display_name: null,
-          bio: null,
-          avatar_url: null,
-        };
 
         const { data: createdProfile, error: createProfileError } =
           await supabase
@@ -120,14 +117,30 @@ export default function DashboardPage() {
            * Even if creation fails, keep the dashboard usable.
            * This gives the user a temporary profile object.
            */
-          setProfile(newProfile);
+          resolvedProfile = {
+            id: user.id,
+            display_name: null,
+            bio: null,
+            avatar_url: null,
+          };
         } else if (createdProfile) {
           console.log("Profile created successfully.");
-          setProfile(createdProfile);
+          resolvedProfile = createdProfile;
         }
-      } else {
-        setProfile(profileData);
       }
+
+      /*
+       * New or incomplete profiles never got a chance to set a
+       * display name because nothing routed users to
+       * /complete-profile. Send them there before showing the
+       * dashboard instead of silently defaulting to "Qalam Writer".
+       */
+      if (!resolvedProfile?.display_name) {
+        router.push("/complete-profile");
+        return;
+      }
+
+      setProfile(resolvedProfile);
     } catch (error) {
       console.error("Dashboard error:", error);
     }
