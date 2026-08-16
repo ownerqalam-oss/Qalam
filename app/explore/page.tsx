@@ -305,7 +305,7 @@ export default function ExplorePage() {
                         <div
                           key={article.id}
                           style={{ animationDelay: `${index * 70}ms` }}
-                          className={`animate-fade-in-up group flex items-start justify-between gap-8 rounded-xl border border-[#DCD4C9] border-t-4 ${genreColor.cardBorder} bg-[#F1E7D3] p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md`}
+                          className={`animate-fade-in-up group flex items-start justify-between gap-8 rounded-xl border border-[#DCD4C9] border-t-4 ${genreColor.cardBorder} bg-[#E9E2D8] p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md`}
                         >
 
                           {/* ARTICLE */}
@@ -424,7 +424,7 @@ export default function ExplorePage() {
                       <Link
                         key={writer.id}
                         href={`/writers/${writer.id}`}
-                        className="group rounded-xl border border-[#DCD4C9] bg-[#F1E7D3] p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-[#053400]/30 hover:shadow-md"
+                        className="group rounded-xl border border-[#DCD4C9] bg-[#E9E2D8] p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-[#053400]/30 hover:shadow-md"
                       >
 
                         <div className="flex items-center gap-4">

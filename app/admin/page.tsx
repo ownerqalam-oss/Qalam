@@ -93,7 +93,7 @@ export default function AdminPage() {
               key={draft.id}
               href={`/admin/review/${draft.id}`}
               style={{ animationDelay: `${index * 70}ms` }}
-              className={`animate-fade-in-up block rounded-xl border border-[#DCD4C9] border-t-4 ${genreColor.cardBorder} bg-[#F1E7D3] p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md`}
+              className={`animate-fade-in-up block rounded-xl border border-[#DCD4C9] border-t-4 ${genreColor.cardBorder} bg-[#E9E2D8] p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md`}
             >
               <div className="mb-2 flex items-center gap-2">
                 <span

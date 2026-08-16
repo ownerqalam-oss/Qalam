@@ -80,7 +80,7 @@ export default function WritersPage() {
               <Link
                 key={writer.id}
                 href={`/writers/${writer.id}`}
-                className="group block rounded-xl border border-[#DCD4C9] bg-[#F1E7D3] p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-[#053400]/30 hover:shadow-md"
+                className="group block rounded-xl border border-[#DCD4C9] bg-[#E9E2D8] p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-[#053400]/30 hover:shadow-md"
               >
                 <div className="flex items-center gap-4">
 

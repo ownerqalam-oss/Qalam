@@ -161,7 +161,7 @@ export default function JournalPage() {
                         key={post.id}
                         href={`/journal/${post.id}`}
                         style={{ animationDelay: `${index * 70}ms` }}
-                        className={`animate-fade-in-up group block rounded-xl border border-[#DCD4C9] border-t-4 ${genreColor.cardBorder} bg-[#F1E7D3] p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md`}
+                        className={`animate-fade-in-up group block rounded-xl border border-[#DCD4C9] border-t-4 ${genreColor.cardBorder} bg-[#E9E2D8] p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md`}
                       >
                         <h3
                           className={`${poppins.className} text-2xl font-medium text-[#46382F] transition group-hover:text-[#053400]`}

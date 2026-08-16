@@ -221,7 +221,7 @@ export default function Home() {
             <a
               key={genre.title}
               href={`/journal?genre=${genre.title.toLowerCase()}`}
-              className={`px-5 py-6 transition hover:bg-[#F1E7D3] hover:shadow-sm md:px-8 md:py-8 ${GENRE_BORDER_CLASSES[index]}`}
+              className={`px-5 py-6 transition hover:bg-[#E9E2D8] hover:shadow-sm md:px-8 md:py-8 ${GENRE_BORDER_CLASSES[index]}`}
             >
 
               <span
@@ -310,7 +310,7 @@ export default function Home() {
                     key={article.id}
                     href={`/journal/${article.id}`}
                     style={{ animationDelay: `${index * 70}ms` }}
-                    className={`animate-fade-in-up group block rounded-xl border border-[#DCD4C9] border-t-4 ${genreColor.cardBorder} bg-[#F1E7D3] p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md md:p-8`}
+                    className={`animate-fade-in-up group block rounded-xl border border-[#DCD4C9] border-t-4 ${genreColor.cardBorder} bg-[#E9E2D8] p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md md:p-8`}
                   >
 
                     <div className="flex items-start justify-between gap-10">

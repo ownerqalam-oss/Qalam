@@ -317,7 +317,7 @@ export default function DashboardPage() {
         </div>
 
         {/* PROFILE */}
-        <section className="mt-10 rounded-2xl border border-[#DCD4C9] bg-[#F1E7D3] p-6">
+        <section className="mt-10 rounded-2xl border border-[#DCD4C9] bg-[#E9E2D8] p-6">
 
           <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
 
@@ -430,7 +430,7 @@ export default function DashboardPage() {
               <div
                 key={draft.id}
                 style={{ animationDelay: `${index * 70}ms` }}
-                className={`animate-fade-in-up flex items-center justify-between rounded-xl border border-[#DCD4C9] border-t-4 ${genreColor.cardBorder} bg-[#F1E7D3] p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md`}
+                className={`animate-fade-in-up flex items-center justify-between rounded-xl border border-[#DCD4C9] border-t-4 ${genreColor.cardBorder} bg-[#E9E2D8] p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md`}
               >
 
                 <Link

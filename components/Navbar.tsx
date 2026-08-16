@@ -154,7 +154,7 @@ export default function Navbar() {
                 className={`rounded-lg px-3 py-3 text-sm font-medium transition ${
                   isActive(link.href)
                     ? "bg-[#053400] text-white"
-                    : "text-[#46382F] hover:bg-[#F1E7D3]"
+                    : "text-[#46382F] hover:bg-[#E9E2D8]"
                 }`}
               >
                 {link.label}
@@ -165,7 +165,7 @@ export default function Navbar() {
               {!loading && session ? (
                 <button
                   onClick={handleLogout}
-                  className="w-full rounded-lg px-3 py-3 text-left text-sm font-medium text-[#053400] transition hover:bg-[#F1E7D3]"
+                  className="w-full rounded-lg px-3 py-3 text-left text-sm font-medium text-[#053400] transition hover:bg-[#E9E2D8]"
                 >
                   LOG OUT
                 </button>
@@ -173,7 +173,7 @@ export default function Navbar() {
                 <Link
                   href="/login"
                   onClick={() => setMenuOpen(false)}
-                  className="block rounded-lg px-3 py-3 text-sm font-medium text-[#053400] transition hover:bg-[#F1E7D3]"
+                  className="block rounded-lg px-3 py-3 text-sm font-medium text-[#053400] transition hover:bg-[#E9E2D8]"
                 >
                   SIGN IN
                 </Link>
