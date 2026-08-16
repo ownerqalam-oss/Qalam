@@ -23,6 +23,7 @@ export default function ReviewPage() {
 
   const [draft, setDraft] = useState<Draft | null>(null);
   const [loading, setLoading] = useState(true);
+  const [rejectReason, setRejectReason] = useState("");
 
   useEffect(() => {
     loadDraft();
@@ -54,13 +55,9 @@ export default function ReviewPage() {
   async function publish() {
     if (!draft) return;
 
-    const { error } = await supabase
-      .from("drafts")
-      .update({
-        status: "published",
-        published_at: new Date().toISOString(),
-      })
-      .eq("id", draft.id);
+    const { error } = await supabase.rpc("publish_draft", {
+      draft_id: draft.id,
+    });
 
     if (error) {
       alert(error.message);
@@ -74,19 +71,22 @@ export default function ReviewPage() {
   async function reject() {
     if (!draft) return;
 
-    const { error } = await supabase
-      .from("drafts")
-      .update({
-        status: "draft",
-      })
-      .eq("id", draft.id);
+    if (!rejectReason.trim()) {
+      alert("Please explain why this is being rejected.");
+      return;
+    }
+
+    const { error } = await supabase.rpc("reject_draft", {
+      draft_id: draft.id,
+      reason: rejectReason.trim(),
+    });
 
     if (error) {
       alert(error.message);
       return;
     }
 
-    alert("Returned to draft.");
+    alert("Sent back to the writer with feedback.");
     router.push("/admin");
   }
 
@@ -162,12 +162,26 @@ export default function ReviewPage() {
         >
           Publish
         </button>
+      </div>
+
+      <div className="mt-8 rounded-xl border border-red-200 bg-red-50 p-6">
+        <label className="mb-2 block text-sm font-medium text-red-900">
+          Reject with feedback
+        </label>
+
+        <textarea
+          value={rejectReason}
+          onChange={(e) => setRejectReason(e.target.value)}
+          placeholder="Explain what needs to change before this can be published..."
+          rows={4}
+          className="w-full resize-none rounded-lg border border-red-300 bg-white px-4 py-3 text-gray-900 outline-none focus:border-red-500"
+        />
 
         <button
           onClick={reject}
-          className="rounded-lg border border-red-300 px-6 py-3 text-red-600 hover:bg-red-50"
+          className="mt-4 rounded-lg border border-red-300 px-6 py-3 text-red-600 hover:bg-red-100"
         >
-          Return to Draft
+          Reject & Send Feedback
         </button>
       </div>
     </main>

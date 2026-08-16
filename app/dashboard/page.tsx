@@ -11,6 +11,7 @@ interface Draft {
   created_at: string;
   status: string;
   type: string;
+  feedback: string | null;
 }
 
 interface Profile {
@@ -58,7 +59,7 @@ export default function DashboardPage() {
        */
       const { data: draftData, error: draftError } = await supabase
         .from("drafts")
-        .select("id, title, created_at, status, type")
+        .select("id, title, created_at, status, type, feedback")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
 
@@ -417,7 +418,13 @@ export default function DashboardPage() {
                     {typeEmoji(draft.type)}
                   </span>
 
-                  <span className="rounded-full bg-blue-100 px-3 py-1 text-xs capitalize text-blue-700">
+                  <span
+                    className={`rounded-full px-3 py-1 text-xs capitalize ${
+                      draft.status === "rejected"
+                        ? "bg-red-100 text-red-700"
+                        : "bg-blue-100 text-blue-700"
+                    }`}
+                  >
                     {draft.status}
                   </span>
 
@@ -432,6 +439,13 @@ export default function DashboardPage() {
                     draft.created_at
                   ).toLocaleDateString()}
                 </p>
+
+                {draft.status === "rejected" && draft.feedback && (
+                  <p className="mt-3 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-800">
+                    <span className="font-medium">Feedback: </span>
+                    {draft.feedback}
+                  </p>
+                )}
 
               </Link>
 

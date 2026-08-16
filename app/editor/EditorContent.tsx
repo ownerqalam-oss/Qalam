@@ -22,6 +22,7 @@ export default function EditorContent() {
 
   const [status, setStatus] = useState("Saved");
   const [draftStatus, setDraftStatus] = useState("draft");
+  const [feedback, setFeedback] = useState<string | null>(null);
 
   const [loading, setLoading] = useState(true);
 
@@ -56,6 +57,7 @@ export default function EditorContent() {
         setTags(data.tags?.join(", ") ?? "");
         setDraftStatus(data.status ?? "draft");
         setIsAnonymous(data.is_anonymous ?? false);
+        setFeedback(data.feedback ?? null);
       }
 
       setLoading(false);
@@ -218,7 +220,13 @@ export default function EditorContent() {
 
         <div className="flex items-center gap-3">
 
-          <span className="rounded-full bg-gray-100 px-3 py-1 text-xs capitalize">
+          <span
+            className={`rounded-full px-3 py-1 text-xs capitalize ${
+              draftStatus === "rejected"
+                ? "bg-red-100 text-red-700"
+                : "bg-gray-100"
+            }`}
+          >
             {draftStatus}
           </span>
 
@@ -245,6 +253,15 @@ export default function EditorContent() {
         </div>
       </div>
 
+      {/* REJECTION FEEDBACK */}
+      {draftStatus === "rejected" && feedback && (
+        <div className="mb-8 rounded-xl border border-red-200 bg-red-50 p-5 text-red-800">
+          <p className="mb-1 text-sm font-medium">
+            This was sent back with feedback:
+          </p>
+          <p className="text-sm">{feedback}</p>
+        </div>
+      )}
 
       {/* TYPE */}
       <select
