@@ -140,13 +140,34 @@ export default function Home() {
           <div className="animate-fade-in-up order-2 flex flex-col items-center justify-center gap-6 py-8 md:order-1">
             <div
               dir="rtl"
-              className={`${amiri.className} animate-verse max-w-[420px] text-center text-[26px] leading-[1.8] text-[#053400] sm:text-[32px] md:max-w-[520px] md:text-[38px]`}
+              className={`${amiri.className} animate-verse max-w-[480px] bg-gradient-to-br from-[#053400] to-[#0E5C33] bg-clip-text text-center text-[34px] font-bold leading-[1.7] text-transparent drop-shadow-[0_2px_3px_rgba(5,52,0,0.18)] sm:max-w-[560px] sm:text-[46px] md:max-w-[640px] md:text-[56px]`}
             >
-              <p>ن ۚ وَالْقَلَمِ وَمَا يَسْطُرُونَ</p>
-              <p>مَا أَنتَ بِنِعْمَةِ رَبِّكَ بِمَجْنُونٍ</p>
+              <p>
+                ن ۚ وَالْقَلَمِ وَمَا يَسْطُرُونَ{" "}
+                <span className="align-middle text-[0.45em] text-[#B8860B]">۝</span>
+              </p>
+              <p className="mt-2">
+                مَا أَنتَ بِنِعْمَةِ رَبِّكَ بِمَجْنُونٍ{" "}
+                <span className="align-middle text-[0.45em] text-[#B8860B]">۝</span>
+              </p>
             </div>
 
             <InkFlourish className="w-[200px] sm:w-[260px]" animate />
+
+            <div className="max-w-[360px] text-center">
+              <p
+                className={`${inter.className} text-[13px] italic leading-6 text-[#70655C] sm:text-sm`}
+              >
+                &ldquo;By the pen and what they inscribe, you are not, by the
+                favor of your Lord, a madman.&rdquo;
+              </p>
+
+              <p
+                className={`${inter.className} mt-2 text-[10px] font-medium uppercase tracking-[0.2em] text-[#9A9188] sm:text-xs`}
+              >
+                Surah Al-Qalam 68:1&ndash;2
+              </p>
+            </div>
           </div>
 
           {/* Hero copy */}
