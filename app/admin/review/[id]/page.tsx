@@ -3,8 +3,19 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
+import { Poppins, Inter } from "next/font/google";
 import { supabase } from "../../../../lib/supabase/client";
 import { isAdminEmail } from "../../../../lib/admin";
+
+const poppins = Poppins({
+  weight: ["400", "500", "600", "700"],
+  subsets: ["latin"],
+});
+
+const inter = Inter({
+  weight: ["400", "500", "600"],
+  subsets: ["latin"],
+});
 
 interface Draft {
   id: string;
@@ -92,97 +103,113 @@ export default function ReviewPage() {
 
   if (loading) {
     return (
-      <main className="mx-auto max-w-4xl px-6 py-20">
-        Loading...
+      <main className="min-h-screen bg-[#F7F1E8]">
+        <div className="mx-auto max-w-4xl px-6 py-20">
+          <div className="h-6 w-28 animate-pulse rounded bg-[#EFE8DC]" />
+          <div className="mt-10 h-14 w-3/4 animate-pulse rounded bg-[#EFE8DC]" />
+          <div className="mt-6 h-64 animate-pulse rounded bg-[#EFE8DC]" />
+        </div>
       </main>
     );
   }
 
   if (!draft) {
     return (
-      <main className="mx-auto max-w-4xl px-6 py-20">
-        Draft not found.
+      <main className="min-h-screen bg-[#F7F1E8] text-[#46382F]">
+        <div className={`${inter.className} mx-auto max-w-4xl px-6 py-20`}>
+          Draft not found.
+        </div>
       </main>
     );
   }
 
   return (
-    <main className="mx-auto max-w-4xl px-6 py-12">
-      <Link
-        href="/admin"
-        className="mb-8 inline-block text-gray-500 hover:text-black"
-      >
-        ← Back to Admin
-      </Link>
-
-      <div className="mb-6 flex items-center gap-2">
-        <span className="rounded-full bg-gray-100 px-3 py-1 text-sm capitalize">
-          {draft.type}
-        </span>
-
-        <span className="rounded-full bg-yellow-100 px-3 py-1 text-sm">
-          {draft.status}
-        </span>
-      </div>
-
-      <h1 className="mb-4 text-5xl font-bold">
-        {draft.title}
-      </h1>
-
-      {draft.tagline && (
-        <p className="mb-6 text-xl text-gray-600">
-          {draft.tagline}
-        </p>
-      )}
-
-      {draft.tags && draft.tags.length > 0 && (
-        <div className="mb-8 flex flex-wrap gap-2">
-          {draft.tags.map((tag) => (
-            <span
-              key={tag}
-              className="rounded-full bg-gray-100 px-3 py-1 text-sm"
-            >
-              {tag}
-            </span>
-          ))}
-        </div>
-      )}
-
-      <article
-        className="prose prose-lg max-w-none"
-        dangerouslySetInnerHTML={{
-          __html: draft.content,
-        }}
-      />
-
-      <div className="mt-12 flex gap-4">
-        <button
-          onClick={publish}
-          className="rounded-lg bg-green-600 px-6 py-3 text-white hover:bg-green-700"
+    <main className="min-h-screen bg-[#F7F1E8] text-[#46382F]">
+      <div className="mx-auto max-w-4xl px-6 py-12 md:px-8">
+        <Link
+          href="/admin"
+          className={`${inter.className} mb-8 inline-block text-sm text-[#81766D] transition hover:text-[#053400]`}
         >
-          Publish
-        </button>
-      </div>
+          ← Back to Admin
+        </Link>
 
-      <div className="mt-8 rounded-xl border border-red-200 bg-red-50 p-6">
-        <label className="mb-2 block text-sm font-medium text-red-900">
-          Reject with feedback
-        </label>
+        <div className="mb-6 flex items-center gap-2">
+          <span
+            className={`${inter.className} rounded-full bg-[#E9E2D8] px-3 py-1 text-xs uppercase tracking-wide capitalize text-[#42614A]`}
+          >
+            {draft.type}
+          </span>
 
-        <textarea
-          value={rejectReason}
-          onChange={(e) => setRejectReason(e.target.value)}
-          placeholder="Explain what needs to change before this can be published..."
-          rows={4}
-          className="w-full resize-none rounded-lg border border-red-300 bg-white px-4 py-3 text-gray-900 outline-none focus:border-red-500"
+          <span
+            className={`${inter.className} rounded-full bg-[#F5E6C8] px-3 py-1 text-xs text-[#8A6A1E]`}
+          >
+            {draft.status}
+          </span>
+        </div>
+
+        <h1
+          className={`${poppins.className} mb-4 text-5xl font-medium text-[#053400]`}
+        >
+          {draft.title}
+        </h1>
+
+        {draft.tagline && (
+          <p className={`${inter.className} mb-6 text-xl text-[#70655C]`}>
+            {draft.tagline}
+          </p>
+        )}
+
+        {draft.tags && draft.tags.length > 0 && (
+          <div className="mb-8 flex flex-wrap gap-2">
+            {draft.tags.map((tag) => (
+              <span
+                key={tag}
+                className={`${inter.className} rounded-full bg-[#E9E2D8] px-3 py-1 text-sm text-[#70655C]`}
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
+
+        <article
+          className="prose prose-lg max-w-none"
+          dangerouslySetInnerHTML={{
+            __html: draft.content,
+          }}
         />
 
-        <button
-          onClick={reject}
-          className="mt-4 rounded-lg border border-red-300 px-6 py-3 text-red-600 hover:bg-red-100"
-        >
-          Reject & Send Feedback
-        </button>
+        <div className="mt-12 flex gap-4">
+          <button
+            onClick={publish}
+            className={`${inter.className} rounded-full bg-[#053400] px-6 py-3 text-sm font-medium text-white transition hover:bg-[#0B4D2B]`}
+          >
+            Publish
+          </button>
+        </div>
+
+        <div className="mt-8 rounded-xl border border-red-200 bg-red-50 p-6">
+          <label
+            className={`${inter.className} mb-2 block text-sm font-medium text-red-900`}
+          >
+            Reject with feedback
+          </label>
+
+          <textarea
+            value={rejectReason}
+            onChange={(e) => setRejectReason(e.target.value)}
+            placeholder="Explain what needs to change before this can be published..."
+            rows={4}
+            className={`${inter.className} w-full resize-none rounded-lg border border-red-300 bg-white px-4 py-3 text-sm text-[#46382F] outline-none focus:border-red-500`}
+          />
+
+          <button
+            onClick={reject}
+            className={`${inter.className} mt-4 rounded-full border border-red-300 px-6 py-3 text-sm font-medium text-red-600 transition hover:bg-red-100`}
+          >
+            Reject & Send Feedback
+          </button>
+        </div>
       </div>
     </main>
   );

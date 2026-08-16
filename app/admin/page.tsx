@@ -3,8 +3,19 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Poppins, Inter } from "next/font/google";
 import { supabase } from "../../lib/supabase/client";
 import { isAdminEmail } from "../../lib/admin";
+
+const poppins = Poppins({
+  weight: ["400", "500", "600", "700"],
+  subsets: ["latin"],
+});
+
+const inter = Inter({
+  weight: ["400", "500", "600"],
+  subsets: ["latin"],
+});
 
 interface Draft {
   id: string;
@@ -46,58 +57,73 @@ export default function AdminPage() {
   function typeLabel(type: string) {
     switch (type) {
       case "story":
-        return "📚 Short Story";
+        return "Short Story";
       case "poetry":
-        return "📜 Poetry";
+        return "Poetry";
       case "reflection":
-        return "✍️ Reflection";
+        return "Reflection";
       default:
-        return "📖 Article";
+        return "Article";
     }
   }
 
   return (
-    <main className="mx-auto max-w-5xl px-8 py-10">
-      <h1 className="mb-10 text-4xl font-bold">
-        Admin Dashboard
-      </h1>
+    <main className="min-h-screen bg-[#F7F1E8] text-[#46382F]">
+      <div className="mx-auto max-w-5xl px-6 py-12 md:px-8">
 
-      <div className="space-y-6">
-        {drafts.map((draft) => (
-          <Link
-            key={draft.id}
-            href={`/admin/review/${draft.id}`}
-            className="block rounded-xl border p-6 transition hover:border-black hover:shadow-sm"
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="mb-2 flex items-center gap-2">
-                  <span className="rounded-full bg-gray-100 px-3 py-1 text-xs">
-                    {typeLabel(draft.type)}
-                  </span>
+        <p
+          className={`${inter.className} text-[11px] font-medium uppercase tracking-[0.3em] text-[#42614A]`}
+        >
+          REVIEW QUEUE
+        </p>
 
-                  <span className="rounded-full bg-yellow-100 px-3 py-1 text-xs">
-                    Submitted
-                  </span>
-                </div>
+        <h1
+          className={`${poppins.className} mt-3 mb-10 text-4xl font-medium text-[#053400]`}
+        >
+          Admin Dashboard
+        </h1>
 
-                <h2 className="text-2xl font-semibold">
-                  {draft.title || "Untitled"}
-                </h2>
+        <div className="space-y-4">
+          {drafts.map((draft) => (
+            <Link
+              key={draft.id}
+              href={`/admin/review/${draft.id}`}
+              className="block rounded-xl border border-[#DCD4C9] bg-white p-6 transition hover:border-[#053400]"
+            >
+              <div className="mb-2 flex items-center gap-2">
+                <span
+                  className={`${inter.className} rounded-full bg-[#E9E2D8] px-3 py-1 text-xs uppercase tracking-wide text-[#42614A]`}
+                >
+                  {typeLabel(draft.type)}
+                </span>
 
-                <p className="mt-2 text-sm text-gray-500">
-                  Click to review →
-                </p>
+                <span
+                  className={`${inter.className} rounded-full bg-[#F5E6C8] px-3 py-1 text-xs text-[#8A6A1E]`}
+                >
+                  Submitted
+                </span>
               </div>
-            </div>
-          </Link>
-        ))}
 
-        {drafts.length === 0 && (
-          <div className="rounded-xl border p-8 text-center text-gray-500">
-            No submitted articles.
-          </div>
-        )}
+              <h2
+                className={`${poppins.className} text-2xl font-medium text-[#46382F]`}
+              >
+                {draft.title || "Untitled"}
+              </h2>
+
+              <p className={`${inter.className} mt-2 text-sm text-[#81766D]`}>
+                Click to review →
+              </p>
+            </Link>
+          ))}
+
+          {drafts.length === 0 && (
+            <div className="rounded-xl border border-dashed border-[#DCD4C9] p-10 text-center">
+              <p className={`${inter.className} text-[#70655C]`}>
+                No submitted articles.
+              </p>
+            </div>
+          )}
+        </div>
       </div>
     </main>
   );

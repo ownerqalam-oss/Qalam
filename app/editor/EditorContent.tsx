@@ -3,8 +3,19 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { Poppins, Inter } from "next/font/google";
 import { supabase } from "../../lib/supabase/client";
 import RichTextEditor from "../../components/RichTextEditor";
+
+const poppins = Poppins({
+  weight: ["400", "500", "600", "700"],
+  subsets: ["latin"],
+});
+
+const inter = Inter({
+  weight: ["400", "500", "600"],
+  subsets: ["latin"],
+});
 
 export default function EditorContent() {
   const searchParams = useSearchParams();
@@ -205,156 +216,170 @@ export default function EditorContent() {
     draftStatus,
   ]);
 
+  if (loading) {
+    return (
+      <main className="min-h-screen bg-[#F7F1E8]">
+        <div className="mx-auto max-w-4xl px-6 py-12 md:px-8">
+          <div className="h-6 w-24 animate-pulse rounded bg-[#EFE8DC]" />
+          <div className="mt-10 h-16 w-2/3 animate-pulse rounded bg-[#EFE8DC]" />
+          <div className="mt-8 h-64 animate-pulse rounded-xl bg-[#EFE8DC]" />
+        </div>
+      </main>
+    );
+  }
+
   return (
-    <main className="mx-auto max-w-4xl px-8 py-12">
+    <main className="min-h-screen bg-[#F7F1E8] text-[#46382F]">
+      <div className="mx-auto max-w-4xl px-6 py-12 md:px-8">
 
-      {/* TOP BAR */}
-      <div className="mb-10 flex items-center justify-between">
+        {/* TOP BAR */}
+        <div className="mb-10 flex flex-wrap items-center justify-between gap-4">
 
-        <Link
-          href="/dashboard"
-          className="text-sm text-gray-500 hover:text-black"
-        >
-          ← Dashboard
-        </Link>
-
-        <div className="flex items-center gap-3">
-
-          <span
-            className={`rounded-full px-3 py-1 text-xs capitalize ${
-              draftStatus === "rejected"
-                ? "bg-red-100 text-red-700"
-                : "bg-gray-100"
-            }`}
+          <Link
+            href="/dashboard"
+            className={`${inter.className} text-sm text-[#81766D] transition hover:text-[#053400]`}
           >
-            {draftStatus}
-          </span>
+            ← Dashboard
+          </Link>
 
-          <span className="text-sm text-gray-500">
-            {status}
-          </span>
+          <div className="flex items-center gap-3">
 
-          <button
-            onClick={saveDraft}
-            disabled={draftStatus === "submitted"}
-            className="rounded-lg bg-black px-5 py-2 text-white disabled:opacity-50"
-          >
-            Save
-          </button>
+            <span
+              className={`${inter.className} rounded-full px-3 py-1 text-xs capitalize ${
+                draftStatus === "rejected"
+                  ? "bg-red-100 text-red-700"
+                  : "bg-[#E4EDE6] text-[#2E5138]"
+              }`}
+            >
+              {draftStatus}
+            </span>
 
-          <button
-            onClick={submitForReview}
-            disabled={!draftId || draftStatus === "submitted"}
-            className="rounded-lg bg-green-600 px-5 py-2 text-white disabled:opacity-50"
-          >
-            Submit
-          </button>
+            <span className={`${inter.className} text-sm text-[#81766D]`}>
+              {status}
+            </span>
 
-        </div>
-      </div>
+            <button
+              onClick={saveDraft}
+              disabled={draftStatus === "submitted"}
+              className={`${inter.className} rounded-full border border-[#DCD4C9] px-5 py-2 text-sm font-medium text-[#46382F] transition hover:border-[#053400] disabled:opacity-50`}
+            >
+              Save
+            </button>
 
-      {/* REJECTION FEEDBACK */}
-      {draftStatus === "rejected" && feedback && (
-        <div className="mb-8 rounded-xl border border-red-200 bg-red-50 p-5 text-red-800">
-          <p className="mb-1 text-sm font-medium">
-            This was sent back with feedback:
-          </p>
-          <p className="text-sm">{feedback}</p>
-        </div>
-      )}
+            <button
+              onClick={submitForReview}
+              disabled={!draftId || draftStatus === "submitted"}
+              className={`${inter.className} rounded-full bg-[#053400] px-5 py-2 text-sm font-medium text-white transition hover:bg-[#0B4D2B] disabled:opacity-50`}
+            >
+              Submit
+            </button>
 
-      {/* TYPE */}
-      <select
-        value={type}
-        disabled={draftStatus === "submitted"}
-        onChange={(e) => setType(e.target.value)}
-        className="mb-6 rounded-lg border px-4 py-2"
-      >
-        <option value="article">📖 Article</option>
-        <option value="reflection">✍️ Reflection</option>
-        <option value="poetry">📜 Poetry</option>
-        <option value="story">📚 Short Story</option>
-      </select>
-
-
-      {/* TAGS */}
-      <input
-        value={tags}
-        onChange={(e) => setTags(e.target.value)}
-        disabled={draftStatus === "submitted"}
-        placeholder="Tags (e.g. History, Palestine, Seerah)"
-        className="mb-6 w-full rounded-lg border border-gray-300 px-4 py-2 outline-none focus:border-black"
-      />
-
-
-      {/* TITLE */}
-      <input
-        value={title}
-        disabled={draftStatus === "submitted"}
-        onChange={(e) => setTitle(e.target.value)}
-        placeholder="Untitled"
-        className="mb-8 w-full border-none bg-transparent text-6xl font-bold outline-none"
-      />
-
-
-      {/* ANONYMOUS OPTION */}
-      <div className="mb-8 flex items-center justify-between rounded-xl border border-gray-200 bg-white px-5 py-4">
-
-        <div>
-          <p className="text-sm font-medium text-gray-900">
-            Publish anonymously
-          </p>
-
-          <p className="mt-1 max-w-xl text-xs leading-5 text-gray-500">
-            Your name will not be shown publicly with this article.
-            You will still be able to see the article on your own profile.
-          </p>
+          </div>
         </div>
 
-        <button
-          type="button"
+        {/* REJECTION FEEDBACK */}
+        {draftStatus === "rejected" && feedback && (
+          <div className="mb-8 rounded-xl border border-red-200 bg-red-50 p-5 text-red-800">
+            <p className="mb-1 text-sm font-medium">
+              This was sent back with feedback:
+            </p>
+            <p className="text-sm">{feedback}</p>
+          </div>
+        )}
+
+        {/* TYPE */}
+        <select
+          value={type}
           disabled={draftStatus === "submitted"}
-          onClick={() => setIsAnonymous((current) => !current)}
-          aria-label="Toggle anonymous publication"
-          aria-pressed={isAnonymous}
-          className={`relative h-6 w-11 shrink-0 rounded-full transition ${
-            isAnonymous
-              ? "bg-green-700"
-              : "bg-gray-300"
-          } ${
-            draftStatus === "submitted"
-              ? "cursor-not-allowed opacity-50"
-              : ""
-          }`}
+          onChange={(e) => setType(e.target.value)}
+          className={`${inter.className} mb-6 rounded-lg border border-[#DCD4C9] bg-white px-4 py-2 text-sm text-[#46382F] outline-none focus:border-[#053400]`}
         >
-          <span
-            className={`absolute top-1 h-4 w-4 rounded-full bg-white shadow-sm transition ${
-              isAnonymous
-                ? "left-6"
-                : "left-1"
-            }`}
-          />
-        </button>
-
-      </div>
+          <option value="article">Article</option>
+          <option value="reflection">Reflection</option>
+          <option value="poetry">Poetry</option>
+          <option value="story">Short Story</option>
+        </select>
 
 
-      {/* EDITOR */}
-      {draftStatus === "submitted" ? (
-
-        <div className="rounded-xl border border-yellow-300 bg-yellow-50 p-6 text-yellow-800">
-          This article has been submitted for review and can no longer be edited.
-        </div>
-
-      ) : (
-
-        <RichTextEditor
-          value={content}
-          onChange={setContent}
+        {/* TAGS */}
+        <input
+          value={tags}
+          onChange={(e) => setTags(e.target.value)}
+          disabled={draftStatus === "submitted"}
+          placeholder="Tags (e.g. History, Palestine, Seerah)"
+          className={`${inter.className} mb-6 w-full rounded-lg border border-[#DCD4C9] bg-white px-4 py-2 text-sm outline-none focus:border-[#053400]`}
         />
 
-      )}
 
+        {/* TITLE */}
+        <input
+          value={title}
+          disabled={draftStatus === "submitted"}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="Untitled"
+          className={`${poppins.className} mb-8 w-full border-none bg-transparent text-5xl font-medium text-[#053400] outline-none placeholder:text-[#B8AF9F] md:text-6xl`}
+        />
+
+
+        {/* ANONYMOUS OPTION */}
+        <div className="mb-8 flex items-center justify-between rounded-xl border border-[#DCD4C9] bg-white px-5 py-4">
+
+          <div>
+            <p className={`${inter.className} text-sm font-medium text-[#46382F]`}>
+              Publish anonymously
+            </p>
+
+            <p className={`${inter.className} mt-1 max-w-xl text-xs leading-5 text-[#81766D]`}>
+              Your name will not be shown publicly with this article.
+              You will still be able to see the article on your own profile.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            disabled={draftStatus === "submitted"}
+            onClick={() => setIsAnonymous((current) => !current)}
+            aria-label="Toggle anonymous publication"
+            aria-pressed={isAnonymous}
+            className={`relative h-6 w-11 shrink-0 rounded-full transition ${
+              isAnonymous
+                ? "bg-[#053400]"
+                : "bg-[#DCD4C9]"
+            } ${
+              draftStatus === "submitted"
+                ? "cursor-not-allowed opacity-50"
+                : ""
+            }`}
+          >
+            <span
+              className={`absolute top-1 h-4 w-4 rounded-full bg-white shadow-sm transition ${
+                isAnonymous
+                  ? "left-6"
+                  : "left-1"
+              }`}
+            />
+          </button>
+
+        </div>
+
+
+        {/* EDITOR */}
+        {draftStatus === "submitted" ? (
+
+          <div className={`${inter.className} rounded-xl border border-yellow-300 bg-yellow-50 p-6 text-yellow-800`}>
+            This article has been submitted for review and can no longer be edited.
+          </div>
+
+        ) : (
+
+          <RichTextEditor
+            value={content}
+            onChange={setContent}
+          />
+
+        )}
+
+      </div>
     </main>
   );
 }
