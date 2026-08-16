@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { Poppins, Inter } from "next/font/google";
 import { supabase } from "../../../lib/supabase/client";
+import { useToast } from "../../../components/ToastProvider";
 
 const poppins = Poppins({
   weight: ["400", "500", "600", "700"],
@@ -38,16 +39,130 @@ interface Article {
 
 export default function ArticlePage() {
   const { id } = useParams();
+  const { showToast } = useToast();
 
   const [article, setArticle] = useState<Article | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [likeCount, setLikeCount] = useState(0);
+  const [liked, setLiked] = useState(false);
+  const [bookmarked, setBookmarked] = useState(false);
+
   useEffect(() => {
     if (id) {
       loadArticle();
+      loadEngagement();
     }
   }, [id]);
+
+  async function loadEngagement() {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    const { count } = await supabase
+      .from("likes")
+      .select("*", { count: "exact", head: true })
+      .eq("draft_id", id);
+
+    setLikeCount(count ?? 0);
+
+    if (!user) return;
+
+    setCurrentUserId(user.id);
+
+    const { data: likeRow } = await supabase
+      .from("likes")
+      .select("id")
+      .eq("draft_id", id)
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    setLiked(!!likeRow);
+
+    const { data: bookmarkRow } = await supabase
+      .from("bookmarks")
+      .select("id")
+      .eq("draft_id", id)
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    setBookmarked(!!bookmarkRow);
+  }
+
+  async function toggleLike() {
+    if (!currentUserId) {
+      showToast("Sign in to like this piece.", "error");
+      return;
+    }
+
+    if (liked) {
+      setLiked(false);
+      setLikeCount((count) => count - 1);
+
+      const { error } = await supabase
+        .from("likes")
+        .delete()
+        .eq("draft_id", id)
+        .eq("user_id", currentUserId);
+
+      if (error) {
+        setLiked(true);
+        setLikeCount((count) => count + 1);
+        showToast(error.message, "error");
+      }
+    } else {
+      setLiked(true);
+      setLikeCount((count) => count + 1);
+
+      const { error } = await supabase
+        .from("likes")
+        .insert({ draft_id: id, user_id: currentUserId });
+
+      if (error) {
+        setLiked(false);
+        setLikeCount((count) => count - 1);
+        showToast(error.message, "error");
+      }
+    }
+  }
+
+  async function toggleBookmark() {
+    if (!currentUserId) {
+      showToast("Sign in to save this piece.", "error");
+      return;
+    }
+
+    if (bookmarked) {
+      setBookmarked(false);
+
+      const { error } = await supabase
+        .from("bookmarks")
+        .delete()
+        .eq("draft_id", id)
+        .eq("user_id", currentUserId);
+
+      if (error) {
+        setBookmarked(true);
+        showToast(error.message, "error");
+      }
+    } else {
+      setBookmarked(true);
+
+      const { error } = await supabase
+        .from("bookmarks")
+        .insert({ draft_id: id, user_id: currentUserId });
+
+      if (error) {
+        setBookmarked(false);
+        showToast(error.message, "error");
+      } else {
+        showToast("Saved to your dashboard.", "success");
+      }
+    }
+  }
 
   async function loadArticle() {
     /*
@@ -266,6 +381,59 @@ export default function ArticlePage() {
               </div>
             </>
           )}
+        </div>
+
+        {/* ENGAGEMENT */}
+        <div className="mt-6 flex items-center gap-3">
+          <button
+            onClick={toggleLike}
+            aria-pressed={liked}
+            className={`${inter.className} flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition active:scale-95 ${
+              liked
+                ? "border-[#053400] bg-[#E4EDE6] text-[#2E5138]"
+                : "border-[#DCD4C9] text-[#46382F] hover:border-[#053400]"
+            }`}
+          >
+            <svg
+              viewBox="0 0 24 24"
+              className="h-4 w-4"
+              fill={liked ? "currentColor" : "none"}
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M12 21s-7-4.35-9.5-8.5C1 9 2 5 6 5c2 0 3.5 1.5 4 2.5.5-1 2-2.5 4-2.5 4 0 5 4 3.5 7.5C19 16.65 12 21 12 21z"
+              />
+            </svg>
+            {likeCount}
+          </button>
+
+          <button
+            onClick={toggleBookmark}
+            aria-pressed={bookmarked}
+            className={`${inter.className} flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition active:scale-95 ${
+              bookmarked
+                ? "border-[#053400] bg-[#E4EDE6] text-[#2E5138]"
+                : "border-[#DCD4C9] text-[#46382F] hover:border-[#053400]"
+            }`}
+          >
+            <svg
+              viewBox="0 0 24 24"
+              className="h-4 w-4"
+              fill={bookmarked ? "currentColor" : "none"}
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z"
+              />
+            </svg>
+            {bookmarked ? "Saved" : "Save"}
+          </button>
         </div>
 
         {/* ARTICLE CONTENT */}

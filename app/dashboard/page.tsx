@@ -10,6 +10,7 @@ import ConfirmDialog from "../../components/ConfirmDialog";
 import AyahLoader from "../../components/AyahLoader";
 import { getGenreColor } from "../../lib/genreColors";
 import InkFlourish from "../../components/InkFlourish";
+import CoverImage from "../../components/CoverImage";
 
 const poppins = Poppins({
   weight: ["400", "500", "600", "700"],
@@ -37,12 +38,20 @@ interface Profile {
   avatar_url: string | null;
 }
 
+interface SavedArticle {
+  id: string;
+  title: string;
+  type: string;
+  cover_image_url: string | null;
+}
+
 export default function DashboardPage() {
   const router = useRouter();
   const { showToast } = useToast();
 
   const [drafts, setDrafts] = useState<Draft[]>([]);
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [savedArticles, setSavedArticles] = useState<SavedArticle[]>([]);
 
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -87,6 +96,30 @@ export default function DashboardPage() {
 
       if (draftData) {
         setDrafts(draftData);
+      }
+
+      /*
+       * LOAD SAVED ARTICLES
+       */
+      const { data: bookmarkData, error: bookmarkError } = await supabase
+        .from("bookmarks")
+        .select("draft:drafts(id, title, type, cover_image_url)")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+
+      if (bookmarkError) {
+        console.error("Error loading saved articles:", bookmarkError);
+      }
+
+      if (bookmarkData) {
+        const articles: SavedArticle[] = [];
+
+        for (const row of bookmarkData) {
+          const draft = Array.isArray(row.draft) ? row.draft[0] : row.draft;
+          if (draft) articles.push(draft);
+        }
+
+        setSavedArticles(articles);
       }
 
       /*
@@ -503,6 +536,46 @@ export default function DashboardPage() {
           )}
 
         </div>
+
+        {/* SAVED ARTICLES */}
+        {savedArticles.length > 0 && (
+          <div className="mt-14">
+            <h2
+              className={`${poppins.className} text-2xl font-medium text-[#053400]`}
+            >
+              Saved
+            </h2>
+
+            <InkFlourish className="mt-2 w-[70px]" />
+
+            <div className="mt-6 space-y-4">
+              {savedArticles.map((article) => {
+                const genreColor = getGenreColor(article.type);
+
+                return (
+                  <Link
+                    key={article.id}
+                    href={`/journal/${article.id}`}
+                    className={`flex items-center gap-4 rounded-xl border border-[#DCD4C9] border-t-4 ${genreColor.cardBorder} bg-[#F1E7D3] p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md`}
+                  >
+                    <CoverImage
+                      src={article.cover_image_url}
+                      type={article.type}
+                      alt={article.title}
+                      className="h-14 w-14 shrink-0 rounded-lg"
+                    />
+
+                    <h3
+                      className={`${poppins.className} text-base font-medium text-[#46382F]`}
+                    >
+                      {article.title}
+                    </h3>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
       </div>
 
