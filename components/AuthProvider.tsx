@@ -1,8 +1,13 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
-import { supabase } from "../lib/supabase";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import { Session } from "@supabase/supabase-js";
+import { supabase } from "../lib/supabase/client";
 
 type AuthContextType = {
   session: Session | null;
@@ -23,6 +28,8 @@ export function AuthProvider({
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    
+
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
       setLoading(false);
@@ -35,7 +42,9 @@ export function AuthProvider({
       setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   return (

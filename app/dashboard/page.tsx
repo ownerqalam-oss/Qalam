@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { createClient } from "../../lib/supabase/client";
+import { supabase } from "../../lib/supabase/client";
 
 interface Draft {
   id: string;
@@ -20,7 +20,7 @@ interface Profile {
 }
 
 export default function DashboardPage() {
-  const supabase = createClient();
+  
   const [drafts, setDrafts] = useState<Draft[]>([]);
   const [profile, setProfile] = useState<Profile | null>(null);
 

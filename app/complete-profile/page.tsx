@@ -101,7 +101,7 @@ export default function CompleteProfilePage() {
         return;
       }
 
-      router.push("/complete-profile");
+      router.push("/dashboard");
     } catch (error) {
       console.error("Profile setup error:", error);
       alert("Something went wrong.");

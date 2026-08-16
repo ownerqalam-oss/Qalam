@@ -4,14 +4,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "./AuthProvider";
-import { createClient } from "../lib/supabase/client";
+import { supabase } from "../lib/supabase/client";
 
 export default function Navbar() {
   const { session, loading } = useAuth();
   const router = useRouter();
 
   async function handleLogout() {
-    const supabase = createClient();
+    
 
     await supabase.auth.signOut();
 

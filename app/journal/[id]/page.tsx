@@ -32,6 +32,7 @@ interface Article {
   tags: string[] | null;
   published_at: string | null;
   user_id: string;
+  is_anonymous: boolean;
 }
 
 export default function ArticlePage() {
@@ -48,6 +49,9 @@ export default function ArticlePage() {
   }, [id]);
 
   async function loadArticle() {
+    /*
+     * Load the published article.
+     */
     const { data: articleData, error: articleError } = await supabase
       .from("drafts")
       .select("*")
@@ -63,18 +67,29 @@ export default function ArticlePage() {
 
     setArticle(articleData);
 
-    const { data: profileData, error: profileError } = await supabase
-      .from("profiles")
-      .select("id, display_name, bio, avatar_url")
-      .eq("id", articleData.user_id)
-      .single();
+    /*
+     * If the article is anonymous, we still load the
+     * author's profile privately for the page logic,
+     * but we NEVER display it publicly.
+     */
+    if (!articleData.is_anonymous) {
+      const { data: profileData, error: profileError } =
+        await supabase
+          .from("profiles")
+          .select("id, display_name, bio, avatar_url")
+          .eq("id", articleData.user_id)
+          .single();
 
-    if (profileError) {
-      console.error("Error loading writer profile:", profileError);
-    }
+      if (profileError) {
+        console.error(
+          "Error loading writer profile:",
+          profileError
+        );
+      }
 
-    if (profileData) {
-      setProfile(profileData);
+      if (profileData) {
+        setProfile(profileData);
+      }
     }
 
     setLoading(false);
@@ -96,7 +111,9 @@ export default function ArticlePage() {
     return (
       <main className="min-h-screen bg-[#F7F1E8] px-6 py-20 text-[#46382F]">
         <div className="mx-auto max-w-3xl">
-          <h1 className={`${poppins.className} mb-4 text-4xl font-medium`}>
+          <h1
+            className={`${poppins.className} mb-4 text-4xl font-medium`}
+          >
             Article not found
           </h1>
 
@@ -110,6 +127,8 @@ export default function ArticlePage() {
       </main>
     );
   }
+
+  const isAnonymous = article.is_anonymous;
 
   return (
     <main className="min-h-screen bg-[#F7F1E8] text-[#46382F]">
@@ -162,41 +181,81 @@ export default function ArticlePage() {
         {/* WRITER */}
         <div className="mt-8 flex items-center gap-4 border-b border-[#DCD4C9] pb-10">
 
-          {/* AVATAR */}
-          {profile?.avatar_url ? (
-            <img
-              src={profile.avatar_url}
-              alt={profile.display_name || "Writer"}
-              className="h-12 w-12 rounded-full object-cover"
-            />
+          {isAnonymous ? (
+            <>
+              {/* ANONYMOUS AVATAR */}
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#053400] text-white">
+                <span className={`${poppins.className} text-lg`}>
+                  Q
+                </span>
+              </div>
+
+              {/* ANONYMOUS NAME */}
+              <div>
+                <p
+                  className={`${poppins.className} text-[15px] font-medium text-[#46382F]`}
+                >
+                  Anonymous
+                </p>
+
+                {article.published_at && (
+                  <p
+                    className={`${inter.className} mt-1 text-xs uppercase tracking-[0.12em] text-[#81766D]`}
+                  >
+                    {new Date(
+                      article.published_at
+                    ).toLocaleDateString("en-GB", {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                    })}
+                  </p>
+                )}
+              </div>
+            </>
           ) : (
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#053400] text-white">
-              <span className={`${poppins.className} text-lg`}>
-                {profile?.display_name?.charAt(0).toUpperCase() || "Q"}
-              </span>
-            </div>
+            <>
+              {/* NORMAL AVATAR */}
+              {profile?.avatar_url ? (
+                <img
+                  src={profile.avatar_url}
+                  alt={profile.display_name || "Writer"}
+                  className="h-12 w-12 rounded-full object-cover"
+                />
+              ) : (
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#053400] text-white">
+                  <span className={`${poppins.className} text-lg`}>
+                    {profile?.display_name
+                      ?.charAt(0)
+                      .toUpperCase() || "Q"}
+                  </span>
+                </div>
+              )}
+
+              {/* NORMAL NAME + DATE */}
+              <div>
+                <p
+                  className={`${poppins.className} text-[15px] font-medium text-[#46382F]`}
+                >
+                  {profile?.display_name || "Qalam Writer"}
+                </p>
+
+                {article.published_at && (
+                  <p
+                    className={`${inter.className} mt-1 text-xs uppercase tracking-[0.12em] text-[#81766D]`}
+                  >
+                    {new Date(
+                      article.published_at
+                    ).toLocaleDateString("en-GB", {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                    })}
+                  </p>
+                )}
+              </div>
+            </>
           )}
-
-          {/* NAME + DATE */}
-          <div>
-            <p
-              className={`${poppins.className} text-[15px] font-medium text-[#46382F]`}
-            >
-              {profile?.display_name || "Qalam Writer"}
-            </p>
-
-            {article.published_at && (
-              <p
-                className={`${inter.className} mt-1 text-xs uppercase tracking-[0.12em] text-[#81766D]`}
-              >
-                {new Date(article.published_at).toLocaleDateString("en-GB", {
-                  day: "numeric",
-                  month: "short",
-                  year: "numeric",
-                })}
-              </p>
-            )}
-          </div>
         </div>
 
         {/* ARTICLE CONTENT */}
@@ -208,7 +267,7 @@ export default function ArticlePage() {
         />
 
         {/* WRITER BIO */}
-        {profile?.bio && (
+        {!isAnonymous && profile?.bio && (
           <div className="mt-16 border-t border-[#DCD4C9] pt-10">
             <div className="flex items-start gap-5">
 
@@ -221,7 +280,9 @@ export default function ArticlePage() {
               ) : (
                 <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[#053400] text-white">
                   <span className={`${poppins.className} text-xl`}>
-                    {profile.display_name?.charAt(0).toUpperCase() || "Q"}
+                    {profile.display_name
+                      ?.charAt(0)
+                      .toUpperCase() || "Q"}
                   </span>
                 </div>
               )}

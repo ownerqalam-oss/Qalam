@@ -38,6 +38,7 @@ const genres = [
       "Personal reflections on faith, life, growth and the experiences that bring us closer to Allah.",
   },
 ];
+
 interface Article {
   id: string;
   title: string;
@@ -47,9 +48,9 @@ interface Article {
 }
 
 export default function Home() {
-    const [articles, setArticles] = useState<Article[]>([]);
+  const [articles, setArticles] = useState<Article[]>([]);
 
-   useEffect(() => {
+  useEffect(() => {
     async function loadLatestArticles() {
       const { data, error } = await supabase
         .from("drafts")
@@ -69,33 +70,29 @@ export default function Home() {
 
     loadLatestArticles();
   }, []);
-  
 
   return (
     <main className="min-h-screen bg-[#F7F1E8] text-[#46382F]">
 
-
-
-
       {/* HERO */}
-      <section className="mx-auto max-w-[1180px] px-8">
+      <section className="mx-auto w-full max-w-[1540px] px-6 md:px-10 lg:px-12">
 
-        <div className="grid min-h-[470px] grid-cols-2 items-center border-b border-[#DCD4C9]">
+        <div className="grid min-h-[440px] grid-cols-2 items-center border-b border-[#DCD4C9]">
 
           {/* Illustration */}
           <div className="flex items-center justify-center">
             <Image
               src="/qalam-hero.png"
               alt="Quill and inkpot"
-              width={620}
-              height={500}
+              width={700}
+              height={560}
               priority
-              className="w-[500px] h-auto"
+              className="w-[620px] max-w-full h-auto"
             />
           </div>
 
           {/* Hero copy */}
-          <div className="pl-8">
+          <div className="pl-10 lg:pl-14">
 
             <p
               className={`${inter.className} text-[11px] font-medium uppercase tracking-[0.45em] text-[#42614A]`}
@@ -104,7 +101,7 @@ export default function Home() {
             </p>
 
             <h1
-              className={`${poppins.className} mt-5 max-w-[570px] text-[56px] font-medium leading-[1.08] tracking-[-2px] text-[#053400]`}
+              className={`${poppins.className} mt-5 max-w-[620px] text-[58px] font-medium leading-[1.04] tracking-[-2.5px] text-[#053400]`}
             >
               A place to write,
               <br />
@@ -112,15 +109,15 @@ export default function Home() {
             </h1>
 
             <p
-              className={`${inter.className} mt-7 max-w-[520px] text-[16px] leading-[1.65] text-[#62574F]`}
+              className={`${inter.className} mt-7 max-w-[570px] text-[17px] leading-[1.55] text-[#62574F]`}
             >
-              A home for Muslim writers and readers, sharing articles,
-              poetry, reflections and short stories written with sincerity.
+              A home for Muslim writers and readers, sharing articles, poetry,
+              reflections and short stories written with sincerity.
             </p>
 
             <a
               href="/write"
-              className={`${inter.className} mt-8 inline-flex items-center gap-3 rounded-full bg-[#053400] px-6 py-3 text-[12px] font-medium text-white transition hover:bg-[#0B4D2B]`}
+              className={`${inter.className} mt-7 inline-flex items-center gap-3 rounded-full bg-[#053400] px-6 py-3 text-[12px] font-medium text-white transition hover:bg-[#0B4D2B]`}
             >
               START WRITING NOW
               <span className="text-base">→</span>
@@ -132,7 +129,7 @@ export default function Home() {
 
 
       {/* GENRES */}
-      <section className="mx-auto max-w-[1180px] px-8">
+      <section className="mx-auto w-full max-w-[1540px] px-6 md:px-10 lg:px-12">
 
         <div className="grid grid-cols-4 border-b border-[#DCD4C9]">
 
@@ -140,21 +137,19 @@ export default function Home() {
             <a
               key={genre.title}
               href={`/journal?genre=${genre.title.toLowerCase()}`}
-              className={`px-7 py-8 transition hover:bg-[#F1EAE0] ${
-                index !== 0
-                  ? "border-l border-[#DCD4C9]"
-                  : ""
+              className={`px-8 py-8 transition hover:bg-[#F1EAE0] ${
+                index !== 0 ? "border-l border-[#DCD4C9]" : ""
               }`}
             >
 
               <h2
-                className={`${poppins.className} text-[24px] font-medium text-[#46382F]`}
+                className={`${poppins.className} text-[25px] font-medium text-[#46382F]`}
               >
                 {genre.title}
               </h2>
 
               <p
-                className={`${inter.className} mt-3 text-[13px] leading-[1.6] text-[#70655C]`}
+                className={`${inter.className} mt-3 max-w-[300px] text-[13px] leading-[1.6] text-[#70655C]`}
               >
                 {genre.description}
               </p>
@@ -167,111 +162,110 @@ export default function Home() {
 
 
       {/* LATEST FROM JOURNAL */}
-<section className="mx-auto max-w-[1400px] px-10">
+      <section className="mx-auto w-full max-w-[1540px] px-6 md:px-10 lg:px-12">
 
-  <div className="border-b border-[#DCD4C9]">
+        <div className="border-b border-[#DCD4C9]">
 
-    <div className="flex items-center justify-between py-8">
+          {/* Heading */}
+          <div className="flex items-center justify-between py-8">
 
-      <h2
-        className={`${poppins.className} text-[30px] font-medium text-[#46382F]`}
-      >
-        Latest from the journal
-      </h2>
+            <h2
+              className={`${poppins.className} text-[31px] font-medium text-[#46382F]`}
+            >
+              Latest from the journal
+            </h2>
 
-      <Link
-        href="/journal"
-        className={`${inter.className} text-[13px] font-medium text-[#46382F] transition hover:text-[#053400]`}
-      >
-        VIEW ALL →
-      </Link>
+            <Link
+              href="/journal"
+              className={`${inter.className} text-[13px] font-medium text-[#46382F] transition hover:text-[#053400]`}
+            >
+              VIEW ALL →
+            </Link>
 
-    </div>
+          </div>
 
-    {articles.length === 0 ? (
 
-      <div className="py-10">
-        <p
-          className={`${inter.className} text-[14px] text-[#81766D]`}
-        >
-          No published writing yet.
-        </p>
-      </div>
+          {/* Articles */}
+          {articles.length === 0 ? (
 
-    ) : (
-
-      <div className="divide-y divide-[#DCD4C9]">
-
-        {articles.map((article) => (
-
-          <Link
-            key={article.id}
-            href={`/journal/${article.id}`}
-            className="group block py-8 transition"
-          >
-
-            <div className="flex items-start justify-between gap-10">
-
-              <div className="max-w-4xl">
-
-                <p
-                  className={`${inter.className} text-[11px] font-medium uppercase tracking-[0.2em] text-[#42614A]`}
-                >
-                  {article.type === "story"
-                    ? "SHORT STORY"
-                    : article.type.toUpperCase()}
-                </p>
-
-                <h3
-                  className={`${poppins.className} mt-2 text-[26px] font-medium text-[#46382F] transition group-hover:text-[#053400]`}
-                >
-                  {article.title}
-                </h3>
-
-                {article.tagline && (
-                  <p
-                    className={`${inter.className} mt-2 text-[14px] leading-6 text-[#70655C]`}
-                  >
-                    {article.tagline}
-                  </p>
-                )}
-
-              </div>
-
-              <span
-                className={`${inter.className} hidden shrink-0 pt-5 text-[13px] text-[#81766D] md:block`}
+            <div className="py-10">
+              <p
+                className={`${inter.className} text-[14px] text-[#81766D]`}
               >
-                {article.published_at
-                  ? new Date(article.published_at).toLocaleDateString(
-                      "en-GB",
-                      {
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric",
-                      }
-                    )
-                  : ""}
-              </span>
+                No published writing yet.
+              </p>
+            </div>
+
+          ) : (
+
+            <div className="divide-y divide-[#DCD4C9]">
+
+              {articles.map((article) => (
+
+                <Link
+                  key={article.id}
+                  href={`/journal/${article.id}`}
+                  className="group block py-8 transition"
+                >
+
+                  <div className="flex items-start justify-between gap-10">
+
+                    <div className="max-w-4xl">
+
+                      <p
+                        className={`${inter.className} text-[11px] font-medium uppercase tracking-[0.2em] text-[#42614A]`}
+                      >
+                        {article.type === "story"
+                          ? "SHORT STORY"
+                          : article.type.toUpperCase()}
+                      </p>
+
+                      <h3
+                        className={`${poppins.className} mt-2 text-[27px] font-medium text-[#46382F] transition group-hover:text-[#053400]`}
+                      >
+                        {article.title}
+                      </h3>
+
+                      {article.tagline && (
+                        <p
+                          className={`${inter.className} mt-2 text-[14px] leading-6 text-[#70655C]`}
+                        >
+                          {article.tagline}
+                        </p>
+                      )}
+
+                    </div>
+
+                    <span
+                      className={`${inter.className} hidden shrink-0 pt-5 text-[13px] text-[#81766D] md:block`}
+                    >
+                      {article.published_at
+                        ? new Date(
+                            article.published_at
+                          ).toLocaleDateString("en-GB", {
+                            day: "numeric",
+                            month: "short",
+                            year: "numeric",
+                          })
+                        : ""}
+                    </span>
+
+                  </div>
+
+                </Link>
+
+              ))}
 
             </div>
 
-          </Link>
+          )}
 
-        ))}
-
-      </div>
-
-    )}
-
-  </div>
-
-</section>
-
-
+        </div>
+      </section>
 
 
       {/* FOOTER */}
-      <footer className="mx-auto max-w-[1180px] px-8">
+      <footer className="mx-auto w-full max-w-[1540px] px-6 md:px-10 lg:px-12">
 
         <div className="flex flex-col justify-between gap-8 py-14 md:flex-row md:items-center">
 
@@ -288,8 +282,9 @@ export default function Home() {
             <p
               className={`${inter.className} text-[13px] text-[#81766D]`}
             >
-              They can silence your toungue,
- but not your pen
+              They can silence your tongue,
+              <br />
+              but not your pen.
             </p>
 
           </div>
@@ -315,7 +310,6 @@ export default function Home() {
           </div>
 
         </div>
-
       </footer>
 
     </main>

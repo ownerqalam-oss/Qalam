@@ -26,6 +26,7 @@ interface Profile {
 interface Article {
   id: string;
   title: string;
+  is_anonymous: boolean;
 }
 
 export default function WriterPage() {
@@ -34,8 +35,6 @@ export default function WriterPage() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
-
-  // Controls enlarged profile picture
   const [showAvatar, setShowAvatar] = useState(false);
 
   useEffect(() => {
@@ -45,7 +44,21 @@ export default function WriterPage() {
   }, [id]);
 
   async function loadWriter() {
-    // Load writer profile
+    setLoading(true);
+
+    /*
+     * Get the currently logged-in user.
+     *
+     * This lets us determine whether the person viewing
+     * this page is the actual owner of the profile.
+     */
+    const {
+      data: { user: currentUser },
+    } = await supabase.auth.getUser();
+
+    /*
+     * Load writer profile
+     */
     const { data: profileData, error: profileError } = await supabase
       .from("profiles")
       .select("id, display_name, bio, avatar_url")
@@ -60,12 +73,34 @@ export default function WriterPage() {
 
     setProfile(profileData);
 
-    // Load published articles
-    const { data: articleData, error: articleError } = await supabase
+    /*
+     * Check whether this is the user's own profile.
+     */
+    const isOwnProfile = currentUser?.id === id;
+
+    /*
+     * Load published articles.
+     *
+     * OWN PROFILE:
+     * Show all their published pieces, including anonymous ones.
+     *
+     * SOMEONE ELSE'S PROFILE:
+     * Only show non-anonymous published pieces.
+     */
+    let articleQuery = supabase
       .from("drafts")
-      .select("id, title")
+      .select("id, title, is_anonymous")
       .eq("user_id", id)
       .eq("status", "published");
+
+    if (!isOwnProfile) {
+      articleQuery = articleQuery.eq("is_anonymous", false);
+    }
+
+    const { data: articleData, error: articleError } =
+      await articleQuery.order("published_at", {
+        ascending: false,
+      });
 
     if (articleError) {
       console.error("ARTICLE ERROR MESSAGE:", articleError.message);
@@ -206,7 +241,9 @@ export default function WriterPage() {
                   <p
                     className={`${inter.className} text-[11px] font-medium uppercase tracking-[0.2em] text-[#42614A]`}
                   >
-                    QALAM
+                    {article.is_anonymous
+                      ? "ANONYMOUS PUBLICATION"
+                      : "QALAM"}
                   </p>
 
                   <h3
@@ -214,6 +251,14 @@ export default function WriterPage() {
                   >
                     {article.title}
                   </h3>
+
+                  {article.is_anonymous && (
+                    <p
+                      className={`${inter.className} mt-2 text-xs text-[#81766D]`}
+                    >
+                      Visible only to you on your profile
+                    </p>
+                  )}
                 </Link>
               ))}
 
