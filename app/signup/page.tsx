@@ -55,6 +55,13 @@ export default function SignupPage() {
 
     setLoading(false);
 
+    if (data.session) {
+      // Email confirmation is off, so signUp() already returned an
+      // active session - no need to send them to login.
+      router.push("/complete-profile");
+      return;
+    }
+
     alert(
       "Account created successfully! Please check your email to verify your account."
     );
