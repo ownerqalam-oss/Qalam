@@ -7,6 +7,7 @@ import { Poppins, Inter } from "next/font/google";
 import { supabase } from "../../lib/supabase/client";
 import RichTextEditor from "../../components/RichTextEditor";
 import { useToast } from "../../components/ToastProvider";
+import AyahLoader from "../../components/AyahLoader";
 
 const poppins = Poppins({
   weight: ["400", "500", "600", "700"],
@@ -221,11 +222,7 @@ export default function EditorContent() {
   if (loading) {
     return (
       <main className="min-h-screen bg-[#F7F1E8]">
-        <div className="mx-auto max-w-4xl px-6 py-12 md:px-8">
-          <div className="h-6 w-24 animate-pulse rounded bg-[#EFE8DC]" />
-          <div className="mt-10 h-16 w-2/3 animate-pulse rounded bg-[#EFE8DC]" />
-          <div className="mt-8 h-64 animate-pulse rounded-xl bg-[#EFE8DC]" />
-        </div>
+        <AyahLoader />
       </main>
     );
   }

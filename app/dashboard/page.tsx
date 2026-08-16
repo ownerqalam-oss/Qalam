@@ -7,6 +7,7 @@ import { Poppins, Inter } from "next/font/google";
 import { supabase } from "../../lib/supabase/client";
 import { useToast } from "../../components/ToastProvider";
 import ConfirmDialog from "../../components/ConfirmDialog";
+import AyahLoader from "../../components/AyahLoader";
 
 const poppins = Poppins({
   weight: ["400", "500", "600", "700"],
@@ -289,11 +290,7 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <main className="min-h-screen bg-[#F7F1E8]">
-        <div className="mx-auto max-w-5xl px-6 py-16 md:px-8">
-          <div className="h-9 w-40 animate-pulse rounded bg-[#EFE8DC]" />
-          <div className="mt-10 h-32 animate-pulse rounded-2xl bg-[#EFE8DC]" />
-          <div className="mt-6 h-24 animate-pulse rounded-xl bg-[#EFE8DC]" />
-        </div>
+        <AyahLoader />
       </main>
     );
   }

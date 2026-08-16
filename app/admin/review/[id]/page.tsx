@@ -7,6 +7,7 @@ import { Poppins, Inter } from "next/font/google";
 import { supabase } from "../../../../lib/supabase/client";
 import { isAdminEmail } from "../../../../lib/admin";
 import { useToast } from "../../../../components/ToastProvider";
+import AyahLoader from "../../../../components/AyahLoader";
 
 const poppins = Poppins({
   weight: ["400", "500", "600", "700"],
@@ -106,11 +107,7 @@ export default function ReviewPage() {
   if (loading) {
     return (
       <main className="min-h-screen bg-[#F7F1E8]">
-        <div className="mx-auto max-w-4xl px-6 py-20">
-          <div className="h-6 w-28 animate-pulse rounded bg-[#EFE8DC]" />
-          <div className="mt-10 h-14 w-3/4 animate-pulse rounded bg-[#EFE8DC]" />
-          <div className="mt-6 h-64 animate-pulse rounded bg-[#EFE8DC]" />
-        </div>
+        <AyahLoader />
       </main>
     );
   }
