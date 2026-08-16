@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "../../lib/supabase/client";
+import InkFlourish from "../../components/InkFlourish";
 
 interface Profile {
   id: string;
@@ -51,6 +52,8 @@ export default function WritersPage() {
           <h1 className="mt-4 text-5xl font-medium text-[#053400]">
             Writers
           </h1>
+
+          <InkFlourish className="mt-3 w-[90px]" />
 
           <p className="mt-4 max-w-2xl text-[16px] leading-7 text-[#70655C]">
             Meet the writers behind the words. Discover their perspectives,

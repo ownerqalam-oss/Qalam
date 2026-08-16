@@ -7,6 +7,7 @@ import { Poppins, Inter, Amiri } from "next/font/google";
 import { supabase } from "../lib/supabase/client";
 import { estimateReadingTime } from "../lib/readingTime";
 import { getGenreColor } from "../lib/genreColors";
+import InkFlourish from "../components/InkFlourish";
 
 const poppins = Poppins({
   weight: ["400", "500", "600", "700"],
@@ -137,35 +138,15 @@ export default function Home() {
 
           {/* Illustration */}
           <div className="animate-fade-in-up order-2 flex flex-col items-center justify-center gap-6 py-8 md:order-1">
-            <p
+            <div
               dir="rtl"
-              className={`${amiri.className} animate-verse text-[110px] leading-none text-[#053400] sm:text-[140px] md:text-[170px]`}
+              className={`${amiri.className} animate-verse max-w-[420px] text-center text-[26px] leading-[1.8] text-[#053400] sm:text-[32px] md:max-w-[520px] md:text-[38px]`}
             >
-              قلم
-            </p>
+              <p>ن ۚ وَالْقَلَمِ وَمَا يَسْطُرُونَ</p>
+              <p>مَا أَنتَ بِنِعْمَةِ رَبِّكَ بِمَجْنُونٍ</p>
+            </div>
 
-            <svg
-              viewBox="0 0 300 40"
-              className="w-[200px] text-[#B8860B] sm:w-[260px]"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M10,20 C70,4 110,36 160,16 C210,-2 250,22 290,12"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                pathLength="1"
-                className="animate-draw-line"
-              />
-              <circle
-                cx="290"
-                cy="12"
-                r="4"
-                fill="currentColor"
-                className="animate-ink-drop"
-              />
-            </svg>
+            <InkFlourish className="w-[200px] sm:w-[260px]" animate />
           </div>
 
           {/* Hero copy */}
@@ -256,11 +237,15 @@ export default function Home() {
           {/* Heading */}
           <div className="flex items-center justify-between py-8">
 
-            <h2
-              className={`${poppins.className} text-[31px] font-medium text-[#46382F]`}
-            >
-              Latest from the journal
-            </h2>
+            <div>
+              <h2
+                className={`${poppins.className} text-[31px] font-medium text-[#46382F]`}
+              >
+                Latest from the journal
+              </h2>
+
+              <InkFlourish className="mt-2 w-[90px]" />
+            </div>
 
             <Link
               href="/journal"
@@ -359,7 +344,7 @@ export default function Home() {
                             className={`${inter.className} text-[13px] text-[#70655C]`}
                           >
                             {writer?.display_name || "Qalam Writer"}
-                            <span className="text-[#B8AF9F]"> · </span>
+                            <span className="text-[#B8860B]"> · </span>
                             {article.published_at
                               ? new Date(
                                   article.published_at
@@ -368,7 +353,7 @@ export default function Home() {
                                   month: "short",
                                 })
                               : ""}
-                            <span className="text-[#B8AF9F]"> · </span>
+                            <span className="text-[#B8860B]"> · </span>
                             {estimateReadingTime(article.content)} min read
                           </span>
                         </div>

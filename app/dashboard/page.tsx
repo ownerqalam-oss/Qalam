@@ -9,6 +9,7 @@ import { useToast } from "../../components/ToastProvider";
 import ConfirmDialog from "../../components/ConfirmDialog";
 import AyahLoader from "../../components/AyahLoader";
 import { getGenreColor } from "../../lib/genreColors";
+import InkFlourish from "../../components/InkFlourish";
 
 const poppins = Poppins({
   weight: ["400", "500", "600", "700"],
@@ -302,11 +303,15 @@ export default function DashboardPage() {
 
         {/* HEADER */}
         <div className="flex items-center justify-between">
-          <h1
-            className={`${poppins.className} text-4xl font-medium text-[#053400]`}
-          >
-            Dashboard
-          </h1>
+          <div>
+            <h1
+              className={`${poppins.className} text-4xl font-medium text-[#053400]`}
+            >
+              Dashboard
+            </h1>
+
+            <InkFlourish className="mt-2 w-[90px]" />
+          </div>
 
           <Link
             href="/new"

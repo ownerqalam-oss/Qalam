@@ -7,6 +7,7 @@ import { Poppins, Inter } from "next/font/google";
 import { supabase } from "../../lib/supabase/client";
 import { isAdminEmail } from "../../lib/admin";
 import { getGenreColor } from "../../lib/genreColors";
+import InkFlourish from "../../components/InkFlourish";
 
 const poppins = Poppins({
   weight: ["400", "500", "600", "700"],
@@ -79,10 +80,12 @@ export default function AdminPage() {
         </p>
 
         <h1
-          className={`${poppins.className} mt-3 mb-10 text-4xl font-medium text-[#053400]`}
+          className={`${poppins.className} mt-3 text-4xl font-medium text-[#053400]`}
         >
           Admin Dashboard
         </h1>
+
+        <InkFlourish className="mb-10 mt-2 w-[90px]" />
 
         <div className="space-y-4">
           {drafts.map((draft, index) => {

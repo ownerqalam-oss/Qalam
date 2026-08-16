@@ -6,6 +6,7 @@ import { Poppins, Inter } from "next/font/google";
 import { supabase } from "../../lib/supabase/client";
 import { estimateReadingTime } from "../../lib/readingTime";
 import { getGenreColor } from "../../lib/genreColors";
+import InkFlourish from "../../components/InkFlourish";
 
 const poppins = Poppins({
   weight: ["400", "500", "600", "700"],
@@ -114,6 +115,8 @@ export default function JournalPage() {
             Journal
           </h1>
 
+          <InkFlourish className="mt-3 w-[90px]" />
+
           <p
             className={`${inter.className} mt-4 max-w-2xl text-[16px] leading-7 text-[#70655C]`}
           >
@@ -210,7 +213,7 @@ export default function JournalPage() {
                             className={`${inter.className} text-[13px] text-[#70655C]`}
                           >
                             {writer?.display_name || "Qalam Writer"}
-                            <span className="text-[#B8AF9F]"> · </span>
+                            <span className="text-[#B8860B]"> · </span>
                             {post.published_at
                               ? new Date(
                                   post.published_at
@@ -219,7 +222,7 @@ export default function JournalPage() {
                                   month: "short",
                                 })
                               : ""}
-                            <span className="text-[#B8AF9F]"> · </span>
+                            <span className="text-[#B8860B]"> · </span>
                             {estimateReadingTime(post.content)} min read
                           </span>
                         </div>

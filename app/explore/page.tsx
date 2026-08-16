@@ -6,6 +6,7 @@ import { Poppins, Inter } from "next/font/google";
 import { supabase } from "../../lib/supabase/client";
 import { estimateReadingTime } from "../../lib/readingTime";
 import { getGenreColor } from "../../lib/genreColors";
+import InkFlourish from "../../components/InkFlourish";
 
 const poppins = Poppins({
   weight: ["400", "500", "600", "700"],
@@ -162,6 +163,8 @@ export default function ExplorePage() {
           >
             Explore
           </h1>
+
+          <InkFlourish className="mt-3 w-[90px]" />
 
           <p
             className={`${inter.className} mt-4 max-w-2xl text-[16px] leading-7 text-[#70655C]`}
