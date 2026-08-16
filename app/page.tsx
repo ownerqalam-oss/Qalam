@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Poppins, Inter } from "next/font/google";
+import { Poppins, Inter, Amiri } from "next/font/google";
 import { supabase } from "../lib/supabase/client";
 import { estimateReadingTime } from "../lib/readingTime";
 import { getGenreColor } from "../lib/genreColors";
@@ -16,6 +16,11 @@ const poppins = Poppins({
 const inter = Inter({
   weight: ["400", "500", "600"],
   subsets: ["latin"],
+});
+
+const amiri = Amiri({
+  weight: ["400", "700"],
+  subsets: ["arabic"],
 });
 
 const GENRE_BORDER_CLASSES = [
@@ -131,15 +136,28 @@ export default function Home() {
         <div className="flex flex-col items-center border-b border-[#DCD4C9] py-10 md:grid md:min-h-[440px] md:grid-cols-2 md:py-0">
 
           {/* Illustration */}
-          <div className="animate-fade-in-up order-2 flex items-center justify-center md:order-1">
-            <Image
-              src="/qalam-hero.png"
-              alt="Quill and inkpot"
-              width={700}
-              height={560}
-              priority
-              className="h-auto w-[280px] max-w-full sm:w-[380px] md:w-[620px]"
-            />
+          <div className="animate-fade-in-up order-2 flex flex-col items-center justify-center gap-6 py-8 md:order-1">
+            <p
+              dir="rtl"
+              className={`${amiri.className} text-[110px] leading-none text-[#053400] sm:text-[140px] md:text-[170px]`}
+            >
+              قلم
+            </p>
+
+            <svg
+              viewBox="0 0 300 40"
+              className="w-[200px] text-[#B8860B] sm:w-[260px]"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M10,20 C70,4 110,36 160,16 C210,-2 250,22 290,12"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+              />
+              <circle cx="290" cy="12" r="4" fill="currentColor" />
+            </svg>
           </div>
 
           {/* Hero copy */}
