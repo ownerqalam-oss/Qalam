@@ -72,11 +72,7 @@ export default function Navbar() {
           {/* Right side */}
           <div className="flex items-center gap-3 md:gap-5">
 
-            {/* Search */}
-            <div className="hidden items-center gap-3 text-[12px] text-[#9A9188] md:flex">
-              <span>SEARCH</span>
-              <span className="text-[18px] text-[#46382F]">⌕</span>
-            </div>
+            
 
             {!loading && session ? (
               <>
