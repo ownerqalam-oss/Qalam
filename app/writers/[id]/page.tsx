@@ -266,6 +266,9 @@ export default function WriterPage() {
 
               <p className={`${inter.className} mt-2 text-sm text-[#81766D]`}>
                 {followerCount} {followerCount === 1 ? "follower" : "followers"}
+                <span className="text-[#B8860B]"> · </span>
+                Written {articles.length}{" "}
+                {articles.length === 1 ? "piece" : "pieces"}
               </p>
             </div>
 

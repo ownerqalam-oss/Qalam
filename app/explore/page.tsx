@@ -323,89 +323,97 @@ export default function ExplorePage() {
                             className="h-20 w-20 shrink-0 rounded-lg sm:h-24 sm:w-24"
                           />
 
-                          {/* ARTICLE */}
-                          <Link
-                            href={`/journal/${article.id}`}
-                            className="min-w-0 flex-1"
-                          >
-                            <span
-                              className={`${inter.className} inline-block rounded-full ${genreColor.badgeBg} px-3 py-1 text-[11px] font-medium uppercase tracking-[0.15em] ${genreColor.badgeText}`}
+                          <div className="flex min-w-0 flex-1 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+
+                            {/* ARTICLE */}
+                            <Link
+                              href={`/journal/${article.id}`}
+                              className="min-w-0 flex-1"
                             >
-                              {article.type === "story"
-                                ? "Short Story"
-                                : article.type}
-                            </span>
+                              <span
+                                className={`${inter.className} inline-block rounded-full ${genreColor.badgeBg} px-3 py-1 text-[11px] font-medium uppercase tracking-[0.15em] ${genreColor.badgeText}`}
+                              >
+                                {article.type === "story"
+                                  ? "Short Story"
+                                  : article.type}
+                              </span>
 
-                            <h3
-                              className={`${poppins.className} mt-2 text-2xl font-medium text-[#46382F] transition group-hover:text-[#053400]`}
-                            >
-                              {article.title}
-                            </h3>
+                              <h3
+                                className={`${poppins.className} mt-2 text-2xl font-medium text-[#46382F] transition group-hover:text-[#053400]`}
+                              >
+                                {article.title}
+                              </h3>
 
-                            <span
-                              className={`${inter.className} mt-1 block text-xs text-[#9A9188]`}
-                            >
-                              {estimateReadingTime(article.content)} min read
-                            </span>
-                          </Link>
+                              <span
+                                className={`${inter.className} mt-1 block text-xs text-[#9A9188]`}
+                              >
+                                {estimateReadingTime(article.content)} min read
+                              </span>
+                            </Link>
 
-                          {/* WRITER */}
-                          <div className="flex shrink-0 items-center gap-3 pt-1">
+                            <div className="flex items-center justify-between gap-3 sm:shrink-0 sm:justify-end">
 
-                            {writer ? (
-                              <>
-                                <Link
-                                  href={`/writers/${writer.id}`}
-                                  className="shrink-0"
-                                >
-                                  {writer.avatar_url ? (
-                                    <img
-                                      src={writer.avatar_url}
-                                      alt={writer.display_name || "Writer"}
-                                      className="h-10 w-10 rounded-full object-cover transition hover:opacity-80"
-                                    />
-                                  ) : (
-                                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#053400] text-xs font-medium text-white">
-                                      {(writer.display_name || "W")[0].toUpperCase()}
+                              {/* WRITER */}
+                              <div className="flex items-center gap-3">
+
+                                {writer ? (
+                                  <>
+                                    <Link
+                                      href={`/writers/${writer.id}`}
+                                      className="shrink-0"
+                                    >
+                                      {writer.avatar_url ? (
+                                        <img
+                                          src={writer.avatar_url}
+                                          alt={writer.display_name || "Writer"}
+                                          className="h-10 w-10 rounded-full object-cover transition hover:opacity-80"
+                                        />
+                                      ) : (
+                                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#053400] text-xs font-medium text-white">
+                                          {(writer.display_name || "W")[0].toUpperCase()}
+                                        </div>
+                                      )}
+                                    </Link>
+
+                                    <span
+                                      className={`${inter.className} text-sm text-[#81766D]`}
+                                    >
+                                      By{" "}
+                                      <Link
+                                        href={`/writers/${writer.id}`}
+                                        className="text-[#42614A] hover:text-[#053400]"
+                                      >
+                                        {writer.display_name || "Qalam Writer"}
+                                      </Link>
+                                    </span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#053400] text-xs font-medium text-white">
+                                      Q
                                     </div>
-                                  )}
-                                </Link>
 
-                                <span
-                                  className={`${inter.className} text-sm text-[#81766D]`}
-                                >
-                                  By{" "}
-                                  <Link
-                                    href={`/writers/${writer.id}`}
-                                    className="text-[#42614A] hover:text-[#053400]"
-                                  >
-                                    {writer.display_name || "Qalam Writer"}
-                                  </Link>
-                                </span>
-                              </>
-                            ) : (
-                              <>
-                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#053400] text-xs font-medium text-white">
-                                  Q
-                                </div>
+                                    <span
+                                      className={`${inter.className} text-sm text-[#81766D]`}
+                                    >
+                                      By Anonymous
+                                    </span>
+                                  </>
+                                )}
 
-                                <span
-                                  className={`${inter.className} text-sm text-[#81766D]`}
-                                >
-                                  By Anonymous
-                                </span>
-                              </>
-                            )}
+                              </div>
+
+                              {/* ARROW */}
+                              <Link
+                                href={`/journal/${article.id}`}
+                                className={`${inter.className} shrink-0 text-lg text-[#81766D] transition hover:text-[#053400]`}
+                              >
+                                →
+                              </Link>
+
+                            </div>
 
                           </div>
-
-                          {/* ARROW */}
-                          <Link
-                            href={`/journal/${article.id}`}
-                            className={`${inter.className} shrink-0 pt-2 text-lg text-[#81766D] transition hover:text-[#053400]`}
-                          >
-                            →
-                          </Link>
 
                         </div>
                       );

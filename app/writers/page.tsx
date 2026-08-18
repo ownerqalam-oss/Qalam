@@ -14,6 +14,7 @@ interface Profile {
 
 export default function WritersPage() {
   const [writers, setWriters] = useState<Profile[]>([]);
+  const [pieceCounts, setPieceCounts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -34,6 +35,21 @@ export default function WritersPage() {
 
     if (data) {
       setWriters(data);
+    }
+
+    const { data: publishedDrafts } = await supabase
+      .from("drafts")
+      .select("user_id")
+      .eq("status", "published");
+
+    if (publishedDrafts) {
+      const counts: Record<string, number> = {};
+
+      for (const draft of publishedDrafts) {
+        counts[draft.user_id] = (counts[draft.user_id] ?? 0) + 1;
+      }
+
+      setPieceCounts(counts);
     }
 
     setLoading(false);
@@ -101,9 +117,16 @@ export default function WritersPage() {
                   )}
 
                   {/* NAME */}
-                  <h2 className="text-xl font-medium text-[#46382F] transition group-hover:text-[#053400]">
-                    {writer.display_name || "Qalam Writer"}
-                  </h2>
+                  <div>
+                    <h2 className="text-xl font-medium text-[#46382F] transition group-hover:text-[#053400]">
+                      {writer.display_name || "Qalam Writer"}
+                    </h2>
+
+                    <p className="mt-1 text-xs text-[#9A9188]">
+                      Written {pieceCounts[writer.id] ?? 0}{" "}
+                      {pieceCounts[writer.id] === 1 ? "piece" : "pieces"}
+                    </p>
+                  </div>
 
                 </div>
 
