@@ -6,6 +6,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "./AuthProvider";
 import { supabase } from "../lib/supabase/client";
+import NotificationBell from "./NotificationBell";
 
 const NAV_LINKS = [
   { href: "/journal", label: "JOURNAL" },
@@ -72,7 +73,7 @@ export default function Navbar() {
           {/* Right side */}
           <div className="flex items-center gap-3 md:gap-5">
 
-            
+            <NotificationBell />
 
             {!loading && session ? (
               <>
