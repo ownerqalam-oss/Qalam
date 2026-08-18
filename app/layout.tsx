@@ -16,8 +16,29 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Qalam",
-  description: "A home for Muslim writers.",
+  metadataBase: new URL("https://qalam.ie"),
+  title: {
+    default: "Qalam",
+    template: "%s",
+  },
+  description:
+    "A home for Muslim writers and readers, sharing articles, poetry, reflections and short stories written with sincerity.",
+  openGraph: {
+    title: "Qalam",
+    description:
+      "A home for Muslim writers and readers, sharing articles, poetry, reflections and short stories written with sincerity.",
+    url: "https://qalam.ie",
+    siteName: "Qalam",
+    images: [{ url: "/og-default.png", width: 1200, height: 630 }],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Qalam",
+    description:
+      "A home for Muslim writers and readers, sharing articles, poetry, reflections and short stories written with sincerity.",
+    images: ["/og-default.png"],
+  },
 };
 
 export default function RootLayout({
