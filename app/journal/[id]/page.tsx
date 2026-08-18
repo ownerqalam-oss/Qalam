@@ -273,6 +273,35 @@ export default function ArticlePage() {
     }
   }
 
+  async function shareArticle() {
+    if (!article) return;
+
+    const url = window.location.href;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: article.title, url });
+      } catch {
+        // User cancelled the share sheet - not an error.
+      }
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(url);
+      showToast("Link copied to clipboard.", "success");
+    } catch {
+      showToast("Could not copy link.", "error");
+    }
+  }
+
+  function whatsappShareUrl() {
+    if (!article) return "#";
+
+    const text = `${article.title} — ${window.location.href}`;
+    return `https://wa.me/?text=${encodeURIComponent(text)}`;
+  }
+
   async function loadArticle() {
     /*
      * Load the published article.
@@ -543,6 +572,38 @@ export default function ArticlePage() {
             </svg>
             {bookmarked ? "Saved" : "Save"}
           </button>
+
+          <button
+            onClick={shareArticle}
+            className={`${inter.className} flex items-center gap-2 rounded-full border border-[#DCD4C9] px-4 py-2 text-sm font-medium text-[#46382F] transition hover:border-[#053400] active:scale-95`}
+          >
+            <svg
+              viewBox="0 0 24 24"
+              className="h-4 w-4"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M8.68 13.34a3 3 0 1 0 0-2.68m0 2.68 6.64 3.98m-6.64-6.66 6.64-3.98m0 0a3 3 0 1 0 5.32-2.82 3 3 0 0 0-5.32 2.82Zm0 10.64a3 3 0 1 0 5.32 2.82 3 3 0 0 0-5.32-2.82Z"
+              />
+            </svg>
+            Share
+          </button>
+
+          <a
+            href={whatsappShareUrl()}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Share on WhatsApp"
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-[#DCD4C9] text-[#46382F] transition hover:border-[#053400] active:scale-95"
+          >
+            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
+              <path d="M12.04 2c-5.5 0-9.96 4.46-9.96 9.96 0 1.76.46 3.4 1.26 4.83L2 22l5.35-1.28a9.9 9.9 0 0 0 4.69 1.18h.01c5.5 0 9.96-4.46 9.96-9.96S17.54 2 12.04 2Zm5.79 14.11c-.24.68-1.4 1.31-1.93 1.36-.5.05-1.02.24-3.42-.71-2.9-1.15-4.74-4.05-4.88-4.24-.14-.19-1.16-1.55-1.16-2.95 0-1.4.73-2.09 1-2.38.24-.27.53-.34.71-.34h.5c.16 0 .38-.03.58.44l.79 1.9c.07.16.11.35.02.55-.09.2-.14.32-.28.49-.14.17-.29.38-.42.51-.14.14-.28.29-.12.57.16.28.71 1.17 1.53 1.9 1.05.94 1.94 1.23 2.22 1.37.28.14.44.12.6-.07.16-.19.68-.79.86-1.06.18-.27.36-.22.6-.13.25.09 1.58.75 1.85.89.27.14.45.2.51.32.07.12.07.68-.17 1.36Z" />
+            </svg>
+          </a>
         </div>
 
         {/* ARTICLE CONTENT */}
