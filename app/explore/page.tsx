@@ -26,6 +26,7 @@ interface Article {
   type: string;
   user_id: string;
   cover_image_url: string | null;
+  is_anonymous: boolean;
 }
 
 interface Writer {
@@ -61,7 +62,7 @@ export default function ExplorePage() {
       error: articleError,
     } = await supabase
       .from("drafts")
-      .select("id, title, content, type, user_id, cover_image_url")
+      .select("id, title, content, type, user_id, cover_image_url, is_anonymous")
       .eq("status", "published");
 
     if (articleError) {
@@ -303,7 +304,9 @@ export default function ExplorePage() {
                   <div className="space-y-3">
 
                     {filteredArticles.map((article, index) => {
-                      const writer = getWriter(article.user_id);
+                      const writer = article.is_anonymous
+                        ? null
+                        : getWriter(article.user_id);
                       const genreColor = getGenreColor(article.type);
 
                       return (
@@ -349,36 +352,50 @@ export default function ExplorePage() {
                           {/* WRITER */}
                           <div className="flex shrink-0 items-center gap-3 pt-1">
 
-                            <Link
-                              href={`/writers/${writer?.id}`}
-                              className="shrink-0"
-                            >
-                              {writer?.avatar_url ? (
-                                <img
-                                  src={writer.avatar_url}
-                                  alt={
-                                    writer.display_name || "Writer"
-                                  }
-                                  className="h-10 w-10 rounded-full object-cover transition hover:opacity-80"
-                                />
-                              ) : (
-                                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#053400] text-xs font-medium text-white">
-                                  {(writer?.display_name || "W")[0].toUpperCase()}
-                                </div>
-                              )}
-                            </Link>
+                            {writer ? (
+                              <>
+                                <Link
+                                  href={`/writers/${writer.id}`}
+                                  className="shrink-0"
+                                >
+                                  {writer.avatar_url ? (
+                                    <img
+                                      src={writer.avatar_url}
+                                      alt={writer.display_name || "Writer"}
+                                      className="h-10 w-10 rounded-full object-cover transition hover:opacity-80"
+                                    />
+                                  ) : (
+                                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#053400] text-xs font-medium text-white">
+                                      {(writer.display_name || "W")[0].toUpperCase()}
+                                    </div>
+                                  )}
+                                </Link>
 
-                            <span
-                              className={`${inter.className} text-sm text-[#81766D]`}
-                            >
-                              By{" "}
-                              <Link
-                                href={`/writers/${writer?.id}`}
-                                className="text-[#42614A] hover:text-[#053400]"
-                              >
-                                {writer?.display_name || "Qalam Writer"}
-                              </Link>
-                            </span>
+                                <span
+                                  className={`${inter.className} text-sm text-[#81766D]`}
+                                >
+                                  By{" "}
+                                  <Link
+                                    href={`/writers/${writer.id}`}
+                                    className="text-[#42614A] hover:text-[#053400]"
+                                  >
+                                    {writer.display_name || "Qalam Writer"}
+                                  </Link>
+                                </span>
+                              </>
+                            ) : (
+                              <>
+                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#053400] text-xs font-medium text-white">
+                                  Q
+                                </div>
+
+                                <span
+                                  className={`${inter.className} text-sm text-[#81766D]`}
+                                >
+                                  By Anonymous
+                                </span>
+                              </>
+                            )}
 
                           </div>
 

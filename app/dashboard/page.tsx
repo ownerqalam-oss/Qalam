@@ -57,6 +57,11 @@ export default function DashboardPage() {
   const [uploading, setUploading] = useState(false);
   const [draftToDelete, setDraftToDelete] = useState<string | null>(null);
 
+  const [editingProfile, setEditingProfile] = useState(false);
+  const [editName, setEditName] = useState("");
+  const [editBio, setEditBio] = useState("");
+  const [savingProfile, setSavingProfile] = useState(false);
+
   useEffect(() => {
     loadDashboard();
   }, []);
@@ -293,6 +298,55 @@ export default function DashboardPage() {
     setUploading(false);
   }
 
+  function startEditingProfile() {
+    setEditName(profile?.display_name || "");
+    setEditBio(profile?.bio || "");
+    setEditingProfile(true);
+  }
+
+  async function saveProfile() {
+    if (!editName.trim()) {
+      showToast("Please enter your name.", "error");
+      return;
+    }
+
+    setSavingProfile(true);
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      showToast("You must be logged in.", "error");
+      setSavingProfile(false);
+      return;
+    }
+
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        display_name: editName.trim(),
+        bio: editBio.trim() || null,
+      })
+      .eq("id", user.id);
+
+    if (error) {
+      showToast(error.message, "error");
+      setSavingProfile(false);
+      return;
+    }
+
+    setProfile((current) =>
+      current
+        ? { ...current, display_name: editName.trim(), bio: editBio.trim() || null }
+        : current
+    );
+
+    setSavingProfile(false);
+    setEditingProfile(false);
+    showToast("Profile updated.", "success");
+  }
+
   async function deleteDraft(id: string) {
     const { error } = await supabase
       .from("drafts")
@@ -381,24 +435,74 @@ export default function DashboardPage() {
             {/* PROFILE INFO */}
             <div className="flex-1">
 
-              <p
-                className={`${inter.className} text-xs font-medium uppercase tracking-[0.2em] text-[#81766D]`}
-              >
-                Your Profile
-              </p>
-
-              <h2
-                className={`${poppins.className} mt-1 text-2xl font-medium text-[#46382F]`}
-              >
-                {profile?.display_name || "Qalam Writer"}
-              </h2>
-
-              {profile?.bio && (
+              <div className="flex items-center justify-between gap-3">
                 <p
-                  className={`${inter.className} mt-2 max-w-xl text-sm text-[#70655C]`}
+                  className={`${inter.className} text-xs font-medium uppercase tracking-[0.2em] text-[#81766D]`}
                 >
-                  {profile.bio}
+                  Your Profile
                 </p>
+
+                {!editingProfile && (
+                  <button
+                    onClick={startEditingProfile}
+                    className={`${inter.className} text-xs font-medium text-[#053400] transition hover:underline`}
+                  >
+                    Edit
+                  </button>
+                )}
+              </div>
+
+              {editingProfile ? (
+                <div className="mt-2 space-y-3">
+                  <input
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    placeholder="Your name"
+                    className={`${inter.className} w-full rounded-lg border border-[#DCD4C9] bg-white px-3 py-2 text-sm text-[#46382F] outline-none focus:border-[#053400]`}
+                  />
+
+                  <textarea
+                    value={editBio}
+                    onChange={(e) => setEditBio(e.target.value)}
+                    placeholder="A short bio (optional)"
+                    rows={3}
+                    className={`${inter.className} w-full resize-none rounded-lg border border-[#DCD4C9] bg-white px-3 py-2 text-sm text-[#46382F] outline-none focus:border-[#053400]`}
+                  />
+
+                  <div className="flex gap-2">
+                    <button
+                      onClick={saveProfile}
+                      disabled={savingProfile}
+                      className={`${inter.className} rounded-full bg-[#053400] px-5 py-2 text-sm font-medium text-white transition hover:bg-[#0B4D2B] active:scale-95 disabled:opacity-50`}
+                    >
+                      {savingProfile ? "Saving..." : "Save"}
+                    </button>
+
+                    <button
+                      onClick={() => setEditingProfile(false)}
+                      disabled={savingProfile}
+                      className={`${inter.className} rounded-full border border-[#DCD4C9] px-5 py-2 text-sm font-medium text-[#46382F] transition hover:border-[#053400] disabled:opacity-50`}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <h2
+                    className={`${poppins.className} mt-1 text-2xl font-medium text-[#46382F]`}
+                  >
+                    {profile?.display_name || "Qalam Writer"}
+                  </h2>
+
+                  {profile?.bio && (
+                    <p
+                      className={`${inter.className} mt-2 max-w-xl text-sm text-[#70655C]`}
+                    >
+                      {profile.bio}
+                    </p>
+                  )}
+                </>
               )}
 
             </div>
