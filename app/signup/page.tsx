@@ -59,8 +59,11 @@ export default function SignupPage() {
 
     if (data.session) {
       // Email confirmation is off, so signUp() already returned an
-      // active session - no need to send them to login.
-      router.push("/complete-profile");
+      // active session - no need to send them to login. A hard
+      // navigation (not router.push) so the request definitely
+      // carries the freshly-set auth cookie past the middleware
+      // check on /complete-profile.
+      window.location.href = "/complete-profile";
       return;
     }
 

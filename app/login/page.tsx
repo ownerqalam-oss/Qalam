@@ -2,12 +2,10 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { supabase } from "../../lib/supabase/client";
 import { useToast } from "../../components/ToastProvider";
 
 export default function LoginPage() {
-  const router = useRouter();
   const { showToast } = useToast();
 
   const [email, setEmail] = useState("");
@@ -31,7 +29,11 @@ export default function LoginPage() {
       return;
     }
 
-    router.push("/dashboard");
+    // A client-side router.push() here can beat the auth cookie
+    // write to /dashboard's middleware check, bouncing back to
+    // login. A hard navigation guarantees the request carries
+    // whatever cookie is actually set at that point.
+    window.location.href = "/dashboard";
   }
 
   return (
