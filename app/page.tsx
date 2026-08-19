@@ -81,6 +81,8 @@ export default function Home() {
   const [articles, setArticles] = useState<Article[]>([]);
   const [writers, setWriters] = useState<Writer[]>([]);
   const [loadingArticles, setLoadingArticles] = useState(true);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
 
   useEffect(() => {
     async function loadLatestArticles() {
@@ -97,7 +99,7 @@ export default function Home() {
       }
 
       if (data) {
-        const latest = data.slice(0, 3);
+        const latest = data.slice(0, 6);
         setArticles(latest);
 
         const authorIds = Array.from(
@@ -129,6 +131,16 @@ export default function Home() {
   function getWriter(userId: string) {
     return writers.find((writer) => writer.id === userId);
   }
+
+  useEffect(() => {
+    if (articles.length < 2 || isPaused) return;
+
+    const timer = setInterval(() => {
+      setActiveIndex((index) => (index + 1) % articles.length);
+    }, 4500);
+
+    return () => clearInterval(timer);
+  }, [articles.length, isPaused]);
 
   return (
     <main className="min-h-screen bg-[#F7F1E8] text-[#46382F]">
@@ -213,46 +225,7 @@ export default function Home() {
       </section>
 
 
-      {/* GENRES */}
-      <section className="mx-auto w-full max-w-[1540px] px-6 md:px-10 lg:px-12">
-
-        <div className="grid grid-cols-2 border-b border-[#DCD4C9] md:grid-cols-4">
-
-          {genres.map((genre, index) => {
-            const genreColor = getGenreColor(genre.type);
-
-            return (
-            <a
-              key={genre.title}
-              href={`/journal?genre=${genre.title.toLowerCase()}`}
-              className={`px-5 py-6 transition hover:bg-[#E9E2D8] hover:shadow-sm md:px-8 md:py-8 ${GENRE_BORDER_CLASSES[index]}`}
-            >
-
-              <span
-                className={`inline-block h-2 w-2 rounded-full ${genreColor.dot}`}
-              />
-
-              <h2
-                className={`${poppins.className} mt-2 text-[18px] font-medium text-[#46382F] md:text-[25px]`}
-              >
-                {genre.title}
-              </h2>
-
-              <p
-                className={`${inter.className} mt-3 max-w-[300px] text-[13px] leading-[1.6] text-[#70655C]`}
-              >
-                {genre.description}
-              </p>
-
-            </a>
-            );
-          })}
-
-        </div>
-      </section>
-
-
-      {/* LATEST FROM JOURNAL */}
+      {/* LATEST FROM JOURNAL — auto-rotating spotlight */}
       <section className="mx-auto w-full max-w-[1540px] px-6 md:px-10 lg:px-12">
 
         <div className="border-b border-[#DCD4C9]">
@@ -304,101 +277,182 @@ export default function Home() {
 
           ) : (
 
-            <div className="space-y-4 py-6">
+            <div
+              className="py-6"
+              onMouseEnter={() => setIsPaused(true)}
+              onMouseLeave={() => setIsPaused(false)}
+            >
 
-              {articles.map((article, index) => {
-                const writer = article.is_anonymous
-                  ? null
-                  : getWriter(article.user_id);
+              {/* Track */}
+              <div className="overflow-hidden">
+                <div
+                  className="flex transition-transform duration-700 ease-in-out"
+                  style={{
+                    width: `${articles.length * 100}%`,
+                    transform: `translateX(-${
+                      (100 / articles.length) * activeIndex
+                    }%)`,
+                  }}
+                >
 
-                const genreColor = getGenreColor(article.type);
+                  {articles.map((article) => {
+                    const writer = article.is_anonymous
+                      ? null
+                      : getWriter(article.user_id);
 
-                return (
-                  <Link
-                    key={article.id}
-                    href={`/journal/${article.id}`}
-                    style={{ animationDelay: `${index * 70}ms` }}
-                    className={`animate-fade-in-up group block rounded-xl border border-[#DCD4C9] border-t-4 ${genreColor.cardBorder} bg-[#E9E2D8] p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md md:p-8`}
-                  >
+                    const genreColor = getGenreColor(article.type);
 
-                    <div className="flex items-start gap-5 md:gap-8">
-
-                      <CoverImage
-                        src={article.cover_image_url}
-                        type={article.type}
-                        alt={article.title}
-                        className="h-20 w-20 shrink-0 rounded-lg sm:h-24 sm:w-24"
-                      />
-
-                      <div className="min-w-0 flex-1">
-
-                        <span
-                          className={`${inter.className} inline-block rounded-full ${genreColor.badgeBg} px-3 py-1 text-[11px] font-medium uppercase tracking-[0.15em] ${genreColor.badgeText}`}
+                    return (
+                      <div
+                        key={article.id}
+                        className="shrink-0 px-1"
+                        style={{ width: `${100 / articles.length}%` }}
+                      >
+                        <Link
+                          href={`/journal/${article.id}`}
+                          className={`group block rounded-xl border border-[#DCD4C9] border-t-4 ${genreColor.cardBorder} bg-[#E9E2D8] p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md md:p-8`}
                         >
-                          {article.type === "story"
-                            ? "Short Story"
-                            : article.type}
-                        </span>
 
-                        <h3
-                          className={`${poppins.className} mt-2 text-[22px] font-medium text-[#46382F] transition group-hover:text-[#053400] md:text-[27px]`}
-                        >
-                          {article.title}
-                        </h3>
+                          <div className="flex items-start gap-5 md:gap-8">
 
-                        {article.tagline && (
-                          <p
-                            className={`${inter.className} mt-2 text-[14px] leading-6 text-[#70655C]`}
-                          >
-                            {article.tagline}
-                          </p>
-                        )}
-
-                        {/* BYLINE */}
-                        <div className="mt-4 flex items-center gap-2.5">
-                          {writer?.avatar_url ? (
-                            <img
-                              src={writer.avatar_url}
-                              alt={writer.display_name || "Writer"}
-                              className="h-7 w-7 rounded-full object-cover"
+                            <CoverImage
+                              src={article.cover_image_url}
+                              type={article.type}
+                              alt={article.title}
+                              className="h-20 w-20 shrink-0 rounded-lg sm:h-24 sm:w-24"
                             />
-                          ) : (
-                            <div
-                              className={`${poppins.className} flex h-7 w-7 items-center justify-center rounded-full bg-[#053400] text-[11px] font-medium text-white`}
-                            >
-                              {(writer?.display_name || "Q")[0].toUpperCase()}
+
+                            <div className="min-w-0 flex-1">
+
+                              <span
+                                className={`${inter.className} inline-block rounded-full ${genreColor.badgeBg} px-3 py-1 text-[11px] font-medium uppercase tracking-[0.15em] ${genreColor.badgeText}`}
+                              >
+                                {article.type === "story"
+                                  ? "Short Story"
+                                  : article.type}
+                              </span>
+
+                              <h3
+                                className={`${poppins.className} mt-2 text-[22px] font-medium text-[#46382F] transition group-hover:text-[#053400] md:text-[27px]`}
+                              >
+                                {article.title}
+                              </h3>
+
+                              {article.tagline && (
+                                <p
+                                  className={`${inter.className} mt-2 text-[14px] leading-6 text-[#70655C]`}
+                                >
+                                  {article.tagline}
+                                </p>
+                              )}
+
+                              {/* BYLINE */}
+                              <div className="mt-4 flex items-center gap-2.5">
+                                {writer?.avatar_url ? (
+                                  <img
+                                    src={writer.avatar_url}
+                                    alt={writer.display_name || "Writer"}
+                                    className="h-7 w-7 rounded-full object-cover"
+                                  />
+                                ) : (
+                                  <div
+                                    className={`${poppins.className} flex h-7 w-7 items-center justify-center rounded-full bg-[#053400] text-[11px] font-medium text-white`}
+                                  >
+                                    {(writer?.display_name || "Q")[0].toUpperCase()}
+                                  </div>
+                                )}
+
+                                <span
+                                  className={`${inter.className} text-[13px] text-[#70655C]`}
+                                >
+                                  {writer?.display_name || "Qalam Writer"}
+                                  <span className="text-[#B8860B]"> · </span>
+                                  {article.published_at
+                                    ? new Date(
+                                        article.published_at
+                                      ).toLocaleDateString("en-GB", {
+                                        day: "numeric",
+                                        month: "short",
+                                      })
+                                    : ""}
+                                  <span className="text-[#B8860B]"> · </span>
+                                  {estimateReadingTime(article.content)} min read
+                                </span>
+                              </div>
+
                             </div>
-                          )}
 
-                          <span
-                            className={`${inter.className} text-[13px] text-[#70655C]`}
-                          >
-                            {writer?.display_name || "Qalam Writer"}
-                            <span className="text-[#B8860B]"> · </span>
-                            {article.published_at
-                              ? new Date(
-                                  article.published_at
-                                ).toLocaleDateString("en-GB", {
-                                  day: "numeric",
-                                  month: "short",
-                                })
-                              : ""}
-                            <span className="text-[#B8860B]"> · </span>
-                            {estimateReadingTime(article.content)} min read
-                          </span>
-                        </div>
+                          </div>
 
+                        </Link>
                       </div>
+                    );
+                  })}
 
-                    </div>
+                </div>
+              </div>
 
-                  </Link>
-                );
-              })}
+              {/* Dots */}
+              {articles.length > 1 && (
+                <div className="mt-6 flex items-center justify-center gap-2">
+                  {articles.map((article, index) => (
+                    <button
+                      key={article.id}
+                      type="button"
+                      onClick={() => setActiveIndex(index)}
+                      aria-label={`Show article ${index + 1}`}
+                      className={`h-2 rounded-full transition-all ${
+                        index === activeIndex
+                          ? "w-6 bg-[#053400]"
+                          : "w-2 bg-[#DCD4C9] hover:bg-[#B8860B]"
+                      }`}
+                    />
+                  ))}
+                </div>
+              )}
 
             </div>
 
           )}
+
+        </div>
+      </section>
+
+
+      {/* GENRES */}
+      <section className="mx-auto w-full max-w-[1540px] px-6 md:px-10 lg:px-12">
+
+        <div className="grid grid-cols-2 border-b border-[#DCD4C9] md:grid-cols-4">
+
+          {genres.map((genre, index) => {
+            const genreColor = getGenreColor(genre.type);
+
+            return (
+            <a
+              key={genre.title}
+              href={`/journal?genre=${genre.title.toLowerCase()}`}
+              className={`px-5 py-6 transition hover:bg-[#E9E2D8] hover:shadow-sm md:px-8 md:py-8 ${GENRE_BORDER_CLASSES[index]}`}
+            >
+
+              <span
+                className={`inline-block h-2 w-2 rounded-full ${genreColor.dot}`}
+              />
+
+              <h2
+                className={`${poppins.className} mt-2 text-[18px] font-medium text-[#46382F] md:text-[25px]`}
+              >
+                {genre.title}
+              </h2>
+
+              <p
+                className={`${inter.className} mt-3 max-w-[300px] text-[13px] leading-[1.6] text-[#70655C]`}
+              >
+                {genre.description}
+              </p>
+
+            </a>
+            );
+          })}
 
         </div>
       </section>
