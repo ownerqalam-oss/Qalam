@@ -29,11 +29,10 @@ export default function LoginPage() {
       return;
     }
 
-    // A client-side router.push() here can beat the auth cookie
-    // write to /dashboard's middleware check, bouncing back to
-    // login. A hard navigation guarantees the request carries
-    // whatever cookie is actually set at that point.
-    window.location.href = "/dashboard";
+    // A hard navigation (not router.push) guarantees the auth
+    // cookie is actually set before anything reads the session,
+    // avoiding the login/signup redirect race.
+    window.location.href = "/";
   }
 
   return (

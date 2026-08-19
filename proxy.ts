@@ -55,7 +55,7 @@ export async function proxy(request: NextRequest) {
     (pathname === "/login" || pathname === "/signup") &&
     user
   ) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
+    return NextResponse.redirect(new URL("/", request.url));
   }
 
   return response;
