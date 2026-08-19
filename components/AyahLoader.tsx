@@ -22,10 +22,23 @@ function randomIndex(excluding?: number) {
 }
 
 export default function AyahLoader() {
-  const [index, setIndex] = useState(() => randomIndex());
+  // Starts on ayahs[0] so the server-rendered markup matches the
+  // client's initial render exactly - picking randomly here would
+  // mismatch between server and client and trigger a hydration error.
+  // The random rotation kicks in client-side once mounted, below.
+  const [index, setIndex] = useState(0);
   const [visible, setVisible] = useState(true);
 
   useEffect(() => {
+    const firstPick = setTimeout(() => {
+      setVisible(false);
+
+      setTimeout(() => {
+        setIndex((current) => randomIndex(current));
+        setVisible(true);
+      }, 300);
+    }, 0);
+
     const interval = setInterval(() => {
       setVisible(false);
 
@@ -35,7 +48,10 @@ export default function AyahLoader() {
       }, 300);
     }, 4000);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearTimeout(firstPick);
+      clearInterval(interval);
+    };
   }, []);
 
   const ayah = ayahs[index];
