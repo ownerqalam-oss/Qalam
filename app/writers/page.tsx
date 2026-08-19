@@ -40,7 +40,8 @@ export default function WritersPage() {
     const { data: publishedDrafts } = await supabase
       .from("drafts")
       .select("user_id")
-      .eq("status", "published");
+      .eq("status", "published")
+      .eq("is_anonymous", false);
 
     if (publishedDrafts) {
       const counts: Record<string, number> = {};

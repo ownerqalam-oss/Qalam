@@ -608,7 +608,7 @@ export default function ArticleView() {
 
         {/* ARTICLE CONTENT */}
         <div
-          className={`${inter.className} prose prose-lg mt-12 max-w-none text-[#46382F]`}
+          className={`${inter.className} prose prose-lg mt-12 max-w-none text-[#46382F] [&_p:empty]:min-h-[1.75em]`}
           dangerouslySetInnerHTML={{
             __html: article.content,
           }}
