@@ -123,3 +123,38 @@ body {
   transform-origin: center;
   animation: inkDrop 0.35s ease-out 2s forwards;
 }
+
+@keyframes inkCover {
+  from {
+    width: 100%;
+  }
+
+  to {
+    width: 0%;
+  }
+}
+
+.animate-ink-cover {
+  width: 100%;
+  animation: inkCover 1.3s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+}
+
+@keyframes inkBlot {
+  0% {
+    transform: scale(0);
+    opacity: 0.55;
+  }
+
+  60% {
+    opacity: 0.3;
+  }
+
+  100% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
+
+.animate-ink-blot {
+  animation: inkBlot 0.6s ease-out forwards;
+}

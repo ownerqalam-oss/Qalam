@@ -89,6 +89,8 @@ export default function ArticleView() {
   const [postingReply, setPostingReply] = useState(false);
 
   const [moreFromWriter, setMoreFromWriter] = useState<OtherPiece[]>([]);
+  const [scrollProgress, setScrollProgress] = useState(0);
+  const [showLikeBlot, setShowLikeBlot] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -97,6 +99,19 @@ export default function ArticleView() {
       loadComments();
     }
   }, [id]);
+
+  useEffect(() => {
+    function handleScroll() {
+      const scrollable = document.documentElement.scrollHeight - window.innerHeight;
+      const progress = scrollable > 0 ? (window.scrollY / scrollable) * 100 : 0;
+      setScrollProgress(Math.min(100, Math.max(0, progress)));
+    }
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   async function loadEngagement() {
     const {
@@ -290,6 +305,8 @@ export default function ArticleView() {
     } else {
       setLiked(true);
       setLikeCount((count) => count + 1);
+      setShowLikeBlot(true);
+      setTimeout(() => setShowLikeBlot(false), 600);
 
       const { error } = await supabase
         .from("likes")
@@ -467,6 +484,15 @@ export default function ArticleView() {
 
   return (
     <main className="min-h-screen bg-[#F7F1E8] text-[#46382F]">
+
+      {/* READING PROGRESS */}
+      <div className="fixed left-0 top-0 z-50 h-[3px] w-full bg-transparent">
+        <div
+          className="h-full bg-gradient-to-r from-[#053400] to-[#B8860B] transition-[width] duration-150 ease-out"
+          style={{ width: `${scrollProgress}%` }}
+        />
+      </div>
+
       <article className="mx-auto max-w-4xl px-6 py-16 md:px-10 md:py-20">
 
         {/* BACK TO JOURNAL */}
@@ -618,15 +644,22 @@ export default function ArticleView() {
           <button
             onClick={toggleLike}
             aria-pressed={liked}
-            className={`${inter.className} flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition active:scale-95 ${
+            className={`${inter.className} relative flex items-center gap-2 overflow-visible rounded-full border px-4 py-2 text-sm font-medium transition active:scale-95 ${
               liked
                 ? "border-[#053400] bg-[#E4EDE6] text-[#2E5138]"
                 : "border-[#DCD4C9] text-[#46382F] hover:border-[#053400]"
             }`}
           >
+            {showLikeBlot && (
+              <span
+                aria-hidden="true"
+                className="animate-ink-blot pointer-events-none absolute left-1/2 top-1/2 h-10 w-10 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#053400]"
+              />
+            )}
+
             <svg
               viewBox="0 0 24 24"
-              className="h-4 w-4"
+              className="relative h-4 w-4"
               fill={liked ? "currentColor" : "none"}
               stroke="currentColor"
               strokeWidth="2"
@@ -637,7 +670,7 @@ export default function ArticleView() {
                 d="M12 21s-7-4.35-9.5-8.5C1 9 2 5 6 5c2 0 3.5 1.5 4 2.5.5-1 2-2.5 4-2.5 4 0 5 4 3.5 7.5C19 16.65 12 21 12 21z"
               />
             </svg>
-            {likeCount}
+            <span className="relative">{likeCount}</span>
           </button>
 
           <button

@@ -161,16 +161,31 @@ export default function Home() {
           <div className="animate-fade-in-up order-2 flex flex-col items-center justify-center gap-6 py-8 md:order-1">
             <div
               dir="rtl"
-              className={`${amiri.className} animate-verse max-w-[480px] bg-gradient-to-br from-[#053400] to-[#0E5C33] bg-clip-text pt-3 text-center text-[34px] font-bold leading-[2.1] text-transparent drop-shadow-[0_2px_3px_rgba(5,52,0,0.18)] sm:max-w-[560px] sm:text-[46px] md:max-w-[640px] md:text-[56px]`}
+              className={`${amiri.className} animate-verse flex max-w-[480px] flex-col items-center pt-3 text-[34px] font-bold leading-[2.1] drop-shadow-[0_2px_3px_rgba(5,52,0,0.18)] sm:max-w-[560px] sm:text-[46px] md:max-w-[640px] md:text-[56px]`}
             >
-              <p>
-                ن ۚ وَالْقَلَمِ وَمَا يَسْطُرُونَ{" "}
-                <span className="align-middle text-[0.45em] text-[#B8860B]">۝١</span>
-              </p>
-              <p className="mt-2">
-                مَا أَنتَ بِنِعْمَةِ رَبِّكَ بِمَجْنُونٍ{" "}
-                <span className="align-middle text-[0.45em] text-[#B8860B]">۝٢</span>
-              </p>
+              <div className="relative w-fit">
+                <div className="bg-gradient-to-br from-[#053400] to-[#0E5C33] bg-clip-text text-transparent">
+                  ن ۚ وَالْقَلَمِ وَمَا يَسْطُرُونَ{" "}
+                  <span className="align-middle text-[0.45em] text-[#B8860B]">۝١</span>
+                </div>
+                <div
+                  aria-hidden="true"
+                  className="animate-ink-cover absolute inset-y-0 left-0 bg-[#F7F1E8]"
+                  style={{ animationDelay: "300ms" }}
+                />
+              </div>
+
+              <div className="relative mt-2 w-fit">
+                <div className="bg-gradient-to-br from-[#053400] to-[#0E5C33] bg-clip-text text-transparent">
+                  مَا أَنتَ بِنِعْمَةِ رَبِّكَ بِمَجْنُونٍ{" "}
+                  <span className="align-middle text-[0.45em] text-[#B8860B]">۝٢</span>
+                </div>
+                <div
+                  aria-hidden="true"
+                  className="animate-ink-cover absolute inset-y-0 left-0 bg-[#F7F1E8]"
+                  style={{ animationDelay: "1.7s" }}
+                />
+              </div>
             </div>
 
             <InkFlourish className="w-[200px] sm:w-[260px]" animate />
