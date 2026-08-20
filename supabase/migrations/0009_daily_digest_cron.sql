@@ -1,4 +1,7 @@
--- Schedules the daily digest to run once a day at 09:00 UTC. Reuses
+-- Schedules the daily digest to run once a day at 21:00 UTC (10pm
+-- Irish time during daylight saving - shifts to 9pm Irish time once
+-- the clocks go back, since this is a fixed UTC schedule with no
+-- timezone awareness). Reuses
 -- the same webhook secret already stored in Vault for the submission
 -- notification (submission_webhook_secret) - it's just proving these
 -- requests come from our own Supabase project, no need for a second
@@ -13,7 +16,7 @@ create extension if not exists pg_cron;
 
 select cron.schedule(
   'daily-digest',
-  '0 9 * * *',
+  '0 21 * * *',
   $$
   select net.http_post(
     url := 'https://qalam.ie/api/send-digest',
