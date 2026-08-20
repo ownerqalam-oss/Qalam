@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      from: "Qalam <onboarding@resend.dev>",
+      from: "Qalam <notifications@qalam.ie>",
       to: ADMIN_EMAILS,
       subject: `New submission for review: ${title}`,
       html: `

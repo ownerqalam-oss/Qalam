@@ -141,7 +141,7 @@ export async function POST(request: NextRequest) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "Qalam <onboarding@resend.dev>",
+        from: "Qalam <notifications@qalam.ie>",
         to: recipient.email,
         subject: `${newPieces.length} new ${newPieces.length === 1 ? "piece" : "pieces"} on Qalam today`,
         html,
