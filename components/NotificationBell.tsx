@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Inter } from "next/font/google";
 import { supabase } from "../lib/supabase/client";
 import { useAuth } from "./AuthProvider";
@@ -34,6 +35,7 @@ interface DraftInfo {
 }
 
 export default function NotificationBell() {
+  const router = useRouter();
   const { session } = useAuth();
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState<NotificationRow[]>([]);
@@ -140,7 +142,7 @@ export default function NotificationBell() {
     }
   }
 
-  function notificationText(n: NotificationRow) {
+  function notificationParts(n: NotificationRow) {
     const actor = getActor(n.actor_id);
     const name = actor?.display_name || "Someone";
     const others =
@@ -148,10 +150,14 @@ export default function NotificationBell() {
         ? ` and ${n.actor_count - 1} other${n.actor_count > 2 ? "s" : ""}`
         : "";
 
-    if (n.type === "like") return `${name}${others} liked your piece`;
-    if (n.type === "comment")
-      return `${name}${others} commented on your piece`;
-    return `${name}${others} started following you`;
+    const action =
+      n.type === "like"
+        ? "liked your piece"
+        : n.type === "comment"
+          ? "commented on your piece"
+          : "started following you";
+
+    return { name, others, action };
   }
 
   function notificationHref(n: NotificationRow) {
@@ -206,31 +212,55 @@ export default function NotificationBell() {
             </p>
           ) : (
             <div className="divide-y divide-[#DCD4C9]">
-              {notifications.map((n) => (
-                <Link
-                  key={n.id}
-                  href={notificationHref(n)}
-                  onClick={() => setOpen(false)}
-                  className={`block px-4 py-3 transition hover:bg-[#F1E7D3] ${
-                    !n.read_at ? "bg-[#E4EDE6]" : ""
-                  }`}
-                >
-                  <p
-                    className={`${inter.className} text-sm text-[#46382F]`}
-                  >
-                    {notificationText(n)}
-                  </p>
+              {notifications.map((n) => {
+                const { name, others, action } = notificationParts(n);
 
-                  <p
-                    className={`${inter.className} mt-1 text-xs text-[#9A9188]`}
+                return (
+                  <div
+                    key={n.id}
+                    role="link"
+                    tabIndex={0}
+                    onClick={() => {
+                      router.push(notificationHref(n));
+                      setOpen(false);
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter") {
+                        router.push(notificationHref(n));
+                        setOpen(false);
+                      }
+                    }}
+                    className={`cursor-pointer px-4 py-3 transition hover:bg-[#F1E7D3] ${
+                      !n.read_at ? "bg-[#E4EDE6]" : ""
+                    }`}
                   >
-                    {new Date(n.updated_at).toLocaleDateString("en-GB", {
-                      day: "numeric",
-                      month: "short",
-                    })}
-                  </p>
-                </Link>
-              ))}
+                    <p
+                      className={`${inter.className} text-sm text-[#46382F]`}
+                    >
+                      <Link
+                        href={`/writers/${n.actor_id}`}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          setOpen(false);
+                        }}
+                        className="font-medium hover:underline"
+                      >
+                        {name}
+                      </Link>
+                      {others} {action}
+                    </p>
+
+                    <p
+                      className={`${inter.className} mt-1 text-xs text-[#9A9188]`}
+                    >
+                      {new Date(n.updated_at).toLocaleDateString("en-GB", {
+                        day: "numeric",
+                        month: "short",
+                      })}
+                    </p>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>

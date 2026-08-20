@@ -79,11 +79,20 @@ export default function AdminPage() {
           REVIEW QUEUE
         </p>
 
-        <h1
-          className={`${poppins.className} mt-3 text-4xl font-medium text-[#053400]`}
-        >
-          Admin Dashboard
-        </h1>
+        <div className="flex items-center justify-between">
+          <h1
+            className={`${poppins.className} mt-3 text-4xl font-medium text-[#053400]`}
+          >
+            Admin Dashboard
+          </h1>
+
+          <Link
+            href="/admin/collections"
+            className={`${inter.className} text-sm font-medium text-[#053400] hover:underline`}
+          >
+            Manage Collections →
+          </Link>
+        </div>
 
         <InkFlourish className="mb-10 mt-2 w-[90px]" />
 

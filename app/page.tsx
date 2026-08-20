@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Poppins, Inter, Amiri } from "next/font/google";
 import { supabase } from "../lib/supabase/client";
 import { estimateReadingTime } from "../lib/readingTime";
@@ -69,6 +70,7 @@ interface Article {
   user_id: string;
   is_anonymous: boolean;
   cover_image_url: string | null;
+  is_featured: boolean;
 }
 
 interface Writer {
@@ -78,7 +80,9 @@ interface Writer {
 }
 
 export default function Home() {
+  const router = useRouter();
   const [articles, setArticles] = useState<Article[]>([]);
+  const [featuredArticles, setFeaturedArticles] = useState<Article[]>([]);
   const [writers, setWriters] = useState<Writer[]>([]);
   const [loadingArticles, setLoadingArticles] = useState(true);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -102,9 +106,12 @@ export default function Home() {
         const latest = data.slice(0, 6);
         setArticles(latest);
 
+        const featured = data.filter((article) => article.is_featured).slice(0, 3);
+        setFeaturedArticles(featured);
+
         const authorIds = Array.from(
           new Set(
-            latest
+            [...latest, ...featured]
               .filter((article) => !article.is_anonymous)
               .map((article) => article.user_id)
           )
@@ -308,9 +315,16 @@ export default function Home() {
                         className="shrink-0 px-1"
                         style={{ width: `${100 / articles.length}%` }}
                       >
-                        <Link
-                          href={`/journal/${article.id}`}
-                          className={`group block rounded-xl border border-[#DCD4C9] border-t-4 ${genreColor.cardBorder} bg-[#E9E2D8] p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md md:p-8`}
+                        <div
+                          role="link"
+                          tabIndex={0}
+                          onClick={() => router.push(`/journal/${article.id}`)}
+                          onKeyDown={(event) => {
+                            if (event.key === "Enter") {
+                              router.push(`/journal/${article.id}`);
+                            }
+                          }}
+                          className={`group block cursor-pointer rounded-xl border border-[#DCD4C9] border-t-4 ${genreColor.cardBorder} bg-[#E9E2D8] p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md md:p-8`}
                         >
 
                           <div className="flex items-start gap-5 md:gap-8">
@@ -347,44 +361,75 @@ export default function Home() {
                               )}
 
                               {/* BYLINE */}
-                              <div className="mt-4 flex items-center gap-2.5">
-                                {writer?.avatar_url ? (
-                                  <img
-                                    src={writer.avatar_url}
-                                    alt={writer.display_name || "Writer"}
-                                    className="h-7 w-7 rounded-full object-cover"
-                                  />
-                                ) : (
+                              {writer ? (
+                                <Link
+                                  href={`/writers/${article.user_id}`}
+                                  onClick={(event) => event.stopPropagation()}
+                                  className="mt-4 flex w-fit items-center gap-2.5 hover:underline"
+                                >
+                                  {writer.avatar_url ? (
+                                    <img
+                                      src={writer.avatar_url}
+                                      alt={writer.display_name || "Writer"}
+                                      className="h-7 w-7 rounded-full object-cover"
+                                    />
+                                  ) : (
+                                    <div
+                                      className={`${poppins.className} flex h-7 w-7 items-center justify-center rounded-full bg-[#053400] text-[11px] font-medium text-white`}
+                                    >
+                                      {(writer.display_name || "Q")[0].toUpperCase()}
+                                    </div>
+                                  )}
+
+                                  <span
+                                    className={`${inter.className} text-[13px] text-[#70655C]`}
+                                  >
+                                    {writer.display_name || "Qalam Writer"}
+                                    <span className="text-[#B8860B]"> · </span>
+                                    {article.published_at
+                                      ? new Date(
+                                          article.published_at
+                                        ).toLocaleDateString("en-GB", {
+                                          day: "numeric",
+                                          month: "short",
+                                        })
+                                      : ""}
+                                    <span className="text-[#B8860B]"> · </span>
+                                    {estimateReadingTime(article.content)} min read
+                                  </span>
+                                </Link>
+                              ) : (
+                                <div className="mt-4 flex items-center gap-2.5">
                                   <div
                                     className={`${poppins.className} flex h-7 w-7 items-center justify-center rounded-full bg-[#053400] text-[11px] font-medium text-white`}
                                   >
-                                    {(writer?.display_name || "Q")[0].toUpperCase()}
+                                    Q
                                   </div>
-                                )}
 
-                                <span
-                                  className={`${inter.className} text-[13px] text-[#70655C]`}
-                                >
-                                  {writer?.display_name || "Qalam Writer"}
-                                  <span className="text-[#B8860B]"> · </span>
-                                  {article.published_at
-                                    ? new Date(
-                                        article.published_at
-                                      ).toLocaleDateString("en-GB", {
-                                        day: "numeric",
-                                        month: "short",
-                                      })
-                                    : ""}
-                                  <span className="text-[#B8860B]"> · </span>
-                                  {estimateReadingTime(article.content)} min read
-                                </span>
-                              </div>
+                                  <span
+                                    className={`${inter.className} text-[13px] text-[#70655C]`}
+                                  >
+                                    Qalam Writer
+                                    <span className="text-[#B8860B]"> · </span>
+                                    {article.published_at
+                                      ? new Date(
+                                          article.published_at
+                                        ).toLocaleDateString("en-GB", {
+                                          day: "numeric",
+                                          month: "short",
+                                        })
+                                      : ""}
+                                    <span className="text-[#B8860B]"> · </span>
+                                    {estimateReadingTime(article.content)} min read
+                                  </span>
+                                </div>
+                              )}
 
                             </div>
 
                           </div>
 
-                        </Link>
+                        </div>
                       </div>
                     );
                   })}
@@ -417,6 +462,55 @@ export default function Home() {
 
         </div>
       </section>
+
+
+      {/* FEATURED / EDITOR'S PICKS */}
+      {featuredArticles.length > 0 && (
+        <section className="mx-auto w-full max-w-[1540px] px-6 md:px-10 lg:px-12">
+          <div className="border-b border-[#DCD4C9] py-10">
+            <div className="flex items-center gap-2">
+              <span className="text-[#B8860B]">★</span>
+              <h2
+                className={`${poppins.className} text-[26px] font-medium text-[#053400]`}
+              >
+                Editor&apos;s Picks
+              </h2>
+            </div>
+
+            <div className="mt-6 grid gap-4 sm:grid-cols-3">
+              {featuredArticles.map((article) => {
+                const writer = article.is_anonymous ? null : getWriter(article.user_id);
+                const genreColor = getGenreColor(article.type);
+
+                return (
+                  <Link
+                    key={article.id}
+                    href={`/journal/${article.id}`}
+                    className={`group block rounded-xl border border-[#DCD4C9] border-t-4 ${genreColor.cardBorder} bg-[#E9E2D8] p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md`}
+                  >
+                    <CoverImage
+                      src={article.cover_image_url}
+                      type={article.type}
+                      alt={article.title}
+                      className="h-32 w-full rounded-lg"
+                    />
+
+                    <h3
+                      className={`${poppins.className} mt-3 text-lg font-medium text-[#46382F] group-hover:text-[#053400]`}
+                    >
+                      {article.title}
+                    </h3>
+
+                    <p className={`${inter.className} mt-1 text-xs text-[#81766D]`}>
+                      {writer?.display_name || "Qalam Writer"}
+                    </p>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      )}
 
 
       {/* GENRES */}
@@ -497,6 +591,10 @@ export default function Home() {
             <a href="/writers" className="hover:text-[#053400]">
               Writers
             </a>
+
+            <Link href="/collections" className="hover:text-[#053400]">
+              Collections
+            </Link>
 
             <a href="/contact" className="hover:text-[#053400]">
               Contact

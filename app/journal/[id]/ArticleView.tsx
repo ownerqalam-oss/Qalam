@@ -37,6 +37,14 @@ interface Article {
   user_id: string;
   is_anonymous: boolean;
   cover_image_url: string | null;
+  view_count: number;
+  is_featured: boolean;
+}
+
+interface OtherPiece {
+  id: string;
+  title: string;
+  type: string;
 }
 
 interface CommentRow {
@@ -44,6 +52,7 @@ interface CommentRow {
   content: string;
   created_at: string;
   user_id: string;
+  parent_id: number | null;
 }
 
 interface CommentAuthor {
@@ -75,6 +84,11 @@ export default function ArticleView() {
   const [commentToDelete, setCommentToDelete] = useState<number | null>(
     null
   );
+  const [replyingTo, setReplyingTo] = useState<number | null>(null);
+  const [replyText, setReplyText] = useState("");
+  const [postingReply, setPostingReply] = useState(false);
+
+  const [moreFromWriter, setMoreFromWriter] = useState<OtherPiece[]>([]);
 
   useEffect(() => {
     if (id) {
@@ -123,7 +137,7 @@ export default function ArticleView() {
   async function loadComments() {
     const { data: commentData, error } = await supabase
       .from("comments")
-      .select("id, content, created_at, user_id")
+      .select("id, content, created_at, user_id, parent_id")
       .eq("draft_id", id)
       .order("created_at", { ascending: true });
 
@@ -183,6 +197,57 @@ export default function ArticleView() {
     setCommentText("");
     setPostingComment(false);
     loadComments();
+  }
+
+  async function postReply(parentId: number) {
+    if (!currentUserId) {
+      showToast("Sign in to reply.", "error");
+      return;
+    }
+
+    if (!replyText.trim()) return;
+
+    setPostingReply(true);
+
+    const { error } = await supabase.from("comments").insert({
+      draft_id: id,
+      user_id: currentUserId,
+      content: replyText.trim(),
+      parent_id: parentId,
+    });
+
+    if (error) {
+      showToast(error.message, "error");
+      setPostingReply(false);
+      return;
+    }
+
+    setReplyText("");
+    setReplyingTo(null);
+    setPostingReply(false);
+    loadComments();
+  }
+
+  async function toggleFeatured() {
+    if (!article) return;
+
+    const nextFeatured = !article.is_featured;
+
+    const { error } = await supabase.rpc("set_featured", {
+      p_draft_id: article.id,
+      p_featured: nextFeatured,
+    });
+
+    if (error) {
+      showToast(error.message, "error");
+      return;
+    }
+
+    setArticle({ ...article, is_featured: nextFeatured });
+    showToast(
+      nextFeatured ? "Marked as Editor's Pick." : "Removed from Editor's Pick.",
+      "success"
+    );
   }
 
   async function deleteComment(commentId: number) {
@@ -321,6 +386,8 @@ export default function ArticleView() {
 
     setArticle(articleData);
 
+    supabase.rpc("increment_view_count", { p_draft_id: articleData.id });
+
     /*
      * If the article is anonymous, we still load the
      * author's profile privately for the page logic,
@@ -343,6 +410,20 @@ export default function ArticleView() {
 
       if (profileData) {
         setProfile(profileData);
+      }
+
+      const { data: otherPieces } = await supabase
+        .from("drafts")
+        .select("id, title, type")
+        .eq("user_id", articleData.user_id)
+        .eq("status", "published")
+        .eq("is_anonymous", false)
+        .neq("id", articleData.id)
+        .order("published_at", { ascending: false })
+        .limit(4);
+
+      if (otherPieces) {
+        setMoreFromWriter(otherPieces);
       }
     }
 
@@ -406,7 +487,15 @@ export default function ArticleView() {
         )}
 
         {/* CATEGORY */}
-        <div className="mb-5 flex flex-wrap gap-2">
+        <div className="mb-5 flex flex-wrap items-center gap-2">
+          {article.is_featured && (
+            <span
+              className={`${inter.className} flex items-center gap-1 rounded-full bg-[#B8860B] px-3 py-1 text-xs font-medium uppercase tracking-wide text-white`}
+            >
+              ★ Editor&apos;s Pick
+            </span>
+          )}
+
           <span
             className={`${inter.className} rounded-full bg-[#E9E2D8] px-3 py-1 text-xs font-medium uppercase tracking-wide text-[#42614A]`}
           >
@@ -477,7 +566,10 @@ export default function ArticleView() {
               </div>
             </>
           ) : (
-            <>
+            <Link
+              href={`/writers/${article.user_id}`}
+              className="group flex items-center gap-4"
+            >
               {/* NORMAL AVATAR */}
               {profile?.avatar_url ? (
                 <img
@@ -498,7 +590,7 @@ export default function ArticleView() {
               {/* NORMAL NAME + DATE */}
               <div>
                 <p
-                  className={`${poppins.className} text-[15px] font-medium text-[#46382F]`}
+                  className={`${poppins.className} text-[15px] font-medium text-[#46382F] group-hover:underline`}
                 >
                   {profile?.display_name || "Qalam Writer"}
                 </p>
@@ -517,7 +609,7 @@ export default function ArticleView() {
                   </p>
                 )}
               </div>
-            </>
+            </Link>
           )}
         </div>
 
@@ -604,6 +696,29 @@ export default function ArticleView() {
               <path d="M12.04 2c-5.5 0-9.96 4.46-9.96 9.96 0 1.76.46 3.4 1.26 4.83L2 22l5.35-1.28a9.9 9.9 0 0 0 4.69 1.18h.01c5.5 0 9.96-4.46 9.96-9.96S17.54 2 12.04 2Zm5.79 14.11c-.24.68-1.4 1.31-1.93 1.36-.5.05-1.02.24-3.42-.71-2.9-1.15-4.74-4.05-4.88-4.24-.14-.19-1.16-1.55-1.16-2.95 0-1.4.73-2.09 1-2.38.24-.27.53-.34.71-.34h.5c.16 0 .38-.03.58.44l.79 1.9c.07.16.11.35.02.55-.09.2-.14.32-.28.49-.14.17-.29.38-.42.51-.14.14-.28.29-.12.57.16.28.71 1.17 1.53 1.9 1.05.94 1.94 1.23 2.22 1.37.28.14.44.12.6-.07.16-.19.68-.79.86-1.06.18-.27.36-.22.6-.13.25.09 1.58.75 1.85.89.27.14.45.2.51.32.07.12.07.68-.17 1.36Z" />
             </svg>
           </a>
+
+          <span
+            className={`${inter.className} ml-1 flex items-center gap-1.5 text-sm text-[#9A9188]`}
+          >
+            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
+              <circle cx="12" cy="12" r="3" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            {article.view_count ?? 0} {article.view_count === 1 ? "view" : "views"}
+          </span>
+
+          {isAdminEmail(currentUserEmail) && (
+            <button
+              onClick={toggleFeatured}
+              className={`${inter.className} ml-auto rounded-full border px-4 py-2 text-sm font-medium transition active:scale-95 ${
+                article.is_featured
+                  ? "border-[#B8860B] bg-[#FBF0DA] text-[#8A6414]"
+                  : "border-[#DCD4C9] text-[#46382F] hover:border-[#053400]"
+              }`}
+            >
+              {article.is_featured ? "★ Featured" : "☆ Feature this piece"}
+            </button>
+          )}
         </div>
 
         {/* ARTICLE CONTENT */}
@@ -619,21 +734,23 @@ export default function ArticleView() {
           <div className="mt-16 border-t border-[#DCD4C9] pt-10">
             <div className="flex items-start gap-5">
 
-              {profile.avatar_url ? (
-                <img
-                  src={profile.avatar_url}
-                  alt={profile.display_name || "Writer"}
-                  className="h-16 w-16 rounded-full object-cover"
-                />
-              ) : (
-                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[#053400] text-white">
-                  <span className={`${poppins.className} text-xl`}>
-                    {profile.display_name
-                      ?.charAt(0)
-                      .toUpperCase() || "Q"}
-                  </span>
-                </div>
-              )}
+              <Link href={`/writers/${article.user_id}`} className="group shrink-0">
+                {profile.avatar_url ? (
+                  <img
+                    src={profile.avatar_url}
+                    alt={profile.display_name || "Writer"}
+                    className="h-16 w-16 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#053400] text-white">
+                    <span className={`${poppins.className} text-xl`}>
+                      {profile.display_name
+                        ?.charAt(0)
+                        .toUpperCase() || "Q"}
+                    </span>
+                  </div>
+                )}
+              </Link>
 
               <div>
                 <p
@@ -642,11 +759,13 @@ export default function ArticleView() {
                   Written by
                 </p>
 
-                <h2
-                  className={`${poppins.className} text-xl font-medium text-[#46382F]`}
-                >
-                  {profile.display_name || "Qalam Writer"}
-                </h2>
+                <Link href={`/writers/${article.user_id}`} className="group">
+                  <h2
+                    className={`${poppins.className} text-xl font-medium text-[#46382F] group-hover:underline`}
+                  >
+                    {profile.display_name || "Qalam Writer"}
+                  </h2>
+                </Link>
 
                 <p
                   className={`${inter.className} mt-2 max-w-2xl text-sm leading-6 text-[#70655C]`}
@@ -655,6 +774,39 @@ export default function ArticleView() {
                 </p>
               </div>
 
+            </div>
+          </div>
+        )}
+
+        {/* MORE FROM THIS WRITER */}
+        {!isAnonymous && moreFromWriter.length > 0 && (
+          <div className="mt-16 border-t border-[#DCD4C9] pt-10">
+            <h2
+              className={`${poppins.className} text-2xl font-medium text-[#053400]`}
+            >
+              More from {profile?.display_name || "this writer"}
+            </h2>
+
+            <div className="mt-6 grid gap-3 sm:grid-cols-2">
+              {moreFromWriter.map((piece) => (
+                <Link
+                  key={piece.id}
+                  href={`/journal/${piece.id}`}
+                  className="group block rounded-xl border border-[#DCD4C9] bg-[#E9E2D8] p-5 transition hover:-translate-y-0.5 hover:shadow-md"
+                >
+                  <p
+                    className={`${inter.className} text-[11px] font-medium uppercase tracking-[0.15em] text-[#42614A]`}
+                  >
+                    {piece.type === "story" ? "Short Story" : piece.type}
+                  </p>
+
+                  <h3
+                    className={`${poppins.className} mt-1 text-lg font-medium text-[#46382F] group-hover:text-[#053400]`}
+                  >
+                    {piece.title}
+                  </h3>
+                </Link>
+              ))}
             </div>
           </div>
         )}
@@ -697,64 +849,180 @@ export default function ArticleView() {
 
           {/* LIST */}
           <div className="mt-10 space-y-6">
-            {comments.map((comment) => {
-              const author = getCommentAuthor(comment.user_id);
-              const canDelete =
-                comment.user_id === currentUserId ||
-                isAdminEmail(currentUserEmail);
+            {comments
+              .filter((comment) => !comment.parent_id)
+              .map((comment) => {
+                const author = getCommentAuthor(comment.user_id);
+                const canDelete =
+                  comment.user_id === currentUserId ||
+                  isAdminEmail(currentUserEmail);
+                const replies = comments.filter(
+                  (reply) => reply.parent_id === comment.id
+                );
 
-              return (
-                <div key={comment.id} className="flex items-start gap-4">
-                  {author?.avatar_url ? (
-                    <img
-                      src={author.avatar_url}
-                      alt={author.display_name || "Writer"}
-                      className="h-9 w-9 shrink-0 rounded-full object-cover"
-                    />
-                  ) : (
-                    <div
-                      className={`${poppins.className} flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#053400] text-xs font-medium text-white`}
-                    >
-                      {(author?.display_name || "Q")[0].toUpperCase()}
-                    </div>
-                  )}
-
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <p
-                        className={`${poppins.className} text-sm font-medium text-[#46382F]`}
-                      >
-                        {author?.display_name || "Qalam Writer"}
-                      </p>
-
-                      <span
-                        className={`${inter.className} text-xs text-[#9A9188]`}
-                      >
-                        {new Date(comment.created_at).toLocaleDateString(
-                          "en-GB",
-                          { day: "numeric", month: "short" }
+                return (
+                  <div key={comment.id}>
+                    <div className="flex items-start gap-4">
+                      <Link href={`/writers/${comment.user_id}`} className="shrink-0">
+                        {author?.avatar_url ? (
+                          <img
+                            src={author.avatar_url}
+                            alt={author.display_name || "Writer"}
+                            className="h-9 w-9 rounded-full object-cover"
+                          />
+                        ) : (
+                          <div
+                            className={`${poppins.className} flex h-9 w-9 items-center justify-center rounded-full bg-[#053400] text-xs font-medium text-white`}
+                          >
+                            {(author?.display_name || "Q")[0].toUpperCase()}
+                          </div>
                         )}
-                      </span>
+                      </Link>
+
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <Link href={`/writers/${comment.user_id}`} className="hover:underline">
+                            <p
+                              className={`${poppins.className} text-sm font-medium text-[#46382F]`}
+                            >
+                              {author?.display_name || "Qalam Writer"}
+                            </p>
+                          </Link>
+
+                          <span
+                            className={`${inter.className} text-xs text-[#9A9188]`}
+                          >
+                            {new Date(comment.created_at).toLocaleDateString(
+                              "en-GB",
+                              { day: "numeric", month: "short" }
+                            )}
+                          </span>
+                        </div>
+
+                        <p
+                          className={`${inter.className} mt-1 text-sm leading-6 text-[#46382F]`}
+                        >
+                          {comment.content}
+                        </p>
+
+                        <div className="mt-1 flex items-center gap-4">
+                          <button
+                            onClick={() => {
+                              setReplyingTo(comment.id);
+                              setReplyText("");
+                            }}
+                            className={`${inter.className} text-xs font-medium text-[#42614A] transition hover:underline`}
+                          >
+                            Reply
+                          </button>
+
+                          {canDelete && (
+                            <button
+                              onClick={() => setCommentToDelete(comment.id)}
+                              className={`${inter.className} text-xs text-red-600 transition hover:underline`}
+                            >
+                              Delete
+                            </button>
+                          )}
+                        </div>
+
+                        {replyingTo === comment.id && (
+                          <div className="mt-3 flex gap-2">
+                            <input
+                              value={replyText}
+                              onChange={(e) => setReplyText(e.target.value)}
+                              placeholder="Write a reply..."
+                              className={`${inter.className} flex-1 rounded-full border border-[#DCD4C9] bg-white px-4 py-2 text-sm outline-none focus:border-[#053400]`}
+                            />
+
+                            <button
+                              onClick={() => postReply(comment.id)}
+                              disabled={postingReply || !replyText.trim()}
+                              className={`${inter.className} shrink-0 rounded-full bg-[#053400] px-4 py-2 text-xs font-medium text-white transition hover:bg-[#0B4D2B] disabled:opacity-50`}
+                            >
+                              {postingReply ? "Posting..." : "Reply"}
+                            </button>
+
+                            <button
+                              onClick={() => setReplyingTo(null)}
+                              className={`${inter.className} shrink-0 text-xs text-[#81766D] hover:underline`}
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        )}
+
+                        {replies.length > 0 && (
+                          <div className="mt-4 space-y-4 border-l-2 border-[#DCD4C9] pl-4">
+                            {replies.map((reply) => {
+                              const replyAuthor = getCommentAuthor(reply.user_id);
+                              const canDeleteReply =
+                                reply.user_id === currentUserId ||
+                                isAdminEmail(currentUserEmail);
+
+                              return (
+                                <div key={reply.id} className="flex items-start gap-3">
+                                  <Link href={`/writers/${reply.user_id}`} className="shrink-0">
+                                    {replyAuthor?.avatar_url ? (
+                                      <img
+                                        src={replyAuthor.avatar_url}
+                                        alt={replyAuthor.display_name || "Writer"}
+                                        className="h-7 w-7 rounded-full object-cover"
+                                      />
+                                    ) : (
+                                      <div
+                                        className={`${poppins.className} flex h-7 w-7 items-center justify-center rounded-full bg-[#053400] text-[10px] font-medium text-white`}
+                                      >
+                                        {(replyAuthor?.display_name || "Q")[0].toUpperCase()}
+                                      </div>
+                                    )}
+                                  </Link>
+
+                                  <div className="min-w-0 flex-1">
+                                    <div className="flex items-center gap-2">
+                                      <Link href={`/writers/${reply.user_id}`} className="hover:underline">
+                                        <p
+                                          className={`${poppins.className} text-sm font-medium text-[#46382F]`}
+                                        >
+                                          {replyAuthor?.display_name || "Qalam Writer"}
+                                        </p>
+                                      </Link>
+
+                                      <span
+                                        className={`${inter.className} text-xs text-[#9A9188]`}
+                                      >
+                                        {new Date(reply.created_at).toLocaleDateString(
+                                          "en-GB",
+                                          { day: "numeric", month: "short" }
+                                        )}
+                                      </span>
+                                    </div>
+
+                                    <p
+                                      className={`${inter.className} mt-1 text-sm leading-6 text-[#46382F]`}
+                                    >
+                                      {reply.content}
+                                    </p>
+
+                                    {canDeleteReply && (
+                                      <button
+                                        onClick={() => setCommentToDelete(reply.id)}
+                                        className={`${inter.className} mt-1 text-xs text-red-600 transition hover:underline`}
+                                      >
+                                        Delete
+                                      </button>
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
                     </div>
-
-                    <p
-                      className={`${inter.className} mt-1 text-sm leading-6 text-[#46382F]`}
-                    >
-                      {comment.content}
-                    </p>
-
-                    {canDelete && (
-                      <button
-                        onClick={() => setCommentToDelete(comment.id)}
-                        className={`${inter.className} mt-1 text-xs text-red-600 transition hover:underline`}
-                      >
-                        Delete
-                      </button>
-                    )}
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
 
             {comments.length === 0 && (
               <p className={`${inter.className} text-sm text-[#81766D]`}>
