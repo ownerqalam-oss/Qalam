@@ -43,6 +43,10 @@ function digestHtml(pieces: NewPiece[], writerNames: Record<string, string>, uns
       ${pieceListHtml(pieces, writerNames)}
     </table>
 
+    <a href="https://qalam.ie/journal" style="display:inline-block;margin-top:24px;padding:12px 24px;background:#053400;color:#F7F1E8;font-size:14px;font-weight:600;text-decoration:none;border-radius:999px;">
+      Read on Qalam &rarr;
+    </a>
+
     <p style="margin-top:32px;font-size:12px;color:#9A9188;">
       You're receiving this because you have an account on Qalam.
       <a href="${unsubscribeLink}" style="color:#9A9188;">Unsubscribe</a> from these daily emails.

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Poppins, Inter } from "next/font/google";
 import { supabase } from "../../lib/supabase/client";
 import RichTextEditor from "../../components/RichTextEditor";
@@ -20,6 +20,7 @@ const inter = Inter({
 });
 
 export default function EditorContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const { showToast } = useToast();
 
@@ -186,7 +187,8 @@ export default function EditorContent() {
     }
 
     setDraftStatus("submitted");
-    showToast("Submitted for review!", "success");
+    showToast("Submitted for review! You'll find it under Pending Review on your dashboard.", "success");
+    router.push("/dashboard");
   }
 
   /*

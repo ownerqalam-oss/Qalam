@@ -142,6 +142,28 @@ export default function EditorToolbar({ editor }: Props) {
       >
         “
       </button>
+
+      <div className="mx-1 h-6 w-px bg-gray-200" />
+
+      {/* Sallallahu alayhi wasallam */}
+      <button
+        type="button"
+        title="Peace be upon him (ﷺ)"
+        onClick={() => editor.chain().focus().insertContent("ﷺ").run()}
+        className={buttonClass()}
+      >
+        ﷺ
+      </button>
+
+      {/* Jalla jalaluhu */}
+      <button
+        type="button"
+        title="Glorified and Exalted is He (ﷻ)"
+        onClick={() => editor.chain().focus().insertContent("ﷻ").run()}
+        className={buttonClass()}
+      >
+        ﷻ
+      </button>
     </div>
   );
 }

@@ -376,6 +376,82 @@ export default function DashboardPage() {
     }
   }
 
+  const pendingDrafts = drafts.filter((draft) => draft.status === "submitted");
+  const otherDrafts = drafts.filter((draft) => draft.status !== "submitted");
+
+  function renderDraftCard(draft: Draft, index: number) {
+    const genreColor = getGenreColor(draft.type);
+
+    return (
+      <div
+        key={draft.id}
+        style={{ animationDelay: `${index * 70}ms` }}
+        className={`animate-fade-in-up flex items-center justify-between rounded-xl border border-[#DCD4C9] border-t-4 ${genreColor.cardBorder} bg-[#E9E2D8] p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md`}
+      >
+
+        <Link
+          href={`/editor?id=${draft.id}`}
+          className="flex-1"
+        >
+
+          <div className="mb-2 flex items-center gap-2">
+
+            <span
+              className={`${inter.className} rounded-full ${genreColor.badgeBg} px-3 py-1 text-xs uppercase tracking-wide ${genreColor.badgeText}`}
+            >
+              {typeLabel(draft.type)}
+            </span>
+
+            <span
+              className={`${inter.className} rounded-full px-3 py-1 text-xs capitalize ${
+                draft.status === "rejected"
+                  ? "bg-red-100 text-red-700"
+                  : "bg-[#E4EDE6] text-[#2E5138]"
+              }`}
+            >
+              {draft.status}
+            </span>
+
+          </div>
+
+          <h3
+            className={`${poppins.className} text-xl font-medium text-[#46382F]`}
+          >
+            {draft.title || "Untitled"}
+          </h3>
+
+          <p
+            className={`${inter.className} mt-2 text-sm text-[#81766D]`}
+          >
+            {draft.created_at
+              ? new Date(draft.created_at).toLocaleDateString(
+                  "en-GB",
+                  { day: "numeric", month: "short", year: "numeric" }
+                )
+              : ""}
+          </p>
+
+          {draft.status === "rejected" && draft.feedback && (
+            <p className="mt-3 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-800">
+              <span className="font-medium">Feedback: </span>
+              {draft.feedback}
+            </p>
+          )}
+
+        </Link>
+
+        <button
+          onClick={() => setDraftToDelete(draft.id)}
+          disabled={draft.status === "submitted"}
+          className={`${inter.className} rounded-full border border-red-300 px-4 py-2 text-sm text-red-600 transition hover:bg-red-50 disabled:opacity-50 disabled:hover:bg-transparent`}
+        >
+          Delete
+        </button>
+
+      </div>
+    );
+  }
+
   if (loading) {
     return (
       <main className="min-h-screen bg-[#F7F1E8]">
@@ -546,10 +622,31 @@ export default function DashboardPage() {
 
         </section>
 
+        {/* PENDING REVIEW */}
+        {pendingDrafts.length > 0 && (
+          <div className="mt-10">
+            <h2
+              className={`${poppins.className} text-2xl font-medium text-[#053400]`}
+            >
+              Pending Review
+            </h2>
+
+            <p className={`${inter.className} mt-1 mb-4 text-sm text-[#70655C]`}>
+              Submitted and waiting on an admin - it&apos;ll stay right here until it&apos;s reviewed.
+            </p>
+
+            <div className="space-y-4">
+              {pendingDrafts.map((draft, index) =>
+                renderDraftCard(draft, index)
+              )}
+            </div>
+          </div>
+        )}
+
         {/* DRAFTS */}
         <div className="mt-10 space-y-4">
 
-          {drafts.length === 0 ? (
+          {otherDrafts.length === 0 && pendingDrafts.length === 0 ? (
             <div className="rounded-xl border border-dashed border-[#DCD4C9] p-10 text-center">
 
               <p className={`${inter.className} text-[#70655C]`}>
@@ -565,78 +662,7 @@ export default function DashboardPage() {
 
             </div>
           ) : (
-            drafts.map((draft, index) => {
-              const genreColor = getGenreColor(draft.type);
-
-              return (
-              <div
-                key={draft.id}
-                style={{ animationDelay: `${index * 70}ms` }}
-                className={`animate-fade-in-up flex items-center justify-between rounded-xl border border-[#DCD4C9] border-t-4 ${genreColor.cardBorder} bg-[#E9E2D8] p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md`}
-              >
-
-                <Link
-                  href={`/editor?id=${draft.id}`}
-                  className="flex-1"
-                >
-
-                  <div className="mb-2 flex items-center gap-2">
-
-                    <span
-                      className={`${inter.className} rounded-full ${genreColor.badgeBg} px-3 py-1 text-xs uppercase tracking-wide ${genreColor.badgeText}`}
-                    >
-                      {typeLabel(draft.type)}
-                    </span>
-
-                    <span
-                      className={`${inter.className} rounded-full px-3 py-1 text-xs capitalize ${
-                        draft.status === "rejected"
-                          ? "bg-red-100 text-red-700"
-                          : "bg-[#E4EDE6] text-[#2E5138]"
-                      }`}
-                    >
-                      {draft.status}
-                    </span>
-
-                  </div>
-
-                  <h3
-                    className={`${poppins.className} text-xl font-medium text-[#46382F]`}
-                  >
-                    {draft.title || "Untitled"}
-                  </h3>
-
-                  <p
-                    className={`${inter.className} mt-2 text-sm text-[#81766D]`}
-                  >
-                    {draft.created_at
-                      ? new Date(draft.created_at).toLocaleDateString(
-                          "en-GB",
-                          { day: "numeric", month: "short", year: "numeric" }
-                        )
-                      : ""}
-                  </p>
-
-                  {draft.status === "rejected" && draft.feedback && (
-                    <p className="mt-3 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-800">
-                      <span className="font-medium">Feedback: </span>
-                      {draft.feedback}
-                    </p>
-                  )}
-
-                </Link>
-
-                <button
-                  onClick={() => setDraftToDelete(draft.id)}
-                  disabled={draft.status === "submitted"}
-                  className={`${inter.className} rounded-full border border-red-300 px-4 py-2 text-sm text-red-600 transition hover:bg-red-50 disabled:opacity-50 disabled:hover:bg-transparent`}
-                >
-                  Delete
-                </button>
-
-              </div>
-              );
-            })
+            otherDrafts.map((draft, index) => renderDraftCard(draft, index))
           )}
 
         </div>

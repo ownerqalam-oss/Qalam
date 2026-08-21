@@ -31,6 +31,7 @@ export default function RichTextEditor({
 
     editorProps: {
       attributes: {
+        dir: "auto",
         class:
   "prose prose-lg max-w-none min-h-[70vh] rounded-xl p-4 outline-none focus:outline-none " +
   "[&_h1]:text-4xl [&_h1]:font-bold [&_h1]:mt-6 [&_h1]:mb-4 " +
