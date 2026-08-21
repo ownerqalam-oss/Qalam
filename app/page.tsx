@@ -593,7 +593,7 @@ export default function Home() {
           </div>
 
           <div
-            className={`${inter.className} flex gap-7 text-[13px] text-[#81766D]`}
+            className={`${inter.className} flex flex-wrap gap-x-7 gap-y-2 text-[13px] text-[#81766D]`}
           >
             <a href="/about" className="hover:text-[#053400]">
               About
@@ -609,6 +609,14 @@ export default function Home() {
 
             <Link href="/collections" className="hover:text-[#053400]">
               Collections
+            </Link>
+
+            <Link href="/privacy" className="hover:text-[#053400]">
+              Privacy
+            </Link>
+
+            <Link href="/terms" className="hover:text-[#053400]">
+              Terms
             </Link>
 
             <a href="/contact" className="hover:text-[#053400]">
