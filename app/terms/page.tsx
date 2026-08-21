@@ -76,10 +76,10 @@ export default function TermsPage() {
             on Qalam, you give us permission to host and display it on the
             site, and to share short excerpts — a title, a quote, a cover
             image — on Qalam&apos;s own social media and promotional
-            channels, to help other pieces find readers. Anonymous pieces
-            stay credited as Anonymous when shared this way, never to you
-            by name. If you&apos;d rather a specific piece not be shared
-            off-site, just email us and we won&apos;t.
+            channels, to help other pieces find readers - with or without
+            naming you as the writer. Anonymous pieces are never named,
+            regardless. If you&apos;d rather a specific piece not be
+            shared off-site at all, just email us and we won&apos;t.
           </p>
           <p>
             You&apos;re responsible for making sure what you submit is
