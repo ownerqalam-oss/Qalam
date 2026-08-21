@@ -403,7 +403,20 @@ export default function ArticleView() {
 
     setArticle(articleData);
 
-    supabase.rpc("increment_view_count", { p_draft_id: articleData.id });
+    supabase
+      .rpc("increment_view_count", { p_draft_id: articleData.id })
+      .then(({ error: viewError }) => {
+        if (viewError) {
+          console.error("Error incrementing view count:", viewError);
+          return;
+        }
+
+        setArticle((current) =>
+          current
+            ? { ...current, view_count: (current.view_count ?? 0) + 1 }
+            : current
+        );
+      });
 
     /*
      * If the article is anonymous, we still load the
