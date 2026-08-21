@@ -73,10 +73,18 @@ export default function TermsPage() {
         <Section title="Your content, your rights">
           <p>
             You keep full ownership of everything you write. By publishing
-            on Qalam, you give us permission to host, display, and
-            distribute it on the site — nothing more. You&apos;re responsible
-            for making sure what you submit is actually yours to share, or
-            that you have the right to share it.
+            on Qalam, you give us permission to host and display it on the
+            site, and to share short excerpts — a title, a quote, a cover
+            image — on Qalam&apos;s own social media and promotional
+            channels, to help other pieces find readers. Anonymous pieces
+            stay credited as Anonymous when shared this way, never to you
+            by name. If you&apos;d rather a specific piece not be shared
+            off-site, just email us and we won&apos;t.
+          </p>
+          <p>
+            You&apos;re responsible for making sure what you submit is
+            actually yours to share, or that you have the right to share
+            it.
           </p>
         </Section>
 
