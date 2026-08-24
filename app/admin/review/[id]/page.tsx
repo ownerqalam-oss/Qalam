@@ -28,6 +28,15 @@ interface Draft {
   tagline: string | null;
   tags: string[] | null;
   created_at: string;
+  user_id: string;
+  is_anonymous: boolean;
+  cover_image_url: string | null;
+}
+
+interface Writer {
+  id: string;
+  display_name: string | null;
+  avatar_url: string | null;
 }
 
 export default function ReviewPage() {
@@ -36,6 +45,7 @@ export default function ReviewPage() {
   const { showToast } = useToast();
 
   const [draft, setDraft] = useState<Draft | null>(null);
+  const [writer, setWriter] = useState<Writer | null>(null);
   const [loading, setLoading] = useState(true);
   const [rejectReason, setRejectReason] = useState("");
 
@@ -61,6 +71,16 @@ export default function ReviewPage() {
 
     if (!error && data) {
       setDraft(data);
+
+      const { data: writerData } = await supabase
+        .from("profiles")
+        .select("id, display_name, avatar_url")
+        .eq("id", data.user_id)
+        .maybeSingle();
+
+      if (writerData) {
+        setWriter(writerData);
+      }
     }
 
     setLoading(false);
@@ -144,13 +164,53 @@ export default function ReviewPage() {
           >
             {draft.status}
           </span>
+
+          {draft.is_anonymous && (
+            <span
+              className={`${inter.className} rounded-full bg-[#E4EDE6] px-3 py-1 text-xs text-[#2E5138]`}
+            >
+              Anonymous to readers
+            </span>
+          )}
         </div>
+
+        {draft.cover_image_url && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={draft.cover_image_url}
+            alt={draft.title}
+            className="mb-6 h-64 w-full rounded-xl object-cover"
+          />
+        )}
 
         <h1
           className={`${poppins.className} mb-4 text-5xl font-medium text-[#053400]`}
         >
           {draft.title}
         </h1>
+
+        <Link
+          href={`/writers/${draft.user_id}`}
+          className="mb-6 flex w-fit items-center gap-3"
+        >
+          {writer?.avatar_url ? (
+            <img
+              src={writer.avatar_url}
+              alt={writer.display_name || "Writer"}
+              className="h-10 w-10 rounded-full object-cover"
+            />
+          ) : (
+            <div
+              className={`${poppins.className} flex h-10 w-10 items-center justify-center rounded-full bg-[#053400] text-sm font-medium text-white`}
+            >
+              {(writer?.display_name || "Q")[0].toUpperCase()}
+            </div>
+          )}
+
+          <span className={`${inter.className} text-sm text-[#46382F] hover:underline`}>
+            {writer?.display_name || "Qalam Writer"}
+          </span>
+        </Link>
 
         {draft.tagline && (
           <p className={`${inter.className} mb-6 text-xl text-[#70655C]`}>
