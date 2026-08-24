@@ -744,7 +744,7 @@ export default function ArticleView() {
           </a>
 
           <span
-            className={`${inter.className} ml-1 flex items-center gap-1.5 text-sm text-[#9A9188]`}
+            className={`${inter.className} ml-1 flex items-center gap-1.5 text-sm text-[#70655C]`}
           >
             <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
               <path strokeLinecap="round" strokeLinejoin="round" d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
@@ -936,7 +936,7 @@ export default function ArticleView() {
                           </Link>
 
                           <span
-                            className={`${inter.className} text-xs text-[#9A9188]`}
+                            className={`${inter.className} text-xs text-[#70655C]`}
                           >
                             {new Date(comment.created_at).toLocaleDateString(
                               "en-GB",
@@ -1035,7 +1035,7 @@ export default function ArticleView() {
                                       </Link>
 
                                       <span
-                                        className={`${inter.className} text-xs text-[#9A9188]`}
+                                        className={`${inter.className} text-xs text-[#70655C]`}
                                       >
                                         {new Date(reply.created_at).toLocaleDateString(
                                           "en-GB",

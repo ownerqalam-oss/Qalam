@@ -50,7 +50,7 @@ export default function TermsPage() {
           Terms of Service
         </h1>
 
-        <p className={`${inter.className} mt-4 text-sm text-[#9A9188]`}>
+        <p className={`${inter.className} mt-4 text-sm text-[#70655C]`}>
           Last updated 20 August 2026
         </p>
 

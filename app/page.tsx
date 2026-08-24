@@ -199,7 +199,7 @@ export default function Home() {
               </p>
 
               <p
-                className={`${inter.className} mt-2 text-[10px] font-medium uppercase tracking-[0.2em] text-[#9A9188] sm:text-xs`}
+                className={`${inter.className} mt-2 text-[10px] font-medium uppercase tracking-[0.2em] text-[#70655C] sm:text-xs`}
               >
                 Surah Al-Qalam 68:1&ndash;2
               </p>

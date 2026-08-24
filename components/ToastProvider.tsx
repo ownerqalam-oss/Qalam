@@ -62,7 +62,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
             <button
               onClick={() => dismiss(toast.id)}
               aria-label="Dismiss"
-              className="mt-0.5 shrink-0 text-[#9A9188] transition hover:text-[#46382F]"
+              className="mt-0.5 shrink-0 text-[#70655C] transition hover:text-[#46382F]"
             >
               ×
             </button>

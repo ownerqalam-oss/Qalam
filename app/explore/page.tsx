@@ -345,7 +345,7 @@ export default function ExplorePage() {
                               </h3>
 
                               <span
-                                className={`${inter.className} mt-1 block text-xs text-[#9A9188]`}
+                                className={`${inter.className} mt-1 block text-xs text-[#70655C]`}
                               >
                                 {estimateReadingTime(article.content)} min read
                               </span>

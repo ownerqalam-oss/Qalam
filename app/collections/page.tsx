@@ -117,7 +117,7 @@ export default function CollectionsPage() {
                     </p>
                   )}
 
-                  <p className={`${inter.className} mt-4 text-xs text-[#9A9188]`}>
+                  <p className={`${inter.className} mt-4 text-xs text-[#70655C]`}>
                     {pieceCounts[collection.id] ?? 0}{" "}
                     {pieceCounts[collection.id] === 1 ? "piece" : "pieces"}
                   </p>

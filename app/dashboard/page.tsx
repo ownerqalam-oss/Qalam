@@ -611,7 +611,7 @@ export default function DashboardPage() {
               />
 
               <p
-                className={`${inter.className} mt-2 text-xs text-[#9A9188]`}
+                className={`${inter.className} mt-2 text-xs text-[#70655C]`}
               >
                 JPG, PNG or WebP · Max 5MB
               </p>

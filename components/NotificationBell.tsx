@@ -251,7 +251,7 @@ export default function NotificationBell() {
                     </p>
 
                     <p
-                      className={`${inter.className} mt-1 text-xs text-[#9A9188]`}
+                      className={`${inter.className} mt-1 text-xs text-[#70655C]`}
                     >
                       {new Date(n.updated_at).toLocaleDateString("en-GB", {
                         day: "numeric",

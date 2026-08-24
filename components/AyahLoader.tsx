@@ -74,7 +74,7 @@ export default function AyahLoader() {
           &ldquo;{ayah.english}&rdquo;
         </p>
 
-        <p className="mt-3 text-xs font-medium uppercase tracking-[0.2em] text-[#9A9188]">
+        <p className="mt-3 text-xs font-medium uppercase tracking-[0.2em] text-[#70655C]">
           {ayah.reference}
         </p>
       </div>

@@ -123,7 +123,7 @@ export default function WritersPage() {
                       {writer.display_name || "Qalam Writer"}
                     </h2>
 
-                    <p className="mt-1 text-xs text-[#9A9188]">
+                    <p className="mt-1 text-xs text-[#70655C]">
                       Written {pieceCounts[writer.id] ?? 0}{" "}
                       {pieceCounts[writer.id] === 1 ? "piece" : "pieces"}
                     </p>
