@@ -113,6 +113,50 @@ export default function EditorToolbar({ editor }: Props) {
 
       <div className="mx-1 h-6 w-px bg-gray-200" />
 
+      {/* Align left */}
+      <button
+        type="button"
+        title="Align left"
+        onClick={() => editor.chain().focus().setTextAlign("left").run()}
+        className={buttonClass(editor.isActive({ textAlign: "left" }))}
+      >
+        <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+          <line x1="2" y1="4" x2="14" y2="4" />
+          <line x1="2" y1="8" x2="10" y2="8" />
+          <line x1="2" y1="12" x2="12" y2="12" />
+        </svg>
+      </button>
+
+      {/* Align center */}
+      <button
+        type="button"
+        title="Align center"
+        onClick={() => editor.chain().focus().setTextAlign("center").run()}
+        className={buttonClass(editor.isActive({ textAlign: "center" }))}
+      >
+        <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+          <line x1="2" y1="4" x2="14" y2="4" />
+          <line x1="4" y1="8" x2="12" y2="8" />
+          <line x1="3" y1="12" x2="13" y2="12" />
+        </svg>
+      </button>
+
+      {/* Align right */}
+      <button
+        type="button"
+        title="Align right"
+        onClick={() => editor.chain().focus().setTextAlign("right").run()}
+        className={buttonClass(editor.isActive({ textAlign: "right" }))}
+      >
+        <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+          <line x1="2" y1="4" x2="14" y2="4" />
+          <line x1="6" y1="8" x2="14" y2="8" />
+          <line x1="4" y1="12" x2="14" y2="12" />
+        </svg>
+      </button>
+
+      <div className="mx-1 h-6 w-px bg-gray-200" />
+
     {/* Bullet List */}
 <button
   type="button"

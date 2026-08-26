@@ -4,6 +4,7 @@ import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
 import Underline from "@tiptap/extension-underline";
+import TextAlign from "@tiptap/extension-text-align";
 import { useEffect } from "react";
 import EditorToolbar from "./EditorToolbar";
 
@@ -22,6 +23,9 @@ export default function RichTextEditor({
     extensions: [
       StarterKit,
       Underline,
+      TextAlign.configure({
+        types: ["heading", "paragraph"],
+      }),
       Placeholder.configure({
         placeholder: "Start writing your article...",
       }),
