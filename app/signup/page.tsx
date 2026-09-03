@@ -6,8 +6,6 @@ import { useRouter } from "next/navigation";
 import { supabase } from "../../lib/supabase/client";
 import { useToast } from "../../components/ToastProvider";
 
-const INVITE_CODE = "QALAM2026";
-
 export default function SignupPage() {
   const router = useRouter();
   const { showToast } = useToast();
@@ -15,16 +13,10 @@ export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [inviteCode, setInviteCode] = useState("");
   const [loading, setLoading] = useState(false);
 
   async function handleSignup(e: React.FormEvent) {
     e.preventDefault();
-
-    if (inviteCode.trim().toUpperCase() !== INVITE_CODE) {
-      showToast("Invalid invitation code.", "error");
-      return;
-    }
 
     if (password !== confirmPassword) {
       showToast("Passwords do not match.", "error");
@@ -138,22 +130,6 @@ export default function SignupPage() {
               placeholder="••••••••"
               required
               className="w-full rounded-lg border border-[#DCD4C9] bg-white px-4 py-3 text-[#46382F] outline-none focus:border-[#053400]"
-            />
-          </div>
-
-          {/* INVITE */}
-          <div>
-            <label className="mb-2 block text-sm font-medium text-[#46382F]">
-              Invitation Code
-            </label>
-
-            <input
-              type="text"
-              value={inviteCode}
-              onChange={(e) => setInviteCode(e.target.value)}
-              placeholder="Enter your invitation code"
-              required
-              className="w-full rounded-lg border border-[#DCD4C9] bg-white px-4 py-3 uppercase text-[#46382F] outline-none focus:border-[#053400]"
             />
           </div>
 
