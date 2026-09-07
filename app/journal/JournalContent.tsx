@@ -166,7 +166,10 @@ export default function JournalContent() {
     : articles;
 
   const followingArticles = sortArticles(
-    visibleArticles.filter((article) => followingIds.includes(article.user_id))
+    visibleArticles.filter(
+      (article) =>
+        !article.is_anonymous && followingIds.includes(article.user_id)
+    )
   );
 
   function renderCard(post: Article, index: number) {
