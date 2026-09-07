@@ -8,6 +8,7 @@ import { supabase } from "../../../lib/supabase/client";
 import { useToast } from "../../../components/ToastProvider";
 import ConfirmDialog from "../../../components/ConfirmDialog";
 import { isAdminEmail } from "../../../lib/admin";
+import { ButtonLink } from "../../../components/ui/Button";
 
 const poppins = Poppins({
   weight: ["400", "500", "600", "700"],
@@ -509,12 +510,13 @@ export default function ArticleView() {
       <article className="mx-auto max-w-4xl px-6 py-16 md:px-10 md:py-20">
 
         {/* BACK TO JOURNAL */}
-        <Link
+        <ButtonLink
           href="/journal"
-          className={`${inter.className} mb-12 inline-block text-sm text-[#81766D] transition hover:text-[#053400]`}
+          variant="secondary"
+          className={`${inter.className} mb-12`}
         >
           ← Back to Journal
-        </Link>
+        </ButtonLink>
 
         {/* COVER IMAGE */}
         {article.cover_image_url && (
@@ -680,7 +682,7 @@ export default function ArticleView() {
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                d="M12 21s-7-4.35-9.5-8.5C1 9 2 5 6 5c2 0 3.5 1.5 4 2.5.5-1 2-2.5 4-2.5 4 0 5 4 3.5 7.5C19 16.65 12 21 12 21z"
+                d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.099 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z"
               />
             </svg>
             <span className="relative">{likeCount}</span>
@@ -725,7 +727,7 @@ export default function ArticleView() {
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                d="M8.68 13.34a3 3 0 1 0 0-2.68m0 2.68 6.64 3.98m-6.64-6.66 6.64-3.98m0 0a3 3 0 1 0 5.32-2.82 3 3 0 0 0-5.32 2.82Zm0 10.64a3 3 0 1 0 5.32 2.82 3 3 0 0 0-5.32-2.82Z"
+                d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186 9.566-5.314m-9.566 7.5 9.566 5.314m0 0a2.25 2.25 0 1 0 3.935 2.186 2.25 2.25 0 0 0-3.935-2.186Zm0-12.814a2.25 2.25 0 1 0 3.933-2.185 2.25 2.25 0 0 0-3.933 2.185Z"
               />
             </svg>
             Share

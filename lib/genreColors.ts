@@ -3,28 +3,28 @@ export const GENRE_COLORS: Record<
   { badgeText: string; badgeBg: string; cardBorder: string; dot: string }
 > = {
   article: {
-    badgeText: "text-[#2E5138]",
-    badgeBg: "bg-[#E4EDE6]",
-    cardBorder: "border-t-[#053400]",
-    dot: "bg-[#053400]",
+    badgeText: "text-brand-800",
+    badgeBg: "bg-brand-100",
+    cardBorder: "border-t-brand-900",
+    dot: "bg-brand-900",
   },
   poetry: {
     badgeText: "text-[#8A6A1E]",
-    badgeBg: "bg-[#F5E6C8]",
-    cardBorder: "border-t-[#B8860B]",
-    dot: "bg-[#B8860B]",
+    badgeBg: "bg-gold-100",
+    cardBorder: "border-t-gold-600",
+    dot: "bg-gold-600",
   },
   story: {
     badgeText: "text-[#9A4A1F]",
     badgeBg: "bg-[#F3DDC9]",
-    cardBorder: "border-t-[#B5651D]",
-    dot: "bg-[#B5651D]",
+    cardBorder: "border-t-rust-600",
+    dot: "bg-rust-600",
   },
   reflection: {
     badgeText: "text-[#7A4B6B]",
     badgeBg: "bg-[#EDE0E8]",
-    cardBorder: "border-t-[#8B5A78]",
-    dot: "bg-[#8B5A78]",
+    cardBorder: "border-t-mauve-600",
+    dot: "bg-mauve-600",
   },
 };
 

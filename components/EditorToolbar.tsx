@@ -12,18 +12,18 @@ export default function EditorToolbar({ editor }: Props) {
   const buttonClass = (active = false, disabled = false) =>
     `
       flex h-9 min-w-9 items-center justify-center rounded-md px-2
-      text-sm font-medium transition
+      text-sm font-medium transition font-[family-name:var(--font-body)]
       ${
         active
-          ? "bg-gray-200 text-black"
-          : "text-gray-700 hover:bg-gray-100"
+          ? "bg-brand-100 text-brand-800"
+          : "text-ink-900 hover:bg-cream-hover"
       }
       ${disabled ? "cursor-not-allowed opacity-30" : ""}
     `;
 
   return (
-    <div className="sticky top-0 z-10 flex flex-wrap items-center gap-1 border-b border-gray-200 bg-white px-3 py-2">
-      
+    <div className="sticky top-0 z-10 flex flex-wrap items-center gap-1 border-b border-border bg-cream-card px-3 py-2">
+
       {/* Undo */}
       <button
         type="button"
@@ -46,7 +46,7 @@ export default function EditorToolbar({ editor }: Props) {
         ↷
       </button>
 
-      <div className="mx-1 h-6 w-px bg-gray-200" />
+      <div className="mx-1 h-6 w-px bg-border" />
 
       {/* Text style */}
       <select
@@ -72,14 +72,14 @@ export default function EditorToolbar({ editor }: Props) {
             editor.chain().focus().setHeading({ level: 2 }).run();
           }
         }}
-        className="h-9 rounded-md border-none bg-white px-2 text-sm font-medium text-gray-700 outline-none hover:bg-gray-100"
+        className="h-9 rounded-md border-none bg-transparent px-2 text-sm font-medium text-ink-900 outline-none hover:bg-cream-hover font-[family-name:var(--font-body)]"
       >
         <option value="paragraph">Normal text</option>
         <option value="h1">Heading 1</option>
         <option value="h2">Heading 2</option>
       </select>
 
-      <div className="mx-1 h-6 w-px bg-gray-200" />
+      <div className="mx-1 h-6 w-px bg-border" />
 
       {/* Bold */}
       <button
@@ -111,7 +111,7 @@ export default function EditorToolbar({ editor }: Props) {
         <span className="underline">U</span>
       </button>
 
-      <div className="mx-1 h-6 w-px bg-gray-200" />
+      <div className="mx-1 h-6 w-px bg-border" />
 
       {/* Align left */}
       <button
@@ -155,7 +155,7 @@ export default function EditorToolbar({ editor }: Props) {
         </svg>
       </button>
 
-      <div className="mx-1 h-6 w-px bg-gray-200" />
+      <div className="mx-1 h-6 w-px bg-border" />
 
     {/* Bullet List */}
 <button
@@ -187,7 +187,7 @@ export default function EditorToolbar({ editor }: Props) {
         “
       </button>
 
-      <div className="mx-1 h-6 w-px bg-gray-200" />
+      <div className="mx-1 h-6 w-px bg-border" />
 
       {/* Sallallahu alayhi wasallam */}
       <button

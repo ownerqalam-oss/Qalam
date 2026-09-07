@@ -4,6 +4,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../../lib/supabase/client";
 import { useToast } from "../../components/ToastProvider";
+import { Button } from "../../components/ui/Button";
+
+const headingFont = "font-[family-name:var(--font-heading)]";
 
 export default function CompleteProfilePage() {
   const router = useRouter();
@@ -112,19 +115,19 @@ export default function CompleteProfilePage() {
   }
 
   return (
-    <main className="flex min-h-[calc(100vh-73px)] items-center justify-center bg-[#F7F1E8] px-6 py-12">
-      <div className="w-full max-w-lg rounded-2xl border border-[#DCD4C9] bg-[#F7F1E8] p-8">
+    <main className="flex min-h-[calc(100vh-73px)] items-center justify-center bg-cream px-6 py-12">
+      <div className="w-full max-w-lg rounded-2xl border border-border bg-cream-card p-8">
 
         <div className="text-center">
-          <p className="text-[11px] font-medium uppercase tracking-[0.3em] text-[#42614A]">
+          <p className="text-[11px] font-medium uppercase tracking-[0.3em] text-brand-600">
             WELCOME TO QALAM
           </p>
 
-          <h1 className="mt-3 text-3xl font-semibold text-[#053400]">
+          <h1 className={`${headingFont} mt-3 text-3xl font-semibold text-brand-900`}>
             Complete Your Profile
           </h1>
 
-          <p className="mt-3 text-sm leading-6 text-[#70655C]">
+          <p className="mt-3 text-sm leading-6 text-ink-600">
             Tell us a little about yourself before you start writing.
           </p>
         </div>
@@ -133,7 +136,7 @@ export default function CompleteProfilePage() {
 
           {/* NAME */}
           <div>
-            <label className="mb-2 block text-sm font-medium text-[#46382F]">
+            <label className="mb-2 block text-sm font-medium text-ink-900">
               Display Name
             </label>
 
@@ -143,17 +146,17 @@ export default function CompleteProfilePage() {
               onChange={(e) => setDisplayName(e.target.value)}
               placeholder="Your name"
               required
-              className="w-full rounded-lg border border-[#DCD4C9] bg-white px-4 py-3 text-[#46382F] outline-none focus:border-[#053400]"
+              className="w-full rounded-lg border border-border bg-white px-4 py-3 text-ink-900 outline-none focus:border-brand-900"
             />
 
-            <p className="mt-2 text-xs text-[#81766D]">
+            <p className="mt-2 text-xs text-ink-400">
               This is the name other Qalam readers will see.
             </p>
           </div>
 
           {/* BIO */}
           <div>
-            <label className="mb-2 block text-sm font-medium text-[#46382F]">
+            <label className="mb-2 block text-sm font-medium text-ink-900">
               Bio
             </label>
 
@@ -162,17 +165,17 @@ export default function CompleteProfilePage() {
               onChange={(e) => setBio(e.target.value)}
               placeholder="Tell readers a little about yourself..."
               rows={4}
-              className="w-full resize-none rounded-lg border border-[#DCD4C9] bg-white px-4 py-3 text-[#46382F] outline-none focus:border-[#053400]"
+              className="w-full resize-none rounded-lg border border-border bg-white px-4 py-3 text-ink-900 outline-none focus:border-brand-900"
             />
 
-            <p className="mt-2 text-xs text-[#81766D]">
+            <p className="mt-2 text-xs text-ink-400">
               Optional.
             </p>
           </div>
 
           {/* PROFILE PICTURE */}
           <div>
-            <label className="mb-2 block text-sm font-medium text-[#46382F]">
+            <label className="mb-2 block text-sm font-medium text-ink-900">
               Profile Picture
             </label>
 
@@ -182,22 +185,18 @@ export default function CompleteProfilePage() {
               onChange={(e) => {
                 setAvatar(e.target.files?.[0] || null);
               }}
-              className="block w-full text-sm text-[#70655C]"
+              className="block w-full text-sm text-ink-600"
             />
 
-            <p className="mt-2 text-xs text-[#81766D]">
+            <p className="mt-2 text-xs text-ink-400">
               JPG, PNG or WebP · Max 5MB · Optional
             </p>
           </div>
 
           {/* SUBMIT */}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded-lg bg-[#053400] py-3 font-medium text-white transition hover:bg-[#0B4D2B] disabled:opacity-60"
-          >
+          <Button type="submit" shape="block" disabled={loading} className="w-full">
             {loading ? "Saving Profile..." : "Complete Profile"}
-          </button>
+          </Button>
 
         </form>
       </div>

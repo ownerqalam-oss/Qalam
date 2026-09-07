@@ -80,7 +80,7 @@ export default function CollectionsPage() {
         {loading ? (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {[0, 1, 2].map((i) => (
-              <div key={i} className="h-40 animate-pulse rounded-xl bg-[#EFE8DC]" />
+              <div key={i} className="h-40 animate-pulse rounded-xl bg-skeleton" />
             ))}
           </div>
         ) : collections.length === 0 ? (

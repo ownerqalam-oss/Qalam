@@ -1,23 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
-import { Poppins, Inter } from "next/font/google";
+import { useSearchParams } from "next/navigation";
 import { supabase } from "../../lib/supabase/client";
 import { estimateReadingTime } from "../../lib/readingTime";
 import { getGenreColor } from "../../lib/genreColors";
 import InkFlourish from "../../components/InkFlourish";
 import CoverImage from "../../components/CoverImage";
+import AyahLoader from "../../components/AyahLoader";
+import { Card, CardLink } from "../../components/ui/Card";
 
-const poppins = Poppins({
-  weight: ["400", "500", "600", "700"],
-  subsets: ["latin"],
-});
-
-const inter = Inter({
-  weight: ["400", "500", "600"],
-  subsets: ["latin"],
-});
+const headingFont = "font-[family-name:var(--font-heading)]";
+const bodyFont = "font-[family-name:var(--font-body)]";
 
 interface Article {
   id: string;
@@ -27,6 +22,14 @@ interface Article {
   user_id: string;
   cover_image_url: string | null;
   is_anonymous: boolean;
+  published_at: string | null;
+  likes: { count: number }[];
+}
+
+type SortMode = "newest" | "top";
+
+function likeCount(article: Article) {
+  return article.likes?.[0]?.count ?? 0;
 }
 
 interface Writer {
@@ -36,14 +39,31 @@ interface Writer {
   avatar_url: string | null;
 }
 
-type SearchType = "all" | "writing" | "writers";
+type SearchType = "all" | "journal" | "writers";
 
 export default function ExplorePage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen bg-cream">
+          <AyahLoader />
+        </main>
+      }
+    >
+      <ExploreContent />
+    </Suspense>
+  );
+}
+
+function ExploreContent() {
+  const searchParams = useSearchParams();
+
   const [articles, setArticles] = useState<Article[]>([]);
   const [writers, setWriters] = useState<Writer[]>([]);
 
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(searchParams.get("q") ?? "");
   const [searchType, setSearchType] = useState<SearchType>("all");
+  const [sortMode, setSortMode] = useState<SortMode>("newest");
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -62,7 +82,9 @@ export default function ExplorePage() {
       error: articleError,
     } = await supabase
       .from("drafts")
-      .select("id, title, content, type, user_id, cover_image_url, is_anonymous")
+      .select(
+        "id, title, content, type, user_id, cover_image_url, is_anonymous, published_at, likes(count)"
+      )
       .eq("status", "published");
 
     if (articleError) {
@@ -135,6 +157,17 @@ export default function ExplorePage() {
     return titleMatch || typeMatch || writerMatch;
   });
 
+  const sortedArticles = [...filteredArticles].sort((a, b) => {
+    if (sortMode === "top") {
+      const diff = likeCount(b) - likeCount(a);
+      if (diff !== 0) return diff;
+    }
+
+    const aTime = a.published_at ? new Date(a.published_at).getTime() : 0;
+    const bTime = b.published_at ? new Date(b.published_at).getTime() : 0;
+    return bTime - aTime;
+  });
+
   const filteredWriters = writers.filter((writer) => {
     if (!searchTerm) return true;
 
@@ -150,19 +183,19 @@ export default function ExplorePage() {
   });
 
   return (
-    <main className="min-h-screen bg-[#F7F1E8] text-[#46382F]">
+    <main className="min-h-screen bg-cream text-ink-900">
       <section className="mx-auto max-w-[1180px] px-8 py-16">
 
         {/* HEADER */}
         <div className="mb-10">
           <p
-            className={`${inter.className} text-[11px] font-medium uppercase tracking-[0.3em] text-[#42614A]`}
+            className={`${bodyFont} text-[11px] font-medium uppercase tracking-[0.3em] text-brand-600`}
           >
             DISCOVER QALAM
           </p>
 
           <h1
-            className={`${poppins.className} mt-4 text-5xl font-medium text-[#053400]`}
+            className={`${headingFont} mt-4 text-5xl font-medium text-brand-900`}
           >
             Explore
           </h1>
@@ -170,14 +203,14 @@ export default function ExplorePage() {
           <InkFlourish className="mt-3 w-[90px]" />
 
           <p
-            className={`${inter.className} mt-4 max-w-2xl text-[16px] leading-7 text-[#70655C]`}
+            className={`${bodyFont} mt-4 max-w-2xl text-[16px] leading-7 text-ink-600`}
           >
-            Discover writing, ideas and the people behind the words.
+            Discover the Journal, ideas and the people behind the words.
           </p>
         </div>
 
         {/* SEARCH */}
-        <div className="border-y border-[#DCD4C9] py-6">
+        <div className="border-y border-border py-6">
           <div className="flex flex-col gap-4 md:flex-row">
 
             <div className="relative flex-1">
@@ -185,50 +218,50 @@ export default function ExplorePage() {
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search writing or writers..."
-                className={`${inter.className} w-full rounded-full border border-[#CFC5B8] bg-transparent px-5 py-3 text-sm outline-none transition focus:border-[#053400]`}
+                placeholder="Search Journal or writers..."
+                className={`${bodyFont} w-full rounded-full border border-border bg-transparent px-5 py-3 text-sm outline-none transition focus:border-brand-900`}
               />
 
               {search && (
                 <button
                   onClick={() => setSearch("")}
-                  className={`${inter.className} absolute right-4 top-1/2 -translate-y-1/2 text-sm text-[#81766D] hover:text-[#053400]`}
+                  className={`${bodyFont} absolute right-4 top-1/2 -translate-y-1/2 text-sm text-ink-400 hover:text-brand-900`}
                 >
                   ×
                 </button>
               )}
             </div>
 
-            <div className="flex rounded-full border border-[#CFC5B8] p-1">
+            <div className="flex rounded-full border border-border p-1">
 
               <button
                 onClick={() => setSearchType("all")}
-                className={`${inter.className} rounded-full px-5 py-2 text-xs font-medium transition ${
+                className={`${bodyFont} rounded-full px-5 py-2 text-xs font-medium transition ${
                   searchType === "all"
-                    ? "bg-[#053400] text-white"
-                    : "text-[#70655C] hover:text-[#053400]"
+                    ? "bg-brand-900 text-white"
+                    : "text-ink-600 hover:text-brand-900"
                 }`}
               >
                 All
               </button>
 
               <button
-                onClick={() => setSearchType("writing")}
-                className={`${inter.className} rounded-full px-5 py-2 text-xs font-medium transition ${
-                  searchType === "writing"
-                    ? "bg-[#053400] text-white"
-                    : "text-[#70655C] hover:text-[#053400]"
+                onClick={() => setSearchType("journal")}
+                className={`${bodyFont} rounded-full px-5 py-2 text-xs font-medium transition ${
+                  searchType === "journal"
+                    ? "bg-brand-900 text-white"
+                    : "text-ink-600 hover:text-brand-900"
                 }`}
               >
-                Writing
+                Journal
               </button>
 
               <button
                 onClick={() => setSearchType("writers")}
-                className={`${inter.className} rounded-full px-5 py-2 text-xs font-medium transition ${
+                className={`${bodyFont} rounded-full px-5 py-2 text-xs font-medium transition ${
                   searchType === "writers"
-                    ? "bg-[#053400] text-white"
-                    : "text-[#70655C] hover:text-[#053400]"
+                    ? "bg-brand-900 text-white"
+                    : "text-ink-600 hover:text-brand-900"
                 }`}
               >
                 Writers
@@ -244,7 +277,7 @@ export default function ExplorePage() {
             {[0, 1, 2].map((i) => (
               <div
                 key={i}
-                className="h-20 animate-pulse rounded-lg bg-[#EFE8DC]"
+                className="h-20 animate-pulse rounded-lg bg-skeleton"
               />
             ))}
           </div>
@@ -252,15 +285,15 @@ export default function ExplorePage() {
 
         {/* ERROR */}
         {!loading && error && (
-          <div className="border-b border-[#DCD4C9] py-10">
+          <div className="border-b border-border py-10">
             <p
-              className={`${inter.className} text-sm text-red-600`}
+              className={`${bodyFont} text-sm text-red-600`}
             >
               Something went wrong:
             </p>
 
             <p
-              className={`${inter.className} mt-2 text-sm text-[#70655C]`}
+              className={`${bodyFont} mt-2 text-sm text-ink-600`}
             >
               {error}
             </p>
@@ -271,49 +304,75 @@ export default function ExplorePage() {
         {!loading && !error && (
           <div className="mt-10">
 
-            {/* WRITING */}
-            {(searchType === "all" || searchType === "writing") && (
+            {/* JOURNAL */}
+            {(searchType === "all" || searchType === "journal") && (
               <section className="mb-16">
 
-                <div className="mb-6 flex items-center justify-between border-b border-[#DCD4C9] pb-5">
+                <div className="mb-6 flex flex-wrap items-center justify-between gap-4 border-b border-border pb-5">
                   <h2
-                    className={`${poppins.className} text-3xl font-medium`}
+                    className={`${headingFont} text-3xl font-medium`}
                   >
-                    Writing
+                    Journal
                   </h2>
 
-                  <span
-                    className={`${inter.className} text-sm text-[#81766D]`}
-                  >
-                    {filteredArticles.length}{" "}
-                    {filteredArticles.length === 1
-                      ? "piece"
-                      : "pieces"}
-                  </span>
+                  <div className="flex items-center gap-4">
+                    <span
+                      className={`${bodyFont} text-sm text-ink-400`}
+                    >
+                      {filteredArticles.length}{" "}
+                      {filteredArticles.length === 1
+                        ? "piece"
+                        : "pieces"}
+                    </span>
+
+                    <div className="flex rounded-full border border-border p-1">
+                      <button
+                        onClick={() => setSortMode("newest")}
+                        className={`${bodyFont} rounded-full px-4 py-1.5 text-xs font-medium transition ${
+                          sortMode === "newest"
+                            ? "bg-brand-900 text-white"
+                            : "text-ink-600 hover:text-brand-900"
+                        }`}
+                      >
+                        Newest
+                      </button>
+
+                      <button
+                        onClick={() => setSortMode("top")}
+                        className={`${bodyFont} rounded-full px-4 py-1.5 text-xs font-medium transition ${
+                          sortMode === "top"
+                            ? "bg-brand-900 text-white"
+                            : "text-ink-600 hover:text-brand-900"
+                        }`}
+                      >
+                        Top
+                      </button>
+                    </div>
+                  </div>
                 </div>
 
                 {filteredArticles.length === 0 ? (
                   <p
-                    className={`${inter.className} py-8 text-sm text-[#81766D]`}
+                    className={`${bodyFont} py-8 text-sm text-ink-400`}
                   >
                     {search
-                      ? `No writing found for "${search}".`
-                      : "No published writing yet."}
+                      ? `No Journal pieces found for "${search}".`
+                      : "No Journal pieces published yet."}
                   </p>
                 ) : (
                   <div className="space-y-3">
 
-                    {filteredArticles.map((article, index) => {
+                    {sortedArticles.map((article, index) => {
                       const writer = article.is_anonymous
                         ? null
                         : getWriter(article.user_id);
                       const genreColor = getGenreColor(article.type);
 
                       return (
-                        <div
+                        <Card
                           key={article.id}
                           style={{ animationDelay: `${index * 70}ms` }}
-                          className={`animate-fade-in-up group flex items-start gap-5 rounded-xl border border-[#DCD4C9] border-t-4 ${genreColor.cardBorder} bg-[#E9E2D8] p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md md:gap-8`}
+                          className={`animate-fade-in-up group flex items-start gap-5 border-t-4 ${genreColor.cardBorder} p-6 md:gap-8`}
                         >
 
                           <CoverImage
@@ -331,7 +390,7 @@ export default function ExplorePage() {
                               className="min-w-0 flex-1"
                             >
                               <span
-                                className={`${inter.className} inline-block rounded-full ${genreColor.badgeBg} px-3 py-1 text-[11px] font-medium uppercase tracking-[0.15em] ${genreColor.badgeText}`}
+                                className={`${bodyFont} inline-block rounded-full ${genreColor.badgeBg} px-3 py-1 text-[11px] font-medium uppercase tracking-[0.15em] ${genreColor.badgeText}`}
                               >
                                 {article.type === "story"
                                   ? "Short Story"
@@ -339,15 +398,28 @@ export default function ExplorePage() {
                               </span>
 
                               <h3
-                                className={`${poppins.className} mt-2 text-2xl font-medium text-[#46382F] transition group-hover:text-[#053400]`}
+                                className={`${headingFont} mt-2 text-2xl font-medium text-ink-900 transition group-hover:text-brand-900`}
                               >
                                 {article.title}
                               </h3>
 
                               <span
-                                className={`${inter.className} mt-1 block text-xs text-[#70655C]`}
+                                className={`${bodyFont} mt-1 flex items-center gap-1.5 text-xs text-ink-600`}
                               >
                                 {estimateReadingTime(article.content)} min read
+
+                                <span className="text-gold-600">·</span>
+
+                                <span className="inline-flex items-center gap-1">
+                                  <svg
+                                    viewBox="0 0 24 24"
+                                    className="h-3 w-3"
+                                    fill="currentColor"
+                                  >
+                                    <path d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.099 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
+                                  </svg>
+                                  {likeCount(article)}
+                                </span>
                               </span>
                             </Link>
 
@@ -369,19 +441,19 @@ export default function ExplorePage() {
                                           className="h-10 w-10 rounded-full object-cover transition hover:opacity-80"
                                         />
                                       ) : (
-                                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#053400] text-xs font-medium text-white">
+                                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-900 text-xs font-medium text-white">
                                           {(writer.display_name || "W")[0].toUpperCase()}
                                         </div>
                                       )}
                                     </Link>
 
                                     <span
-                                      className={`${inter.className} text-sm text-[#81766D]`}
+                                      className={`${bodyFont} text-sm text-ink-400`}
                                     >
                                       By{" "}
                                       <Link
                                         href={`/writers/${writer.id}`}
-                                        className="text-[#42614A] hover:text-[#053400]"
+                                        className="text-brand-600 hover:text-brand-900"
                                       >
                                         {writer.display_name || "Qalam Writer"}
                                       </Link>
@@ -389,12 +461,12 @@ export default function ExplorePage() {
                                   </>
                                 ) : (
                                   <>
-                                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#053400] text-xs font-medium text-white">
+                                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-900 text-xs font-medium text-white">
                                       Q
                                     </div>
 
                                     <span
-                                      className={`${inter.className} text-sm text-[#81766D]`}
+                                      className={`${bodyFont} text-sm text-ink-400`}
                                     >
                                       By Anonymous
                                     </span>
@@ -406,7 +478,7 @@ export default function ExplorePage() {
                               {/* ARROW */}
                               <Link
                                 href={`/journal/${article.id}`}
-                                className={`${inter.className} shrink-0 text-lg text-[#81766D] transition hover:text-[#053400]`}
+                                className={`${bodyFont} shrink-0 text-lg text-ink-400 transition hover:text-brand-900`}
                               >
                                 →
                               </Link>
@@ -415,7 +487,7 @@ export default function ExplorePage() {
 
                           </div>
 
-                        </div>
+                        </Card>
                       );
                     })}
 
@@ -429,17 +501,17 @@ export default function ExplorePage() {
             {(searchType === "all" || searchType === "writers") && (
               <section>
 
-                <div className="mb-6 flex items-center justify-between border-b border-[#DCD4C9] pb-5">
+                <div className="mb-6 flex items-center justify-between border-b border-border pb-5">
 
                   <h2
-                    className={`${poppins.className} text-3xl font-medium`}
+                    className={`${headingFont} text-3xl font-medium`}
                   >
                     Writers
                   </h2>
 
                   <Link
                     href="/writers"
-                    className={`${inter.className} text-xs font-medium text-[#81766D] transition hover:text-[#053400]`}
+                    className={`${bodyFont} text-xs font-medium text-ink-400 transition hover:text-brand-900`}
                   >
                     VIEW ALL →
                   </Link>
@@ -448,7 +520,7 @@ export default function ExplorePage() {
 
                 {filteredWriters.length === 0 ? (
                   <p
-                    className={`${inter.className} py-8 text-sm text-[#81766D]`}
+                    className={`${bodyFont} py-8 text-sm text-ink-400`}
                   >
                     {search
                       ? `No writers found for "${search}".`
@@ -458,10 +530,10 @@ export default function ExplorePage() {
                   <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
 
                     {filteredWriters.map((writer) => (
-                      <Link
+                      <CardLink
                         key={writer.id}
                         href={`/writers/${writer.id}`}
-                        className="group rounded-xl border border-[#DCD4C9] bg-[#E9E2D8] p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-[#053400]/30 hover:shadow-md"
+                        className="p-6 hover:border-brand-900/30"
                       >
 
                         <div className="flex items-center gap-4">
@@ -475,13 +547,13 @@ export default function ExplorePage() {
                               className="h-14 w-14 rounded-full object-cover transition group-hover:opacity-90"
                             />
                           ) : (
-                            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[#053400] text-lg font-medium text-white">
+                            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-brand-900 text-lg font-medium text-white">
                               {(writer.display_name || "W")[0].toUpperCase()}
                             </div>
                           )}
 
                           <h3
-                            className={`${poppins.className} text-lg font-medium transition group-hover:text-[#053400]`}
+                            className={`${headingFont} text-lg font-medium transition group-hover:text-brand-900`}
                           >
                             {writer.display_name || "Qalam Writer"}
                           </h3>
@@ -490,13 +562,13 @@ export default function ExplorePage() {
 
                         {writer.bio && (
                           <p
-                            className={`${inter.className} mt-5 line-clamp-3 text-sm leading-6 text-[#70655C]`}
+                            className={`${bodyFont} mt-5 line-clamp-3 text-sm leading-6 text-ink-600`}
                           >
                             {writer.bio}
                           </p>
                         )}
 
-                      </Link>
+                      </CardLink>
                     ))}
 
                   </div>

@@ -37,10 +37,12 @@ export default function RichTextEditor({
       attributes: {
         dir: "auto",
         class:
-  "prose prose-lg max-w-none min-h-[70vh] rounded-xl p-4 outline-none focus:outline-none " +
+  "prose prose-lg max-w-none min-h-[70vh] rounded-xl p-4 outline-none focus:outline-none font-[family-name:var(--font-body)] " +
   "[&_h1]:text-4xl [&_h1]:font-bold [&_h1]:mt-6 [&_h1]:mb-4 " +
   "[&_h2]:text-3xl [&_h2]:font-bold [&_h2]:mt-5 [&_h2]:mb-3 " +
   "[&_h3]:text-2xl [&_h3]:font-semibold [&_h3]:mt-4 [&_h3]:mb-2 " +
+  "[&_h1]:font-[family-name:var(--font-heading)] [&_h2]:font-[family-name:var(--font-heading)] [&_h3]:font-[family-name:var(--font-heading)] " +
+  "[&_h1]:text-ink-900 [&_h2]:text-ink-900 [&_h3]:text-ink-900 " +
   "[&_ul]:list-disc [&_ul]:pl-6 " +
   "[&_ol]:list-decimal [&_ol]:pl-6",
       },
@@ -64,7 +66,7 @@ export default function RichTextEditor({
   if (!editor) return null;
 
   return (
-    <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+    <div className="overflow-hidden rounded-xl border border-border bg-white shadow-sm">
       <EditorToolbar editor={editor} />
 
       <EditorContent editor={editor} />

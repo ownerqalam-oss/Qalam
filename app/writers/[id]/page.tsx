@@ -3,19 +3,16 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { Poppins, Inter } from "next/font/google";
 import { supabase } from "../../../lib/supabase/client";
 import { useToast } from "../../../components/ToastProvider";
+import { estimateReadingTime } from "../../../lib/readingTime";
+import { getGenreColor } from "../../../lib/genreColors";
+import InkFlourish from "../../../components/InkFlourish";
+import CoverImage from "../../../components/CoverImage";
+import { Button, ButtonLink } from "../../../components/ui/Button";
 
-const poppins = Poppins({
-  weight: ["400", "500", "600", "700"],
-  subsets: ["latin"],
-});
-
-const inter = Inter({
-  weight: ["400", "500", "600"],
-  subsets: ["latin"],
-});
+const headingFont = "font-[family-name:var(--font-heading)]";
+const bodyFont = "font-[family-name:var(--font-body)]";
 
 interface Profile {
   id: string;
@@ -27,7 +24,12 @@ interface Profile {
 interface Article {
   id: string;
   title: string;
+  content: string;
+  type: string;
+  tags: string[] | null;
+  published_at: string | null;
   is_anonymous: boolean;
+  cover_image_url: string | null;
 }
 
 export default function WriterPage() {
@@ -159,7 +161,9 @@ export default function WriterPage() {
      */
     let articleQuery = supabase
       .from("drafts")
-      .select("id, title, is_anonymous")
+      .select(
+        "id, title, content, type, tags, published_at, is_anonymous, cover_image_url"
+      )
       .eq("user_id", id)
       .eq("status", "published");
 
@@ -188,7 +192,7 @@ export default function WriterPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-[#F7F1E8] px-8 py-20 text-[#46382F]">
+      <main className="min-h-screen bg-cream px-8 py-20 text-ink-900">
         Loading...
       </main>
     );
@@ -196,100 +200,93 @@ export default function WriterPage() {
 
   if (!profile) {
     return (
-      <main className="min-h-screen bg-[#F7F1E8] px-8 py-20 text-[#46382F]">
+      <main className="min-h-screen bg-cream px-8 py-20 text-ink-900">
         <div className="mx-auto max-w-4xl">
-          <h1 className={`${poppins.className} text-4xl`}>
+          <h1 className={`${headingFont} text-4xl`}>
             Writer not found
           </h1>
 
-          <Link
-            href="/writers"
-            className={`${inter.className} mt-6 inline-block text-[#053400]`}
-          >
+          <ButtonLink href="/writers" variant="secondary" className={`${bodyFont} mt-6`}>
             ← Back to Writers
-          </Link>
+          </ButtonLink>
         </div>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-[#F7F1E8] text-[#46382F]">
+    <main className="min-h-screen bg-cream text-ink-900">
       <div className="mx-auto max-w-[1180px] px-8 py-16">
 
         {/* BACK */}
-        <Link
-          href="/writers"
-          className={`${inter.className} text-sm text-[#81766D] hover:text-[#053400]`}
-        >
+        <ButtonLink href="/writers" variant="secondary" className={bodyFont}>
           ← Back to Writers
-        </Link>
+        </ButtonLink>
 
         {/* PROFILE */}
-        <section className="mt-12 border-b border-[#DCD4C9] pb-12">
-          <div className="flex items-center gap-6">
+        <section className="mt-8 rounded-2xl border border-border bg-cream-card p-8">
+          <div className="flex flex-col items-center gap-6 text-center sm:flex-row sm:items-center sm:text-left">
 
             {/* PROFILE PICTURE */}
             {profile.avatar_url ? (
               <button
                 type="button"
                 onClick={() => setShowAvatar(true)}
-                className="cursor-zoom-in rounded-full focus:outline-none"
+                className="cursor-zoom-in shrink-0 rounded-full focus:outline-none"
                 aria-label="View profile picture"
               >
                 <img
                   src={profile.avatar_url}
                   alt={profile.display_name || "Writer"}
-                  className="h-24 w-24 rounded-full object-cover transition hover:opacity-90"
+                  className="h-24 w-24 rounded-full object-cover shadow-sm transition hover:opacity-90"
                 />
               </button>
             ) : (
-              <div className="flex h-24 w-24 items-center justify-center rounded-full bg-[#053400] text-white">
-                <span className={`${poppins.className} text-3xl`}>
+              <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-full bg-brand-900 text-white shadow-sm">
+                <span className={`${headingFont} text-3xl`}>
                   {profile.display_name?.charAt(0).toUpperCase() || "Q"}
                 </span>
               </div>
             )}
 
-            <div>
+            <div className="min-w-0 flex-1">
               <p
-                className={`${inter.className} text-[11px] font-medium uppercase tracking-[0.3em] text-[#42614A]`}
+                className={`${bodyFont} text-[11px] font-medium uppercase tracking-[0.3em] text-brand-600`}
               >
-                QALAM WRITER
+                Qalam Writer
               </p>
 
               <h1
-                className={`${poppins.className} mt-2 text-4xl font-medium text-[#053400] md:text-5xl`}
+                className={`${headingFont} mt-2 text-4xl font-medium text-brand-900 md:text-5xl`}
               >
                 {profile.display_name || "Qalam Writer"}
               </h1>
 
-              <p className={`${inter.className} mt-2 text-sm text-[#81766D]`}>
+              <InkFlourish className="mx-auto mt-3 w-[70px] sm:mx-0" />
+
+              <p className={`${bodyFont} mt-4 text-sm text-ink-400`}>
                 {followerCount} {followerCount === 1 ? "follower" : "followers"}
-                <span className="text-[#B8860B]"> · </span>
+                <span className="text-gold-600"> · </span>
                 Written {articles.length}{" "}
                 {articles.length === 1 ? "piece" : "pieces"}
               </p>
             </div>
 
             {currentUserId !== id && (
-              <button
+              <Button
                 onClick={toggleFollow}
                 aria-pressed={isFollowing}
-                className={`${inter.className} ml-auto shrink-0 rounded-full px-6 py-2.5 text-sm font-medium transition active:scale-95 ${
-                  isFollowing
-                    ? "border border-[#DCD4C9] text-[#46382F] hover:border-[#053400]"
-                    : "bg-[#053400] text-white hover:bg-[#0B4D2B]"
-                }`}
+                variant={isFollowing ? "secondary" : "primary"}
+                className={`${bodyFont} shrink-0`}
               >
                 {isFollowing ? "Following" : "Follow"}
-              </button>
+              </Button>
             )}
           </div>
 
           {profile.bio && (
             <p
-              className={`${inter.className} mt-7 max-w-2xl text-[15px] leading-7 text-[#70655C]`}
+              className={`${bodyFont} mt-7 max-w-2xl text-[15px] leading-7 text-ink-600`}
             >
               {profile.bio}
             </p>
@@ -297,17 +294,21 @@ export default function WriterPage() {
         </section>
 
         {/* WRITING */}
-        <section className="mt-12">
+        <section className="mt-14">
 
-          <div className="flex items-center justify-between border-b border-[#DCD4C9] pb-6">
-            <h2
-              className={`${poppins.className} text-3xl font-medium`}
-            >
-              Writing
-            </h2>
+          <div className="mb-6 flex items-end justify-between border-b border-border pb-5">
+            <div>
+              <h2
+                className={`${headingFont} text-3xl font-medium text-brand-900`}
+              >
+                Journal
+              </h2>
+
+              <InkFlourish className="mt-2 w-[70px]" />
+            </div>
 
             <span
-              className={`${inter.className} text-sm text-[#81766D]`}
+              className={`${bodyFont} text-sm text-ink-400`}
             >
               {articles.length}{" "}
               {articles.length === 1 ? "piece" : "pieces"}
@@ -316,43 +317,113 @@ export default function WriterPage() {
 
           {articles.length === 0 ? (
             <p
-              className={`${inter.className} py-10 text-sm text-[#81766D]`}
+              className={`${bodyFont} py-10 text-sm text-ink-400`}
             >
-              No published writing yet.
+              No Journal pieces published yet.
             </p>
           ) : (
-            <div className="divide-y divide-[#DCD4C9]">
+            <div className="space-y-4">
+              {articles.map((article, index) => {
+                const genreColor = getGenreColor(article.type);
 
-              {articles.map((article) => (
-                <Link
-                  key={article.id}
-                  href={`/journal/${article.id}`}
-                  className="group block py-8"
-                >
-                  <p
-                    className={`${inter.className} text-[11px] font-medium uppercase tracking-[0.2em] text-[#42614A]`}
+                return (
+                  <div
+                    key={article.id}
+                    style={{ animationDelay: `${index * 70}ms` }}
+                    className={`animate-fade-in-up group rounded-xl border border-border border-t-4 ${genreColor.cardBorder} bg-cream-card p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md`}
                   >
-                    {article.is_anonymous
-                      ? "ANONYMOUS PUBLICATION"
-                      : "QALAM"}
-                  </p>
+                    <div className="flex items-start gap-5">
 
-                  <h3
-                    className={`${poppins.className} mt-2 text-2xl font-medium group-hover:text-[#053400]`}
-                  >
-                    {article.title}
-                  </h3>
+                      <Link href={`/journal/${article.id}`} className="shrink-0">
+                        <CoverImage
+                          src={article.cover_image_url}
+                          type={article.type}
+                          alt={article.title}
+                          className="h-20 w-20 rounded-lg sm:h-24 sm:w-24"
+                        />
+                      </Link>
 
-                  {article.is_anonymous && (
-                    <p
-                      className={`${inter.className} mt-2 text-xs text-[#81766D]`}
-                    >
-                      Visible only to you on your profile
-                    </p>
-                  )}
-                </Link>
-              ))}
+                      <div className="min-w-0 flex-1">
+                        <span
+                          className={`${bodyFont} inline-block rounded-full ${genreColor.badgeBg} px-3 py-1 text-[11px] font-medium uppercase tracking-[0.15em] ${genreColor.badgeText}`}
+                        >
+                          {article.type === "story"
+                            ? "Short Story"
+                            : article.type}
+                        </span>
 
+                        <Link href={`/journal/${article.id}`}>
+                          <h3
+                            className={`${headingFont} mt-2 text-2xl font-medium text-ink-900 transition group-hover:text-brand-900`}
+                          >
+                            {article.title}
+                          </h3>
+                        </Link>
+
+                        <div className="mt-4 flex items-center gap-2.5">
+                          {!article.is_anonymous && profile.avatar_url ? (
+                            <img
+                              src={profile.avatar_url}
+                              alt={profile.display_name || "Writer"}
+                              className="h-7 w-7 rounded-full object-cover"
+                            />
+                          ) : (
+                            <div
+                              className={`${headingFont} flex h-7 w-7 items-center justify-center rounded-full bg-brand-900 text-[11px] font-medium text-white`}
+                            >
+                              {article.is_anonymous
+                                ? "Q"
+                                : (profile.display_name || "Q")[0].toUpperCase()}
+                            </div>
+                          )}
+
+                          <span
+                            className={`${bodyFont} text-[13px] text-ink-600`}
+                          >
+                            {article.is_anonymous
+                              ? "Anonymous"
+                              : profile.display_name || "Qalam Writer"}
+                            <span className="text-gold-600"> · </span>
+                            {article.published_at
+                              ? new Date(
+                                  article.published_at
+                                ).toLocaleDateString("en-GB", {
+                                  day: "numeric",
+                                  month: "short",
+                                })
+                              : ""}
+                            <span className="text-gold-600"> · </span>
+                            {estimateReadingTime(article.content)} min read
+                          </span>
+                        </div>
+
+                        {article.is_anonymous && (
+                          <p
+                            className={`${bodyFont} mt-2 text-xs text-ink-400`}
+                          >
+                            Published anonymously · visible only to you here
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    {article.tags && article.tags.length > 0 && (
+                      <div className="mt-4 flex flex-wrap gap-2 pl-[100px]">
+                        {article.tags.map((tag) => (
+                          <Link
+                            key={tag}
+                            href={`/journal?tag=${encodeURIComponent(tag)}`}
+                            onClick={(event) => event.stopPropagation()}
+                            className={`${bodyFont} rounded-full bg-border px-3 py-1 text-xs text-ink-900 transition hover:bg-brand-900 hover:text-white`}
+                          >
+                            #{tag}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
 

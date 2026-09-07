@@ -1,23 +1,17 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Poppins, Inter } from "next/font/google";
 import { supabase } from "../../lib/supabase/client";
 import RichTextEditor from "../../components/RichTextEditor";
 import { useToast } from "../../components/ToastProvider";
 import AyahLoader from "../../components/AyahLoader";
+import { Button, ButtonLink } from "../../components/ui/Button";
+import PublishModal from "../../components/PublishModal";
+import { prompts, getRandomPrompt } from "../../lib/prompts";
 
-const poppins = Poppins({
-  weight: ["400", "500", "600", "700"],
-  subsets: ["latin"],
-});
-
-const inter = Inter({
-  weight: ["400", "500", "600"],
-  subsets: ["latin"],
-});
+const headingFont = "font-[family-name:var(--font-heading)]";
+const bodyFont = "font-[family-name:var(--font-body)]";
 
 export default function EditorContent() {
   const router = useRouter();
@@ -43,7 +37,18 @@ export default function EditorContent() {
 
   const [loading, setLoading] = useState(true);
 
+  const [publishModalOpen, setPublishModalOpen] = useState(false);
+  const [publishing, setPublishing] = useState(false);
+
+  const [promptIndex, setPromptIndex] = useState(0);
+  const [promptDismissed, setPromptDismissed] = useState(false);
+
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    const id = setTimeout(() => setPromptIndex(getRandomPrompt()), 0);
+    return () => clearTimeout(id);
+  }, []);
 
   /*
    * Load existing draft
@@ -85,16 +90,21 @@ export default function EditorContent() {
   }, [draftId]);
 
   /*
-   * Save draft
+   * Save draft.
+   *
+   * Returns the draft id (existing or newly created) so callers
+   * that need to chain a follow-up action (like submitting for
+   * review) don't have to rely on the `draftId` state, which
+   * wouldn't have flushed yet in the same tick.
    */
-  async function saveDraft() {
-    if (draftStatus === "submitted") return;
+  async function saveDraft(): Promise<string | null> {
+    if (draftStatus === "submitted") return draftId;
 
     const {
       data: { user },
     } = await supabase.auth.getUser();
 
-    if (!user) return;
+    if (!user) return null;
 
     setStatus("Saving...");
 
@@ -123,11 +133,11 @@ export default function EditorContent() {
       if (error) {
         showToast(error.message, "error");
         setStatus("Error");
-        return;
+        return null;
       }
 
       setStatus("Saved");
-      return;
+      return draftId;
     }
 
     /*
@@ -150,7 +160,7 @@ export default function EditorContent() {
     if (error) {
       showToast(error.message, "error");
       setStatus("Error");
-      return;
+      return null;
     }
 
     setDraftId(data.id);
@@ -162,24 +172,20 @@ export default function EditorContent() {
     );
 
     setStatus("Saved");
+    return data.id;
   }
 
   /*
    * Submit for review
    */
-  async function submitForReview() {
-    if (!draftId) {
-      showToast("Please save your draft first.", "error");
-      return;
-    }
-
+  async function submitForReview(id: string) {
     const { error } = await supabase
       .from("drafts")
       .update({
         status: "submitted",
         submitted_at: new Date().toISOString(),
       })
-      .eq("id", draftId);
+      .eq("id", id);
 
     if (error) {
       showToast(error.message, "error");
@@ -187,8 +193,40 @@ export default function EditorContent() {
     }
 
     setDraftStatus("submitted");
+    setPublishModalOpen(false);
     showToast("Submitted for review! You'll find it under Pending Review on your dashboard.", "success");
     router.push("/dashboard");
+  }
+
+  /*
+   * Publish button - open the details modal, saving first if this
+   * is a brand new draft with nothing persisted yet.
+   */
+  async function handlePublishClick() {
+    if (!title.trim() && !content.trim()) {
+      showToast("Write something first.", "error");
+      return;
+    }
+
+    if (!draftId) {
+      await saveDraft();
+    }
+
+    setPublishModalOpen(true);
+  }
+
+  async function handleConfirmPublish() {
+    setPublishing(true);
+
+    const id = await saveDraft();
+
+    if (!id) {
+      setPublishing(false);
+      return;
+    }
+
+    await submitForReview(id);
+    setPublishing(false);
   }
 
   /*
@@ -285,57 +323,71 @@ export default function EditorContent() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-[#F7F1E8]">
+      <main className="min-h-screen bg-cream">
         <AyahLoader />
       </main>
     );
   }
 
+  const showPrompt =
+    !promptDismissed && !title.trim() && !content.trim() && draftStatus !== "submitted";
+
   return (
-    <main className="min-h-screen bg-[#F7F1E8] text-[#46382F]">
+    <main className="min-h-screen bg-cream text-ink-900">
       <div className="mx-auto max-w-4xl px-6 py-12 md:px-8">
 
         {/* TOP BAR */}
         <div className="mb-10 flex flex-wrap items-center justify-between gap-4">
 
-          <Link
-            href="/dashboard"
-            className={`${inter.className} text-sm text-[#81766D] transition hover:text-[#053400]`}
-          >
+          <ButtonLink href="/dashboard" variant="secondary" className={bodyFont}>
             ← Dashboard
-          </Link>
+          </ButtonLink>
 
           <div className="flex items-center gap-3">
 
             <span
-              className={`${inter.className} rounded-full px-3 py-1 text-xs capitalize ${
+              className={`${bodyFont} rounded-full px-3 py-1 text-xs capitalize ${
                 draftStatus === "rejected"
                   ? "bg-red-100 text-red-700"
-                  : "bg-[#E4EDE6] text-[#2E5138]"
+                  : "bg-brand-100 text-brand-800"
               }`}
             >
               {draftStatus}
             </span>
 
-            <span className={`${inter.className} text-sm text-[#81766D]`}>
+            <span
+              className={`${bodyFont} flex items-center gap-1.5 text-sm ${
+                status === "Saved"
+                  ? "text-brand-700"
+                  : status === "Error"
+                  ? "text-danger-600"
+                  : "text-ink-400"
+              }`}
+            >
+              {status === "Saved" && (
+                <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              )}
               {status}
             </span>
 
-            <button
+            <Button
+              variant="secondary"
               onClick={saveDraft}
               disabled={draftStatus === "submitted"}
-              className={`${inter.className} rounded-full border border-[#DCD4C9] px-5 py-2 text-sm font-medium text-[#46382F] transition hover:border-[#053400] disabled:opacity-50`}
+              className={bodyFont}
             >
               Save
-            </button>
+            </Button>
 
-            <button
-              onClick={submitForReview}
-              disabled={!draftId || draftStatus === "submitted"}
-              className={`${inter.className} rounded-full bg-[#053400] px-5 py-2 text-sm font-medium text-white transition hover:bg-[#0B4D2B] active:scale-95 disabled:opacity-50`}
+            <Button
+              onClick={handlePublishClick}
+              disabled={draftStatus === "submitted"}
+              className={bodyFont}
             >
-              Submit
-            </button>
+              Publish
+            </Button>
 
           </div>
         </div>
@@ -350,134 +402,53 @@ export default function EditorContent() {
           </div>
         )}
 
-        {/* TYPE */}
-        <select
-          value={type}
-          disabled={draftStatus === "submitted"}
-          onChange={(e) => setType(e.target.value)}
-          className={`${inter.className} mb-6 rounded-lg border border-[#DCD4C9] bg-white px-4 py-2 text-sm text-[#46382F] outline-none focus:border-[#053400]`}
-        >
-          <option value="article">Article</option>
-          <option value="reflection">Reflection</option>
-          <option value="poetry">Poetry</option>
-          <option value="story">Short Story</option>
-        </select>
-
-
-        {/* TAGS */}
-        <input
-          value={tags}
-          onChange={(e) => setTags(e.target.value)}
-          disabled={draftStatus === "submitted"}
-          placeholder="Tags (e.g. History, Palestine, Seerah)"
-          className={`${inter.className} mb-6 w-full rounded-lg border border-[#DCD4C9] bg-white px-4 py-2 text-sm outline-none focus:border-[#053400]`}
-        />
-
-
-        {/* COVER IMAGE */}
-        <div className="mb-6">
-          <label
-            htmlFor="cover-upload"
-            className={`relative flex h-48 w-full items-center justify-center overflow-hidden rounded-xl border border-dashed border-[#DCD4C9] bg-white transition hover:border-[#053400] ${
-              draftStatus === "submitted" || uploadingCover
-                ? "pointer-events-none opacity-50"
-                : "cursor-pointer"
-            }`}
-          >
-            {coverImageUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={coverImageUrl}
-                alt="Cover"
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <span className={`${inter.className} text-sm text-[#81766D]`}>
-                {uploadingCover
-                  ? "Uploading..."
-                  : "Add a cover image (optional)"}
-              </span>
-            )}
-          </label>
-
-          <input
-            id="cover-upload"
-            type="file"
-            accept="image/*"
-            onChange={uploadCoverImage}
-            className="hidden"
-            disabled={draftStatus === "submitted" || uploadingCover}
-          />
-
-          {coverImageUrl && (
-            <button
-              type="button"
-              onClick={() => setCoverImageUrl(null)}
-              disabled={draftStatus === "submitted"}
-              className={`${inter.className} mt-2 text-xs text-red-600 transition hover:underline disabled:opacity-50`}
-            >
-              Remove cover image
-            </button>
-          )}
-        </div>
-
-
         {/* TITLE */}
         <input
           value={title}
           disabled={draftStatus === "submitted"}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Untitled"
-          className={`${poppins.className} mb-8 w-full border-none bg-transparent text-5xl font-medium text-[#053400] outline-none placeholder:text-[#B8AF9F] md:text-6xl`}
+          className={`${headingFont} mb-4 w-full border-none bg-transparent text-5xl font-medium text-brand-900 outline-none placeholder:text-[#B8AF9F] md:text-6xl`}
         />
 
+        {/* PROMPT */}
+        {showPrompt && (
+          <div className="mb-8 flex items-start justify-between gap-4 rounded-xl border border-border bg-cream-card px-5 py-4">
+            <div>
+              <p className={`${bodyFont} text-xs font-medium uppercase tracking-[0.2em] text-brand-600`}>
+                Feeling stuck?
+              </p>
 
-        {/* ANONYMOUS OPTION */}
-        <div className="mb-8 flex items-center justify-between rounded-xl border border-[#DCD4C9] bg-white px-5 py-4">
+              <p className={`${bodyFont} mt-2 text-[15px] leading-6 text-ink-900`}>
+                {prompts[promptIndex]}
+              </p>
+            </div>
 
-          <div>
-            <p className={`${inter.className} text-sm font-medium text-[#46382F]`}>
-              Publish anonymously
-            </p>
+            <div className="flex shrink-0 items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setPromptIndex((current) => getRandomPrompt(current))}
+                className={`${bodyFont} text-xs font-medium text-brand-900 transition hover:underline`}
+              >
+                Another →
+              </button>
 
-            <p className={`${inter.className} mt-1 max-w-xl text-xs leading-5 text-[#81766D]`}>
-              Your name will not be shown publicly with this article.
-              You will still be able to see the article on your own profile.
-            </p>
+              <button
+                type="button"
+                onClick={() => setPromptDismissed(true)}
+                aria-label="Dismiss prompt"
+                className="text-ink-400 transition hover:text-ink-900"
+              >
+                ×
+              </button>
+            </div>
           </div>
-
-          <button
-            type="button"
-            disabled={draftStatus === "submitted"}
-            onClick={() => setIsAnonymous((current) => !current)}
-            aria-label="Toggle anonymous publication"
-            aria-pressed={isAnonymous}
-            className={`relative h-6 w-11 shrink-0 rounded-full transition ${
-              isAnonymous
-                ? "bg-[#053400]"
-                : "bg-[#DCD4C9]"
-            } ${
-              draftStatus === "submitted"
-                ? "cursor-not-allowed opacity-50"
-                : ""
-            }`}
-          >
-            <span
-              className={`absolute top-1 h-4 w-4 rounded-full bg-white shadow-sm transition ${
-                isAnonymous
-                  ? "left-6"
-                  : "left-1"
-              }`}
-            />
-          </button>
-
-        </div>
-
+        )}
 
         {/* EDITOR */}
         {draftStatus === "submitted" ? (
 
-          <div className={`${inter.className} rounded-xl border border-yellow-300 bg-yellow-50 p-6 text-yellow-800`}>
+          <div className={`${bodyFont} rounded-xl border border-yellow-300 bg-yellow-50 p-6 text-yellow-800`}>
             This article has been submitted for review and can no longer be edited.
           </div>
 
@@ -491,6 +462,23 @@ export default function EditorContent() {
         )}
 
       </div>
+
+      <PublishModal
+        open={publishModalOpen}
+        type={type}
+        onTypeChange={setType}
+        tags={tags}
+        onTagsChange={setTags}
+        isAnonymous={isAnonymous}
+        onToggleAnonymous={() => setIsAnonymous((current) => !current)}
+        coverImageUrl={coverImageUrl}
+        onCoverUpload={uploadCoverImage}
+        onRemoveCover={() => setCoverImageUrl(null)}
+        uploadingCover={uploadingCover}
+        publishing={publishing}
+        onClose={() => setPublishModalOpen(false)}
+        onConfirm={handleConfirmPublish}
+      />
     </main>
   );
 }

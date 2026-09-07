@@ -3,20 +3,83 @@
 :root {
   --background: #FAF7F2;
   --foreground: #1f2937;
+
+  /* Brand green */
+  --brand-950: #042B00;
+  --brand-900: #053400;
+  --brand-800: #2E5138;
+  --brand-700: #0B4D2B;
+  --brand-600: #42614A;
+  --brand-500: #2E7D4F;
+  --brand-200: #C7DBC9;
+  --brand-100: #E4EDE6;
+  --brand-50: #F3F7F1;
+
+  /* Gold accent */
+  --gold-700: #96690A;
+  --gold-600: #B8860B;
+  --gold-100: #F5E6C8;
+
+  /* Parchment and ink */
+  --cream: #F7F1E8;
+  --cream-card: #E9E2D8;
+  --cream-hover: #F1E7D3;
+  --skeleton: #EFE8DC;
+  --border-color: #DCD4C9;
+  --ink-900: #46382F;
+  --ink-600: #70655C;
+  --ink-400: #81766D;
+
+  /* Genre accents */
+  --rust-600: #B5651D;
+  --mauve-600: #8B5A78;
+
+  /* Semantic */
+  --danger-600: #B3261E;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
 
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-brand-950: var(--brand-950);
+  --color-brand-900: var(--brand-900);
+  --color-brand-800: var(--brand-800);
+  --color-brand-700: var(--brand-700);
+  --color-brand-600: var(--brand-600);
+  --color-brand-500: var(--brand-500);
+  --color-brand-200: var(--brand-200);
+  --color-brand-100: var(--brand-100);
+  --color-brand-50: var(--brand-50);
+
+  --color-gold-700: var(--gold-700);
+  --color-gold-600: var(--gold-600);
+  --color-gold-100: var(--gold-100);
+
+  --color-cream: var(--cream);
+  --color-cream-card: var(--cream-card);
+  --color-cream-hover: var(--cream-hover);
+  --color-skeleton: var(--skeleton);
+  --color-border: var(--border-color);
+  --color-ink-900: var(--ink-900);
+  --color-ink-600: var(--ink-600);
+  --color-ink-400: var(--ink-400);
+
+  --color-rust-600: var(--rust-600);
+  --color-mauve-600: var(--mauve-600);
+
+  --color-danger-600: var(--danger-600);
+
+  --font-sans: var(--font-inter);
+  --font-heading: var(--font-poppins);
+  --font-body: var(--font-inter);
+  --font-arabic: var(--font-amiri);
 }
 
 body {
   background-color: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body), Arial, Helvetica, sans-serif;
 
   /* Paper grain */
   background-image:

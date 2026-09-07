@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Poppins, Inter } from "next/font/google";
 import { supabase } from "../../lib/supabase/client";
 import { useToast } from "../../components/ToastProvider";
 import ConfirmDialog from "../../components/ConfirmDialog";
@@ -11,21 +10,17 @@ import AyahLoader from "../../components/AyahLoader";
 import { getGenreColor } from "../../lib/genreColors";
 import InkFlourish from "../../components/InkFlourish";
 import CoverImage from "../../components/CoverImage";
+import { Button, ButtonLink } from "../../components/ui/Button";
+import { Card } from "../../components/ui/Card";
 
-const poppins = Poppins({
-  weight: ["400", "500", "600", "700"],
-  subsets: ["latin"],
-});
-
-const inter = Inter({
-  weight: ["400", "500", "600"],
-  subsets: ["latin"],
-});
+const headingFont = "font-[family-name:var(--font-heading)]";
+const bodyFont = "font-[family-name:var(--font-body)]";
 
 interface Draft {
   id: string;
   title: string;
   created_at: string;
+  updated_at: string;
   status: string;
   type: string;
   feedback: string | null;
@@ -91,7 +86,7 @@ export default function DashboardPage() {
        */
       const { data: draftData, error: draftError } = await supabase
         .from("drafts")
-        .select("id, title, created_at, status, type, feedback")
+        .select("id, title, created_at, updated_at, status, type, feedback")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
 
@@ -150,8 +145,6 @@ export default function DashboardPage() {
       let resolvedProfile: Profile | null = profileData ?? null;
 
       if (!profileData) {
-        console.log("No profile found. Creating profile...");
-
         const { data: createdProfile, error: createProfileError } =
           await supabase
             .from("profiles")
@@ -181,7 +174,6 @@ export default function DashboardPage() {
             avatar_url: null,
           };
         } else if (createdProfile) {
-          console.log("Profile created successfully.");
           resolvedProfile = createdProfile;
         }
       }
@@ -377,16 +369,25 @@ export default function DashboardPage() {
   }
 
   const pendingDrafts = drafts.filter((draft) => draft.status === "submitted");
-  const otherDrafts = drafts.filter((draft) => draft.status !== "submitted");
+  const publishedDrafts = drafts.filter((draft) => draft.status === "published");
+  const otherDrafts = drafts.filter(
+    (draft) => draft.status !== "submitted" && draft.status !== "published"
+  );
+
+  const continueDraft = [...drafts]
+    .filter((draft) => draft.status === "draft")
+    .sort(
+      (a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+    )[0];
 
   function renderDraftCard(draft: Draft, index: number) {
     const genreColor = getGenreColor(draft.type);
 
     return (
-      <div
+      <Card
         key={draft.id}
         style={{ animationDelay: `${index * 70}ms` }}
-        className={`animate-fade-in-up flex items-center justify-between rounded-xl border border-[#DCD4C9] border-t-4 ${genreColor.cardBorder} bg-[#E9E2D8] p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md`}
+        className={`animate-fade-in-up flex items-center justify-between border-t-4 ${genreColor.cardBorder} p-5`}
       >
 
         <Link
@@ -397,16 +398,16 @@ export default function DashboardPage() {
           <div className="mb-2 flex items-center gap-2">
 
             <span
-              className={`${inter.className} rounded-full ${genreColor.badgeBg} px-3 py-1 text-xs uppercase tracking-wide ${genreColor.badgeText}`}
+              className={`${bodyFont} rounded-full ${genreColor.badgeBg} px-3 py-1 text-xs uppercase tracking-wide ${genreColor.badgeText}`}
             >
               {typeLabel(draft.type)}
             </span>
 
             <span
-              className={`${inter.className} rounded-full px-3 py-1 text-xs capitalize ${
+              className={`${bodyFont} rounded-full px-3 py-1 text-xs capitalize ${
                 draft.status === "rejected"
                   ? "bg-red-100 text-red-700"
-                  : "bg-[#E4EDE6] text-[#2E5138]"
+                  : "bg-brand-100 text-brand-800"
               }`}
             >
               {draft.status}
@@ -415,13 +416,13 @@ export default function DashboardPage() {
           </div>
 
           <h3
-            className={`${poppins.className} text-xl font-medium text-[#46382F]`}
+            className={`${headingFont} text-xl font-medium text-ink-900`}
           >
             {draft.title || "Untitled"}
           </h3>
 
           <p
-            className={`${inter.className} mt-2 text-sm text-[#81766D]`}
+            className={`${bodyFont} mt-2 text-sm text-ink-400`}
           >
             {draft.created_at
               ? new Date(draft.created_at).toLocaleDateString(
@@ -443,32 +444,32 @@ export default function DashboardPage() {
         <button
           onClick={() => setDraftToDelete(draft.id)}
           disabled={draft.status === "submitted"}
-          className={`${inter.className} rounded-full border border-red-300 px-4 py-2 text-sm text-red-600 transition hover:bg-red-50 disabled:opacity-50 disabled:hover:bg-transparent`}
+          className={`${bodyFont} rounded-full border border-red-300 px-4 py-2 text-sm text-red-600 transition hover:bg-red-50 disabled:opacity-50 disabled:hover:bg-transparent`}
         >
           Delete
         </button>
 
-      </div>
+      </Card>
     );
   }
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-[#F7F1E8]">
+      <main className="min-h-screen bg-cream">
         <AyahLoader />
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-[#F7F1E8] text-[#46382F]">
+    <main className="min-h-screen bg-cream text-ink-900">
       <div className="mx-auto max-w-5xl px-6 py-12 md:px-8">
 
         {/* HEADER */}
         <div className="flex items-center justify-between">
           <div>
             <h1
-              className={`${poppins.className} text-4xl font-medium text-[#053400]`}
+              className={`${headingFont} text-4xl font-medium text-brand-900`}
             >
               Dashboard
             </h1>
@@ -476,16 +477,34 @@ export default function DashboardPage() {
             <InkFlourish className="mt-2 w-[90px]" />
           </div>
 
-          <Link
-            href="/new"
-            className={`${inter.className} rounded-full bg-[#053400] px-6 py-3 text-[13px] font-medium text-white transition hover:bg-[#0B4D2B] active:scale-95`}
-          >
+          <ButtonLink href="/editor" className={bodyFont}>
             New Draft
-          </Link>
+          </ButtonLink>
         </div>
 
+        {/* CONTINUE DRAFT */}
+        {continueDraft && (
+          <div className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-xl border border-border bg-brand-50 px-6 py-4">
+            <p className={`${bodyFont} text-sm text-ink-900`}>
+              You have an unfinished piece —{" "}
+              <span className="font-medium">
+                {continueDraft.title || "Untitled"}
+              </span>
+              . Pick up where you left off.
+            </p>
+
+            <ButtonLink
+              href={`/editor?id=${continueDraft.id}`}
+              variant="secondary"
+              className={bodyFont}
+            >
+              Continue writing →
+            </ButtonLink>
+          </div>
+        )}
+
         {/* PROFILE */}
-        <section className="mt-10 rounded-2xl border border-[#DCD4C9] bg-[#E9E2D8] p-6">
+        <section className="mt-10 rounded-2xl border border-border bg-cream-card p-6">
 
           <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
 
@@ -500,7 +519,7 @@ export default function DashboardPage() {
                 />
               ) : (
                 <div
-                  className={`${poppins.className} flex h-24 w-24 items-center justify-center rounded-full bg-[#053400] text-3xl font-medium text-white`}
+                  className={`${headingFont} flex h-24 w-24 items-center justify-center rounded-full bg-brand-900 text-3xl font-medium text-white`}
                 >
                   {(profile?.display_name || "Q")[0].toUpperCase()}
                 </div>
@@ -511,22 +530,11 @@ export default function DashboardPage() {
             {/* PROFILE INFO */}
             <div className="flex-1">
 
-              <div className="flex items-center justify-between gap-3">
-                <p
-                  className={`${inter.className} text-xs font-medium uppercase tracking-[0.2em] text-[#81766D]`}
-                >
-                  Your Profile
-                </p>
-
-                {!editingProfile && (
-                  <button
-                    onClick={startEditingProfile}
-                    className={`${inter.className} text-xs font-medium text-[#053400] transition hover:underline`}
-                  >
-                    Edit
-                  </button>
-                )}
-              </div>
+              <p
+                className={`${bodyFont} text-xs font-medium uppercase tracking-[0.2em] text-ink-400`}
+              >
+                Your Profile
+              </p>
 
               {editingProfile ? (
                 <div className="mt-2 space-y-3">
@@ -534,7 +542,7 @@ export default function DashboardPage() {
                     value={editName}
                     onChange={(e) => setEditName(e.target.value)}
                     placeholder="Your name"
-                    className={`${inter.className} w-full rounded-lg border border-[#DCD4C9] bg-white px-3 py-2 text-sm text-[#46382F] outline-none focus:border-[#053400]`}
+                    className={`${bodyFont} w-full rounded-lg border border-border bg-white px-3 py-2 text-sm text-ink-900 outline-none focus:border-brand-900`}
                   />
 
                   <textarea
@@ -542,38 +550,39 @@ export default function DashboardPage() {
                     onChange={(e) => setEditBio(e.target.value)}
                     placeholder="A short bio (optional)"
                     rows={3}
-                    className={`${inter.className} w-full resize-none rounded-lg border border-[#DCD4C9] bg-white px-3 py-2 text-sm text-[#46382F] outline-none focus:border-[#053400]`}
+                    className={`${bodyFont} w-full resize-none rounded-lg border border-border bg-white px-3 py-2 text-sm text-ink-900 outline-none focus:border-brand-900`}
                   />
 
                   <div className="flex gap-2">
-                    <button
+                    <Button
                       onClick={saveProfile}
                       disabled={savingProfile}
-                      className={`${inter.className} rounded-full bg-[#053400] px-5 py-2 text-sm font-medium text-white transition hover:bg-[#0B4D2B] active:scale-95 disabled:opacity-50`}
+                      className={bodyFont}
                     >
                       {savingProfile ? "Saving..." : "Save"}
-                    </button>
+                    </Button>
 
-                    <button
+                    <Button
+                      variant="secondary"
                       onClick={() => setEditingProfile(false)}
                       disabled={savingProfile}
-                      className={`${inter.className} rounded-full border border-[#DCD4C9] px-5 py-2 text-sm font-medium text-[#46382F] transition hover:border-[#053400] disabled:opacity-50`}
+                      className={bodyFont}
                     >
                       Cancel
-                    </button>
+                    </Button>
                   </div>
                 </div>
               ) : (
                 <>
                   <h2
-                    className={`${poppins.className} mt-1 text-2xl font-medium text-[#46382F]`}
+                    className={`${headingFont} mt-1 text-2xl font-medium text-ink-900`}
                   >
                     {profile?.display_name || "Qalam Writer"}
                   </h2>
 
                   {profile?.bio && (
                     <p
-                      className={`${inter.className} mt-2 max-w-xl text-sm text-[#70655C]`}
+                      className={`${bodyFont} mt-2 max-w-xl text-sm text-ink-600`}
                     >
                       {profile.bio}
                     </p>
@@ -586,20 +595,32 @@ export default function DashboardPage() {
             {/* UPLOAD */}
             <div>
 
-              <label
-                htmlFor="avatar-upload"
-                className={`${inter.className} inline-flex cursor-pointer items-center rounded-full border border-[#DCD4C9] px-4 py-2 text-sm font-medium text-[#46382F] transition hover:border-[#053400] ${
-                  uploading
-                    ? "pointer-events-none opacity-50"
-                    : ""
-                }`}
-              >
-                {uploading
-                  ? "Uploading..."
-                  : profile?.avatar_url
-                  ? "Change Picture"
-                  : "Upload Picture"}
-              </label>
+              <div className="flex items-center gap-2">
+                {!editingProfile && (
+                  <Button
+                    variant="secondary"
+                    onClick={startEditingProfile}
+                    className={bodyFont}
+                  >
+                    Edit
+                  </Button>
+                )}
+
+                <label
+                  htmlFor="avatar-upload"
+                  className={`${bodyFont} inline-flex cursor-pointer items-center rounded-full border border-border px-4 py-2 text-sm font-medium text-ink-900 transition hover:border-brand-900 ${
+                    uploading
+                      ? "pointer-events-none opacity-50"
+                      : ""
+                  }`}
+                >
+                  {uploading
+                    ? "Uploading..."
+                    : profile?.avatar_url
+                    ? "Change Picture"
+                    : "Upload Picture"}
+                </label>
+              </div>
 
               <input
                 id="avatar-upload"
@@ -611,7 +632,7 @@ export default function DashboardPage() {
               />
 
               <p
-                className={`${inter.className} mt-2 text-xs text-[#70655C]`}
+                className={`${bodyFont} mt-2 text-xs text-ink-600`}
               >
                 JPG, PNG or WebP · Max 5MB
               </p>
@@ -626,12 +647,12 @@ export default function DashboardPage() {
         {pendingDrafts.length > 0 && (
           <div className="mt-10">
             <h2
-              className={`${poppins.className} text-2xl font-medium text-[#053400]`}
+              className={`${headingFont} text-2xl font-medium text-brand-900`}
             >
               Pending Review
             </h2>
 
-            <p className={`${inter.className} mt-1 mb-4 text-sm text-[#70655C]`}>
+            <p className={`${bodyFont} mt-1 mb-4 text-sm text-ink-600`}>
               Submitted and waiting on an admin - it&apos;ll stay right here until it&apos;s reviewed.
             </p>
 
@@ -643,35 +664,63 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* DRAFTS */}
-        <div className="mt-10 space-y-4">
+        {/* PUBLISHED */}
+        {publishedDrafts.length > 0 && (
+          <div className="mt-10">
+            <h2
+              className={`${headingFont} text-2xl font-medium text-brand-900`}
+            >
+              Published
+            </h2>
 
-          {otherDrafts.length === 0 && pendingDrafts.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-[#DCD4C9] p-10 text-center">
+            <InkFlourish className="mt-2 mb-4 w-[70px]" />
 
-              <p className={`${inter.className} text-[#70655C]`}>
-                You don't have any drafts yet.
-              </p>
-
-              <Link
-                href="/new"
-                className={`${inter.className} mt-4 inline-block rounded-full bg-[#053400] px-6 py-3 text-sm font-medium text-white transition hover:bg-[#0B4D2B] active:scale-95`}
-              >
-                Start Writing
-              </Link>
-
+            <div className="space-y-4">
+              {publishedDrafts.map((draft, index) =>
+                renderDraftCard(draft, index)
+              )}
             </div>
-          ) : (
-            otherDrafts.map((draft, index) => renderDraftCard(draft, index))
-          )}
+          </div>
+        )}
 
-        </div>
+        {/* DRAFTS */}
+        {pendingDrafts.length === 0 &&
+        publishedDrafts.length === 0 &&
+        otherDrafts.length === 0 ? (
+          <div className="mt-10 rounded-xl border border-dashed border-border p-10 text-center">
+
+            <p className={`${bodyFont} text-ink-600`}>
+              You don't have any drafts yet.
+            </p>
+
+            <ButtonLink href="/editor" className={`${bodyFont} mt-4`}>
+              Start Writing
+            </ButtonLink>
+
+          </div>
+        ) : (
+          otherDrafts.length > 0 && (
+            <div className="mt-10">
+              <h2
+                className={`${headingFont} text-2xl font-medium text-brand-900`}
+              >
+                Drafts
+              </h2>
+
+              <InkFlourish className="mt-2 mb-4 w-[70px]" />
+
+              <div className="space-y-4">
+                {otherDrafts.map((draft, index) => renderDraftCard(draft, index))}
+              </div>
+            </div>
+          )
+        )}
 
         {/* SAVED ARTICLES */}
         {savedArticles.length > 0 && (
           <div className="mt-14">
             <h2
-              className={`${poppins.className} text-2xl font-medium text-[#053400]`}
+              className={`${headingFont} text-2xl font-medium text-brand-900`}
             >
               Saved
             </h2>
@@ -686,7 +735,7 @@ export default function DashboardPage() {
                   <Link
                     key={article.id}
                     href={`/journal/${article.id}`}
-                    className={`flex items-center gap-4 rounded-xl border border-[#DCD4C9] border-t-4 ${genreColor.cardBorder} bg-[#F1E7D3] p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md`}
+                    className={`flex items-center gap-4 rounded-xl border border-border border-t-4 ${genreColor.cardBorder} bg-cream-hover p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md`}
                   >
                     <CoverImage
                       src={article.cover_image_url}
@@ -696,7 +745,7 @@ export default function DashboardPage() {
                     />
 
                     <h3
-                      className={`${poppins.className} text-base font-medium text-[#46382F]`}
+                      className={`${headingFont} text-base font-medium text-ink-900`}
                     >
                       {article.title}
                     </h3>

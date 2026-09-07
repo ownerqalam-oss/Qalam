@@ -4,33 +4,24 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Poppins, Inter, Amiri } from "next/font/google";
 import { supabase } from "../lib/supabase/client";
 import { estimateReadingTime } from "../lib/readingTime";
 import { getGenreColor } from "../lib/genreColors";
 import InkFlourish from "../components/InkFlourish";
 import CoverImage from "../components/CoverImage";
+import { ButtonLink } from "../components/ui/Button";
+import { Card, CardLink } from "../components/ui/Card";
+import { prompts, getRandomPrompt } from "../lib/prompts";
 
-const poppins = Poppins({
-  weight: ["400", "500", "600", "700"],
-  subsets: ["latin"],
-});
-
-const inter = Inter({
-  weight: ["400", "500", "600"],
-  subsets: ["latin"],
-});
-
-const amiri = Amiri({
-  weight: ["400", "700"],
-  subsets: ["arabic"],
-});
+const headingFont = "font-[family-name:var(--font-heading)]";
+const bodyFont = "font-[family-name:var(--font-body)]";
+const arabicFont = "font-[family-name:var(--font-arabic)]";
 
 const GENRE_BORDER_CLASSES = [
   "",
-  "border-l border-[#DCD4C9]",
-  "border-t border-[#DCD4C9] md:border-t-0 md:border-l",
-  "border-l border-t border-[#DCD4C9] md:border-t-0",
+  "border-l border-border",
+  "border-t border-border md:border-t-0 md:border-l",
+  "border-l border-t border-border md:border-t-0",
 ];
 
 const genres = [
@@ -87,6 +78,12 @@ export default function Home() {
   const [loadingArticles, setLoadingArticles] = useState(true);
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const [promptIndex, setPromptIndex] = useState(0);
+
+  useEffect(() => {
+    const id = setTimeout(() => setPromptIndex(getRandomPrompt()), 0);
+    return () => clearTimeout(id);
+  }, []);
 
   useEffect(() => {
     async function loadLatestArticles() {
@@ -150,39 +147,39 @@ export default function Home() {
   }, [articles.length, isPaused]);
 
   return (
-    <main className="min-h-screen bg-[#F7F1E8] text-[#46382F]">
+    <main className="min-h-screen bg-cream text-ink-900">
 
       {/* HERO */}
       <section className="mx-auto w-full max-w-[1540px] px-6 md:px-10 lg:px-12">
 
-        <div className="flex flex-col items-center border-b border-[#DCD4C9] py-10 md:grid md:min-h-[440px] md:grid-cols-2 md:py-0">
+        <div className="flex flex-col items-center border-b border-border py-10 md:grid md:min-h-[440px] md:grid-cols-2 md:py-0">
 
           {/* Illustration */}
           <div className="animate-fade-in-up order-2 flex flex-col items-center justify-center gap-6 py-8 md:order-1">
             <div
               dir="rtl"
-              className={`${amiri.className} animate-verse flex max-w-[480px] flex-col items-center pt-3 text-[34px] font-bold leading-[2.1] drop-shadow-[0_2px_3px_rgba(5,52,0,0.18)] sm:max-w-[560px] sm:text-[46px] md:max-w-[640px] md:text-[56px]`}
+              className={`${arabicFont} animate-verse flex max-w-[480px] flex-col items-center pt-3 text-[34px] font-bold leading-[2.1] drop-shadow-[0_2px_3px_rgba(5,52,0,0.18)] sm:max-w-[560px] sm:text-[46px] md:max-w-[640px] md:text-[56px]`}
             >
               <div className="relative w-fit">
-                <div className="bg-gradient-to-br from-[#053400] to-[#0E5C33] bg-clip-text text-transparent">
+                <div className="bg-gradient-to-br from-brand-900 to-[#0E5C33] bg-clip-text text-transparent">
                   ن ۚ وَالْقَلَمِ وَمَا يَسْطُرُونَ{" "}
-                  <span className="align-middle text-[0.45em] text-[#B8860B]">۝١</span>
+                  <span className="align-middle text-[0.45em] text-gold-600">۝١</span>
                 </div>
                 <div
                   aria-hidden="true"
-                  className="animate-ink-cover absolute inset-y-0 left-0 bg-[#F7F1E8]"
+                  className="animate-ink-cover absolute inset-y-0 left-0 bg-cream"
                   style={{ animationDelay: "300ms" }}
                 />
               </div>
 
               <div className="relative mt-2 w-fit">
-                <div className="bg-gradient-to-br from-[#053400] to-[#0E5C33] bg-clip-text text-transparent">
+                <div className="bg-gradient-to-br from-brand-900 to-[#0E5C33] bg-clip-text text-transparent">
                   مَا أَنتَ بِنِعْمَةِ رَبِّكَ بِمَجْنُونٍ{" "}
-                  <span className="align-middle text-[0.45em] text-[#B8860B]">۝٢</span>
+                  <span className="align-middle text-[0.45em] text-gold-600">۝٢</span>
                 </div>
                 <div
                   aria-hidden="true"
-                  className="animate-ink-cover absolute inset-y-0 left-0 bg-[#F7F1E8]"
+                  className="animate-ink-cover absolute inset-y-0 left-0 bg-cream"
                   style={{ animationDelay: "1.7s" }}
                 />
               </div>
@@ -192,14 +189,14 @@ export default function Home() {
 
             <div className="max-w-[360px] text-center">
               <p
-                className={`${inter.className} text-[13px] italic leading-6 text-[#70655C] sm:text-sm`}
+                className={`${bodyFont} text-[13px] italic leading-6 text-ink-600 sm:text-sm`}
               >
                 &ldquo;By the pen and what they inscribe, you are not, by the
                 favor of your Lord, a madman.&rdquo;
               </p>
 
               <p
-                className={`${inter.className} mt-2 text-[10px] font-medium uppercase tracking-[0.2em] text-[#70655C] sm:text-xs`}
+                className={`${bodyFont} mt-2 text-[10px] font-medium uppercase tracking-[0.2em] text-ink-600 sm:text-xs`}
               >
                 Surah Al-Qalam 68:1&ndash;2
               </p>
@@ -211,14 +208,14 @@ export default function Home() {
 
             <p
               style={{ animationDelay: "80ms" }}
-              className={`${inter.className} animate-fade-in-up text-[11px] font-medium uppercase tracking-[0.45em] text-[#42614A]`}
+              className={`${bodyFont} animate-fade-in-up text-[11px] font-medium uppercase tracking-[0.45em] text-brand-600`}
             >
               REVIVING THE PEN
             </p>
 
             <h1
               style={{ animationDelay: "140ms" }}
-              className={`${poppins.className} animate-fade-in-up mt-5 text-[36px] font-medium leading-[1.08] tracking-[-1px] text-[#053400] sm:text-[46px] md:max-w-[620px] md:text-[58px] md:leading-[1.04] md:tracking-[-2.5px]`}
+              className={`${headingFont} animate-fade-in-up mt-5 text-[36px] font-medium leading-[1.08] tracking-[-1px] text-brand-900 sm:text-[46px] md:max-w-[620px] md:text-[58px] md:leading-[1.04] md:tracking-[-2.5px]`}
             >
               A place to write,
               <br />
@@ -227,20 +224,29 @@ export default function Home() {
 
             <p
               style={{ animationDelay: "220ms" }}
-              className={`${inter.className} animate-fade-in-up mx-auto mt-7 max-w-[420px] text-[16px] leading-[1.55] text-[#62574F] md:mx-0 md:max-w-[570px] md:text-[17px]`}
+              className={`${bodyFont} animate-fade-in-up mx-auto mt-7 max-w-[420px] text-[16px] leading-[1.55] text-[#62574F] md:mx-0 md:max-w-[570px] md:text-[17px]`}
             >
               A home for Muslim writers and readers, sharing articles, poetry,
               reflections and short stories written with sincerity.
             </p>
 
-            <a
-              href="/write"
+            <ButtonLink
+              href="/editor"
+              variant="primary"
               style={{ animationDelay: "300ms" }}
-              className={`${inter.className} animate-fade-in-up mt-7 inline-flex items-center gap-3 rounded-full bg-[#053400] px-6 py-3 text-[12px] font-medium text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-[#0B4D2B] hover:shadow-md active:scale-95`}
+              className={`${bodyFont} animate-fade-in-up mt-7 gap-3 hover:-translate-y-0.5 hover:shadow-md`}
             >
               START WRITING NOW
               <span className="text-base">→</span>
-            </a>
+            </ButtonLink>
+
+            <Link
+              href="/editor"
+              style={{ animationDelay: "340ms" }}
+              className={`${bodyFont} animate-fade-in-up mt-4 block text-[13px] italic leading-6 text-ink-600 transition hover:text-brand-900`}
+            >
+              Today&apos;s prompt: &ldquo;{prompts[promptIndex]}&rdquo;
+            </Link>
 
           </div>
         </div>
@@ -250,14 +256,14 @@ export default function Home() {
       {/* LATEST FROM JOURNAL — auto-rotating spotlight */}
       <section className="mx-auto w-full max-w-[1540px] px-6 md:px-10 lg:px-12">
 
-        <div className="border-b border-[#DCD4C9]">
+        <div className="border-b border-border">
 
           {/* Heading */}
           <div className="flex items-center justify-between py-8">
 
             <div>
               <h2
-                className={`${poppins.className} text-[31px] font-medium text-[#46382F]`}
+                className={`${headingFont} text-[31px] font-medium text-ink-900`}
               >
                 Latest from the journal
               </h2>
@@ -267,7 +273,7 @@ export default function Home() {
 
             <Link
               href="/journal"
-              className={`${inter.className} text-[13px] font-medium text-[#46382F] transition hover:text-[#053400]`}
+              className={`${bodyFont} text-[13px] font-medium text-ink-900 transition hover:text-brand-900`}
             >
               VIEW ALL →
             </Link>
@@ -282,7 +288,7 @@ export default function Home() {
               {[0, 1].map((i) => (
                 <div
                   key={i}
-                  className="h-20 animate-pulse rounded-lg bg-[#EFE8DC]"
+                  className="h-20 animate-pulse rounded-lg bg-skeleton"
                 />
               ))}
             </div>
@@ -291,9 +297,9 @@ export default function Home() {
 
             <div className="py-10">
               <p
-                className={`${inter.className} text-[14px] text-[#81766D]`}
+                className={`${bodyFont} text-[14px] text-ink-400`}
               >
-                No published writing yet.
+                No Journal pieces published yet.
               </p>
             </div>
 
@@ -330,7 +336,7 @@ export default function Home() {
                         className="shrink-0 px-1"
                         style={{ width: `${100 / articles.length}%` }}
                       >
-                        <div
+                        <Card
                           role="link"
                           tabIndex={0}
                           onClick={() => router.push(`/journal/${article.id}`)}
@@ -339,7 +345,7 @@ export default function Home() {
                               router.push(`/journal/${article.id}`);
                             }
                           }}
-                          className={`group block cursor-pointer rounded-xl border border-[#DCD4C9] border-t-4 ${genreColor.cardBorder} bg-[#E9E2D8] p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md md:p-8`}
+                          className={`group block cursor-pointer border-t-4 ${genreColor.cardBorder} p-6 md:p-8`}
                         >
 
                           <div className="flex items-start gap-5 md:gap-8">
@@ -354,7 +360,7 @@ export default function Home() {
                             <div className="min-w-0 flex-1">
 
                               <span
-                                className={`${inter.className} inline-block rounded-full ${genreColor.badgeBg} px-3 py-1 text-[11px] font-medium uppercase tracking-[0.15em] ${genreColor.badgeText}`}
+                                className={`${bodyFont} inline-block rounded-full ${genreColor.badgeBg} px-3 py-1 text-[11px] font-medium uppercase tracking-[0.15em] ${genreColor.badgeText}`}
                               >
                                 {article.type === "story"
                                   ? "Short Story"
@@ -362,14 +368,14 @@ export default function Home() {
                               </span>
 
                               <h3
-                                className={`${poppins.className} mt-2 text-[22px] font-medium text-[#46382F] transition group-hover:text-[#053400] md:text-[27px]`}
+                                className={`${headingFont} mt-2 text-[22px] font-medium text-ink-900 transition group-hover:text-brand-900 md:text-[27px]`}
                               >
                                 {article.title}
                               </h3>
 
                               {article.tagline && (
                                 <p
-                                  className={`${inter.className} mt-2 text-[14px] leading-6 text-[#70655C]`}
+                                  className={`${bodyFont} mt-2 text-[14px] leading-6 text-ink-600`}
                                 >
                                   {article.tagline}
                                 </p>
@@ -390,17 +396,17 @@ export default function Home() {
                                     />
                                   ) : (
                                     <div
-                                      className={`${poppins.className} flex h-7 w-7 items-center justify-center rounded-full bg-[#053400] text-[11px] font-medium text-white`}
+                                      className={`${headingFont} flex h-7 w-7 items-center justify-center rounded-full bg-brand-900 text-[11px] font-medium text-white`}
                                     >
                                       {(writer.display_name || "Q")[0].toUpperCase()}
                                     </div>
                                   )}
 
                                   <span
-                                    className={`${inter.className} text-[13px] text-[#70655C]`}
+                                    className={`${bodyFont} text-[13px] text-ink-600`}
                                   >
                                     {writer.display_name || "Qalam Writer"}
-                                    <span className="text-[#B8860B]"> · </span>
+                                    <span className="text-gold-600"> · </span>
                                     {article.published_at
                                       ? new Date(
                                           article.published_at
@@ -409,23 +415,23 @@ export default function Home() {
                                           month: "short",
                                         })
                                       : ""}
-                                    <span className="text-[#B8860B]"> · </span>
+                                    <span className="text-gold-600"> · </span>
                                     {estimateReadingTime(article.content)} min read
                                   </span>
                                 </Link>
                               ) : (
                                 <div className="mt-4 flex items-center gap-2.5">
                                   <div
-                                    className={`${poppins.className} flex h-7 w-7 items-center justify-center rounded-full bg-[#053400] text-[11px] font-medium text-white`}
+                                    className={`${headingFont} flex h-7 w-7 items-center justify-center rounded-full bg-brand-900 text-[11px] font-medium text-white`}
                                   >
                                     Q
                                   </div>
 
                                   <span
-                                    className={`${inter.className} text-[13px] text-[#70655C]`}
+                                    className={`${bodyFont} text-[13px] text-ink-600`}
                                   >
                                     Qalam Writer
-                                    <span className="text-[#B8860B]"> · </span>
+                                    <span className="text-gold-600"> · </span>
                                     {article.published_at
                                       ? new Date(
                                           article.published_at
@@ -434,7 +440,7 @@ export default function Home() {
                                           month: "short",
                                         })
                                       : ""}
-                                    <span className="text-[#B8860B]"> · </span>
+                                    <span className="text-gold-600"> · </span>
                                     {estimateReadingTime(article.content)} min read
                                   </span>
                                 </div>
@@ -444,7 +450,7 @@ export default function Home() {
 
                           </div>
 
-                        </div>
+                        </Card>
                       </div>
                     );
                   })}
@@ -463,8 +469,8 @@ export default function Home() {
                       aria-label={`Show article ${index + 1}`}
                       className={`h-2 rounded-full transition-all ${
                         index === activeIndex
-                          ? "w-6 bg-[#053400]"
-                          : "w-2 bg-[#DCD4C9] hover:bg-[#B8860B]"
+                          ? "w-6 bg-brand-900"
+                          : "w-2 bg-border hover:bg-gold-600"
                       }`}
                     />
                   ))}
@@ -482,11 +488,11 @@ export default function Home() {
       {/* FEATURED / EDITOR'S PICKS */}
       {featuredArticles.length > 0 && (
         <section className="mx-auto w-full max-w-[1540px] px-6 md:px-10 lg:px-12">
-          <div className="border-b border-[#DCD4C9] py-10">
+          <div className="border-b border-border py-10">
             <div className="flex items-center gap-2">
-              <span className="text-[#B8860B]">★</span>
+              <span className="text-gold-600">★</span>
               <h2
-                className={`${poppins.className} text-[26px] font-medium text-[#053400]`}
+                className={`${headingFont} text-[26px] font-medium text-brand-900`}
               >
                 Editor&apos;s Picks
               </h2>
@@ -498,10 +504,10 @@ export default function Home() {
                 const genreColor = getGenreColor(article.type);
 
                 return (
-                  <Link
+                  <CardLink
                     key={article.id}
                     href={`/journal/${article.id}`}
-                    className={`group block rounded-xl border border-[#DCD4C9] border-t-4 ${genreColor.cardBorder} bg-[#E9E2D8] p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md`}
+                    className={`border-t-4 ${genreColor.cardBorder} p-5`}
                   >
                     <CoverImage
                       src={article.cover_image_url}
@@ -511,15 +517,15 @@ export default function Home() {
                     />
 
                     <h3
-                      className={`${poppins.className} mt-3 text-lg font-medium text-[#46382F] group-hover:text-[#053400]`}
+                      className={`${headingFont} mt-3 text-lg font-medium text-ink-900 group-hover:text-brand-900`}
                     >
                       {article.title}
                     </h3>
 
-                    <p className={`${inter.className} mt-1 text-xs text-[#81766D]`}>
+                    <p className={`${bodyFont} mt-1 text-xs text-ink-400`}>
                       {writer?.display_name || "Qalam Writer"}
                     </p>
-                  </Link>
+                  </CardLink>
                 );
               })}
             </div>
@@ -531,7 +537,7 @@ export default function Home() {
       {/* GENRES */}
       <section className="mx-auto w-full max-w-[1540px] px-6 md:px-10 lg:px-12">
 
-        <div className="grid grid-cols-2 border-b border-[#DCD4C9] md:grid-cols-4">
+        <div className="grid grid-cols-2 border-b border-border md:grid-cols-4">
 
           {genres.map((genre, index) => {
             const genreColor = getGenreColor(genre.type);
@@ -540,7 +546,7 @@ export default function Home() {
             <a
               key={genre.title}
               href={`/journal?genre=${genre.title.toLowerCase()}`}
-              className={`px-5 py-6 transition hover:bg-[#E9E2D8] hover:shadow-sm md:px-8 md:py-8 ${GENRE_BORDER_CLASSES[index]}`}
+              className={`px-5 py-6 transition hover:bg-cream-card hover:shadow-sm md:px-8 md:py-8 ${GENRE_BORDER_CLASSES[index]}`}
             >
 
               <span
@@ -548,13 +554,13 @@ export default function Home() {
               />
 
               <h2
-                className={`${poppins.className} mt-2 text-[18px] font-medium text-[#46382F] md:text-[25px]`}
+                className={`${headingFont} mt-2 text-[18px] font-medium text-ink-900 md:text-[25px]`}
               >
                 {genre.title}
               </h2>
 
               <p
-                className={`${inter.className} mt-3 max-w-[300px] text-[13px] leading-[1.6] text-[#70655C]`}
+                className={`${bodyFont} mt-3 max-w-[300px] text-[13px] leading-[1.6] text-ink-600`}
               >
                 {genre.description}
               </p>
@@ -583,7 +589,7 @@ export default function Home() {
             />
 
             <p
-              className={`${inter.className} text-[13px] text-[#81766D]`}
+              className={`${bodyFont} text-[13px] text-ink-400`}
             >
               They can silence your tongue,
               <br />
@@ -593,33 +599,33 @@ export default function Home() {
           </div>
 
           <div
-            className={`${inter.className} flex flex-wrap gap-x-7 gap-y-2 text-[13px] text-[#81766D]`}
+            className={`${bodyFont} flex flex-wrap gap-x-7 gap-y-2 text-[13px] text-ink-400`}
           >
-            <a href="/about" className="hover:text-[#053400]">
+            <a href="/about" className="hover:text-brand-900">
               About
             </a>
 
-            <a href="/journal" className="hover:text-[#053400]">
+            <a href="/journal" className="hover:text-brand-900">
               Journal
             </a>
 
-            <a href="/writers" className="hover:text-[#053400]">
+            <a href="/writers" className="hover:text-brand-900">
               Writers
             </a>
 
-            <Link href="/collections" className="hover:text-[#053400]">
+            <Link href="/collections" className="hover:text-brand-900">
               Collections
             </Link>
 
-            <Link href="/privacy" className="hover:text-[#053400]">
+            <Link href="/privacy" className="hover:text-brand-900">
               Privacy
             </Link>
 
-            <Link href="/terms" className="hover:text-[#053400]">
+            <Link href="/terms" className="hover:text-brand-900">
               Terms
             </Link>
 
-            <a href="/contact" className="hover:text-[#053400]">
+            <a href="/contact" className="hover:text-brand-900">
               Contact
             </a>
           </div>
