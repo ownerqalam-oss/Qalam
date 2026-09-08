@@ -232,7 +232,7 @@ export default function ReviewPage() {
         )}
 
         <article
-          className="prose prose-lg max-w-none [&_p:empty]:min-h-[1.75em]"
+          className="prose prose-lg max-w-none [&_p]:my-0 [&_p:empty]:min-h-[1.75em]"
           dangerouslySetInnerHTML={{
             __html: draft.content,
           }}
