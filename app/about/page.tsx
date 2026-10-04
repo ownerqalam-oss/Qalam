@@ -1,4 +1,6 @@
+import type { Metadata } from "next";
 import { Poppins, Inter } from "next/font/google";
+import { pageMetadata } from "../../lib/seo";
 
 const poppins = Poppins({
   weight: ["400", "500", "600", "700"],
@@ -8,6 +10,13 @@ const poppins = Poppins({
 const inter = Inter({
   weight: ["400", "500", "600"],
   subsets: ["latin"],
+});
+
+export const metadata: Metadata = pageMetadata({
+  title: "About",
+  description:
+    "Qalam is a home for Muslim writers and readers - a space for young Muslims to write from the heart, and for readers to find writing rooted in faith.",
+  path: "/about",
 });
 
 export default function AboutPage() {

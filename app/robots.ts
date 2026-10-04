@@ -5,19 +5,10 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      // Private, account and form pages - nothing worth indexing.
-      disallow: [
-        "/admin",
-        "/dashboard",
-        "/editor",
-        "/write",
-        "/api/",
-        "/login",
-        "/signup",
-        "/forgot-password",
-        "/reset-password",
-        "/complete-profile",
-      ],
+      // Private pages. Auth pages (login, signup, ...) are deliberately not
+      // listed: they carry a noindex tag, which crawlers can only see if
+      // they're allowed to fetch the page.
+      disallow: ["/admin", "/dashboard", "/editor", "/write", "/api/"],
     },
     sitemap: "https://qalam.ie/sitemap.xml",
   };

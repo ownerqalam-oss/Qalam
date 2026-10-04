@@ -2,22 +2,20 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { cache } from "react";
 import { createPublicClient } from "../../../lib/supabase/public";
+import {
+  DEFAULT_IMAGE,
+  SITE_NAME,
+  SITE_URL,
+  excerpt,
+  noIndex,
+  pageMetadata,
+} from "../../../lib/seo";
+import JsonLd from "../../../components/JsonLd";
 import ArticleView, {
   type Article,
   type OtherPiece,
   type Profile,
 } from "./ArticleView";
-
-function excerptFromHtml(html: string, maxLength = 160): string {
-  const text = html
-    .replace(/<[^>]*>/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-
-  if (text.length <= maxLength) return text;
-
-  return `${text.slice(0, maxLength).trimEnd()}…`;
-}
 
 // Wrapped in cache() so generateMetadata and the page share one fetch.
 const loadArticle = cache(async (id: string) => {
@@ -72,33 +70,23 @@ export async function generateMetadata({
   const data = await loadArticle(id);
 
   if (!data) {
-    return { title: "Article not found | Qalam" };
+    return { title: "Article not found", ...noIndex };
   }
 
-  const { article } = data;
-  const description =
-    excerptFromHtml(article.content) ||
-    "Read on Qalam - a home for Muslim writers.";
-  const image = article.cover_image_url || "https://qalam.ie/og-default.png";
+  const { article, profile } = data;
 
-  return {
-    title: `${article.title} | Qalam`,
-    description,
-    openGraph: {
-      title: article.title,
-      description,
-      url: `https://qalam.ie/journal/${id}`,
-      siteName: "Qalam",
-      images: [{ url: image, width: 1200, height: 630 }],
-      type: "article",
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: article.title,
-      description,
-      images: [image],
-    },
-  };
+  return pageMetadata({
+    title: article.title,
+    description:
+      article.tagline?.trim() ||
+      excerpt(article.content) ||
+      "Read on Qalam - a home for Muslim writers.",
+    path: `/journal/${id}`,
+    image: article.cover_image_url,
+    type: "article",
+    publishedTime: article.published_at,
+    authors: profile?.display_name ? [profile.display_name] : undefined,
+  });
 }
 
 export default async function ArticlePage({
@@ -111,11 +99,48 @@ export default async function ArticlePage({
 
   if (!data) notFound();
 
+  const { article, profile } = data;
+  const url = `${SITE_URL}/journal/${article.id}`;
+
+  // Anonymous pieces are credited to Qalam, never to the real author.
+  const author =
+    article.is_anonymous || !profile
+      ? { "@type": "Organization", name: SITE_NAME, url: SITE_URL }
+      : {
+          "@type": "Person",
+          name: profile.display_name || "Qalam Writer",
+          url: `${SITE_URL}/writers/${profile.id}`,
+        };
+
+  const articleJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: article.title,
+    description: article.tagline?.trim() || excerpt(article.content),
+    image: [article.cover_image_url || DEFAULT_IMAGE],
+    datePublished: article.published_at ?? undefined,
+    author,
+    publisher: {
+      "@type": "Organization",
+      name: SITE_NAME,
+      url: SITE_URL,
+      logo: { "@type": "ImageObject", url: `${SITE_URL}/logo2.png` },
+    },
+    mainEntityOfPage: url,
+    url,
+    articleSection: article.type,
+    keywords: article.tags?.join(", ") || undefined,
+    inLanguage: "en",
+  };
+
   return (
-    <ArticleView
-      initialArticle={data.article}
-      profile={data.profile}
-      moreFromWriter={data.moreFromWriter}
-    />
+    <>
+      <JsonLd data={articleJsonLd} />
+      <ArticleView
+        initialArticle={article}
+        profile={profile}
+        moreFromWriter={data.moreFromWriter}
+      />
+    </>
   );
 }

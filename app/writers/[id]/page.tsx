@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { cache } from "react";
 import { createPublicClient } from "../../../lib/supabase/public";
+import { SITE_URL, excerpt, noIndex, pageMetadata } from "../../../lib/seo";
+import JsonLd from "../../../components/JsonLd";
 import WriterView, { type Article, type Profile } from "./WriterView";
 
 // Wrapped in cache() so generateMetadata and the page share one fetch.
@@ -43,33 +45,20 @@ export async function generateMetadata({
   const data = await loadWriter(id);
 
   if (!data) {
-    return { title: "Writer not found | Qalam" };
+    return { title: "Writer not found", ...noIndex };
   }
 
   const name = data.profile.display_name || "Qalam Writer";
-  const description =
-    data.profile.bio?.trim().slice(0, 160) ||
-    `Read articles, poetry and reflections by ${name} on Qalam.`;
-  const image = data.profile.avatar_url || "https://qalam.ie/og-default.png";
 
-  return {
-    title: `${name} | Qalam`,
-    description,
-    openGraph: {
-      title: name,
-      description,
-      url: `https://qalam.ie/writers/${id}`,
-      siteName: "Qalam",
-      images: [{ url: image }],
-      type: "profile",
-    },
-    twitter: {
-      card: "summary",
-      title: name,
-      description,
-      images: [image],
-    },
-  };
+  return pageMetadata({
+    title: name,
+    description:
+      (data.profile.bio && excerpt(data.profile.bio)) ||
+      `Read articles, poetry and reflections by ${name} on Qalam.`,
+    path: `/writers/${id}`,
+    image: data.profile.avatar_url,
+    type: "profile",
+  });
 }
 
 export default async function WriterPage({
@@ -82,5 +71,33 @@ export default async function WriterPage({
 
   if (!data) notFound();
 
-  return <WriterView profile={data.profile} initialArticles={data.articles} />;
+  const { profile, articles } = data;
+  const url = `${SITE_URL}/writers/${profile.id}`;
+
+  const profileJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "ProfilePage",
+    url,
+    mainEntity: {
+      "@type": "Person",
+      name: profile.display_name || "Qalam Writer",
+      url,
+      description: profile.bio || undefined,
+      image: profile.avatar_url || undefined,
+    },
+    // Only public pieces - the server list never includes anonymous ones.
+    hasPart: articles.map((article) => ({
+      "@type": "Article",
+      headline: article.title,
+      url: `${SITE_URL}/journal/${article.id}`,
+      datePublished: article.published_at ?? undefined,
+    })),
+  };
+
+  return (
+    <>
+      <JsonLd data={profileJsonLd} />
+      <WriterView profile={profile} initialArticles={articles} />
+    </>
+  );
 }

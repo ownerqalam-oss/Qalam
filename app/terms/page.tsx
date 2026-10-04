@@ -1,4 +1,6 @@
+import type { Metadata } from "next";
 import { Poppins, Inter } from "next/font/google";
+import { pageMetadata } from "../../lib/seo";
 
 const poppins = Poppins({
   weight: ["400", "500", "600", "700"],
@@ -32,6 +34,13 @@ function Section({
     </section>
   );
 }
+
+export const metadata: Metadata = pageMetadata({
+  title: "Terms of Service",
+  description:
+    "The terms for using Qalam and publishing your writing here.",
+  path: "/terms",
+});
 
 export default function TermsPage() {
   return (

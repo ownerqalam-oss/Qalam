@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { cache } from "react";
 import { Poppins, Inter } from "next/font/google";
 import { createPublicClient } from "../../../lib/supabase/public";
+import { noIndex, excerpt, pageMetadata } from "../../../lib/seo";
 import { getGenreColor } from "../../../lib/genreColors";
 import CoverImage from "../../../components/CoverImage";
 import InkFlourish from "../../../components/InkFlourish";
@@ -97,33 +98,19 @@ export async function generateMetadata({
   const data = await loadCollection(id);
 
   if (!data) {
-    return { title: "Collection not found | Qalam" };
+    return { title: "Collection not found", ...noIndex };
   }
 
   const { collection } = data;
-  const description =
-    collection.description?.trim().slice(0, 160) ||
-    `A curated collection of writing on Qalam.`;
-  const image = collection.cover_image_url || "https://qalam.ie/og-default.png";
 
-  return {
-    title: `${collection.title} | Qalam`,
-    description,
-    openGraph: {
-      title: collection.title,
-      description,
-      url: `https://qalam.ie/collections/${id}`,
-      siteName: "Qalam",
-      images: [{ url: image, width: 1200, height: 630 }],
-      type: "website",
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: collection.title,
-      description,
-      images: [image],
-    },
-  };
+  return pageMetadata({
+    title: collection.title,
+    description:
+      (collection.description && excerpt(collection.description)) ||
+      "A curated collection of writing on Qalam.",
+    path: `/collections/${id}`,
+    image: collection.cover_image_url,
+  });
 }
 
 export default async function CollectionPage({

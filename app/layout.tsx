@@ -4,6 +4,8 @@ import Navbar from "../components/Navbar";
 import { AuthProvider } from "../components/AuthProvider";
 import { ToastProvider } from "../components/ToastProvider";
 import FeedbackButton from "../components/FeedbackButton";
+import JsonLd from "../components/JsonLd";
+import { DEFAULT_DESCRIPTION, SITE_NAME, SITE_URL } from "../lib/seo";
 import "./globals.css";
 
 const poppins = Poppins({
@@ -25,28 +27,42 @@ const amiri = Amiri({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://qalam.ie"),
+  metadataBase: new URL(SITE_URL),
   title: {
-    default: "Qalam",
-    template: "%s",
+    // Used as-is on the home page; other pages get "Page | Qalam".
+    default: "Qalam - A home for Muslim writers and readers",
+    template: `%s | ${SITE_NAME}`,
   },
-  description:
-    "A home for Muslim writers and readers, sharing articles, poetry, reflections and short stories written with sincerity.",
+  description: DEFAULT_DESCRIPTION,
   openGraph: {
-    title: "Qalam",
-    description:
-      "A home for Muslim writers and readers, sharing articles, poetry, reflections and short stories written with sincerity.",
-    url: "https://qalam.ie",
-    siteName: "Qalam",
+    title: SITE_NAME,
+    description: DEFAULT_DESCRIPTION,
+    url: SITE_URL,
+    siteName: SITE_NAME,
     images: [{ url: "/og-default.png", width: 1200, height: 630 }],
+    locale: "en_IE",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Qalam",
-    description:
-      "A home for Muslim writers and readers, sharing articles, poetry, reflections and short stories written with sincerity.",
+    title: SITE_NAME,
+    description: DEFAULT_DESCRIPTION,
     images: ["/og-default.png"],
+  },
+};
+
+const siteJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: SITE_NAME,
+  url: SITE_URL,
+  description: DEFAULT_DESCRIPTION,
+  inLanguage: "en",
+  publisher: {
+    "@type": "Organization",
+    name: SITE_NAME,
+    url: SITE_URL,
+    logo: `${SITE_URL}/logo2.png`,
   },
 };
 
@@ -61,6 +77,7 @@ export default function RootLayout({
       className={`${poppins.variable} ${inter.variable} ${amiri.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        <JsonLd data={siteJsonLd} />
         <ToastProvider>
           <AuthProvider>
             <Navbar />
