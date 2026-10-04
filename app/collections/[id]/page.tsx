@@ -1,10 +1,9 @@
-"use client";
-
-import { useEffect, useState } from "react";
+import type { Metadata } from "next";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { notFound } from "next/navigation";
+import { cache } from "react";
 import { Poppins, Inter } from "next/font/google";
-import { supabase } from "../../../lib/supabase/client";
+import { createPublicClient } from "../../../lib/supabase/public";
 import { getGenreColor } from "../../../lib/genreColors";
 import CoverImage from "../../../components/CoverImage";
 import InkFlourish from "../../../components/InkFlourish";
@@ -40,90 +39,107 @@ interface Writer {
   display_name: string | null;
 }
 
-export default function CollectionPage() {
-  const { id } = useParams();
+// Wrapped in cache() so generateMetadata and the page share one fetch.
+const loadCollection = cache(async (id: string) => {
+  const supabase = createPublicClient();
 
-  const [collection, setCollection] = useState<Collection | null>(null);
-  const [pieces, setPieces] = useState<Piece[]>([]);
-  const [writers, setWriters] = useState<Writer[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: collection } = await supabase
+    .from("collections")
+    .select("id, title, description, cover_image_url")
+    .eq("id", id)
+    .maybeSingle<Collection>();
 
-  useEffect(() => {
-    if (id) loadCollection();
-  }, [id]);
+  if (!collection) return null;
 
-  async function loadCollection() {
-    const { data: collectionData, error: collectionError } = await supabase
-      .from("collections")
-      .select("id, title, description, cover_image_url")
-      .eq("id", id)
-      .single();
+  const { data: pieceRows } = await supabase
+    .from("collection_drafts")
+    .select("position, draft:drafts(id, title, type, cover_image_url, user_id, is_anonymous, status)")
+    .eq("collection_id", id)
+    .order("position", { ascending: true });
 
-    if (collectionError || !collectionData) {
-      setLoading(false);
-      return;
+  const pieces: Piece[] = [];
+
+  for (const row of pieceRows ?? []) {
+    const draft = Array.isArray(row.draft) ? row.draft[0] : row.draft;
+    if (draft && draft.status === "published") {
+      pieces.push(draft);
     }
-
-    setCollection(collectionData);
-
-    const { data: pieceRows } = await supabase
-      .from("collection_drafts")
-      .select("position, draft:drafts(id, title, type, cover_image_url, user_id, is_anonymous, status)")
-      .eq("collection_id", id)
-      .order("position", { ascending: true });
-
-    if (pieceRows) {
-      const publishedPieces: Piece[] = [];
-
-      for (const row of pieceRows) {
-        const draft = Array.isArray(row.draft) ? row.draft[0] : row.draft;
-        if (draft && draft.status === "published") {
-          publishedPieces.push(draft);
-        }
-      }
-
-      setPieces(publishedPieces);
-
-      const authorIds = Array.from(
-        new Set(
-          publishedPieces
-            .filter((piece) => !piece.is_anonymous)
-            .map((piece) => piece.user_id)
-        )
-      );
-
-      if (authorIds.length > 0) {
-        const { data: writerData } = await supabase
-          .from("profiles")
-          .select("id, display_name")
-          .in("id", authorIds);
-
-        if (writerData) setWriters(writerData);
-      }
-    }
-
-    setLoading(false);
   }
+
+  const authorIds = Array.from(
+    new Set(
+      pieces
+        .filter((piece) => !piece.is_anonymous)
+        .map((piece) => piece.user_id)
+    )
+  );
+
+  let writers: Writer[] = [];
+
+  if (authorIds.length > 0) {
+    const { data: writerData } = await supabase
+      .from("profiles")
+      .select("id, display_name")
+      .in("id", authorIds);
+
+    writers = writerData ?? [];
+  }
+
+  return { collection, pieces, writers };
+});
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const data = await loadCollection(id);
+
+  if (!data) {
+    return { title: "Collection not found | Qalam" };
+  }
+
+  const { collection } = data;
+  const description =
+    collection.description?.trim().slice(0, 160) ||
+    `A curated collection of writing on Qalam.`;
+  const image = collection.cover_image_url || "https://qalam.ie/og-default.png";
+
+  return {
+    title: `${collection.title} | Qalam`,
+    description,
+    openGraph: {
+      title: collection.title,
+      description,
+      url: `https://qalam.ie/collections/${id}`,
+      siteName: "Qalam",
+      images: [{ url: image, width: 1200, height: 630 }],
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: collection.title,
+      description,
+      images: [image],
+    },
+  };
+}
+
+export default async function CollectionPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  const data = await loadCollection(id);
+
+  if (!data) notFound();
+
+  const { collection, pieces, writers } = data;
 
   function getWriter(userId: string) {
     return writers.find((writer) => writer.id === userId);
-  }
-
-  if (loading) {
-    return <main className="min-h-screen bg-[#F7F1E8]" />;
-  }
-
-  if (!collection) {
-    return (
-      <main className="min-h-screen bg-[#F7F1E8] px-8 py-20 text-[#46382F]">
-        <div className="mx-auto max-w-4xl">
-          <h1 className={`${poppins.className} text-4xl`}>Collection not found</h1>
-          <Link href="/collections" className={`${inter.className} mt-6 inline-block text-[#053400]`}>
-            ← Back to Collections
-          </Link>
-        </div>
-      </main>
-    );
   }
 
   return (

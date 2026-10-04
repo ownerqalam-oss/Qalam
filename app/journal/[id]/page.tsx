@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
-import ArticleView from "./ArticleView";
-
-interface DraftMeta {
-  title: string;
-  content: string;
-  cover_image_url: string | null;
-}
+import { notFound } from "next/navigation";
+import { cache } from "react";
+import { createPublicClient } from "../../../lib/supabase/public";
+import ArticleView, {
+  type Article,
+  type OtherPiece,
+  type Profile,
+} from "./ArticleView";
 
 function excerptFromHtml(html: string, maxLength = 160): string {
   const text = html
@@ -18,22 +19,49 @@ function excerptFromHtml(html: string, maxLength = 160): string {
   return `${text.slice(0, maxLength).trimEnd()}…`;
 }
 
-async function fetchArticleMeta(id: string): Promise<DraftMeta | null> {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/drafts?id=eq.${id}&status=eq.published&select=title,content,cover_image_url`,
-    {
-      headers: {
-        apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      },
-      next: { revalidate: 60 },
-    }
-  );
+// Wrapped in cache() so generateMetadata and the page share one fetch.
+const loadArticle = cache(async (id: string) => {
+  const supabase = createPublicClient();
 
-  if (!res.ok) return null;
+  const { data: article } = await supabase
+    .from("drafts")
+    .select("*")
+    .eq("id", id)
+    .eq("status", "published")
+    .maybeSingle<Article>();
 
-  const data = await res.json();
-  return data[0] ?? null;
-}
+  if (!article) return null;
+
+  /*
+   * Anonymous pieces never load or expose the author's profile.
+   */
+  if (article.is_anonymous) {
+    return { article, profile: null, moreFromWriter: [] };
+  }
+
+  const [{ data: profile }, { data: moreFromWriter }] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("id, display_name, bio, avatar_url")
+      .eq("id", article.user_id)
+      .maybeSingle<Profile>(),
+    supabase
+      .from("drafts")
+      .select("id, title, type")
+      .eq("user_id", article.user_id)
+      .eq("status", "published")
+      .eq("is_anonymous", false)
+      .neq("id", article.id)
+      .order("published_at", { ascending: false })
+      .limit(4),
+  ]);
+
+  return {
+    article,
+    profile,
+    moreFromWriter: (moreFromWriter ?? []) as OtherPiece[],
+  };
+});
 
 export async function generateMetadata({
   params,
@@ -41,12 +69,13 @@ export async function generateMetadata({
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
   const { id } = await params;
-  const article = await fetchArticleMeta(id);
+  const data = await loadArticle(id);
 
-  if (!article) {
+  if (!data) {
     return { title: "Article not found | Qalam" };
   }
 
+  const { article } = data;
   const description =
     excerptFromHtml(article.content) ||
     "Read on Qalam - a home for Muslim writers.";
@@ -72,6 +101,21 @@ export async function generateMetadata({
   };
 }
 
-export default function ArticlePage() {
-  return <ArticleView />;
+export default async function ArticlePage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  const data = await loadArticle(id);
+
+  if (!data) notFound();
+
+  return (
+    <ArticleView
+      initialArticle={data.article}
+      profile={data.profile}
+      moreFromWriter={data.moreFromWriter}
+    />
+  );
 }

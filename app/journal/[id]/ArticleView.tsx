@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
 import { Poppins, Inter } from "next/font/google";
 import { supabase } from "../../../lib/supabase/client";
 import { useToast } from "../../../components/ToastProvider";
@@ -20,14 +19,14 @@ const inter = Inter({
   subsets: ["latin"],
 });
 
-interface Profile {
+export interface Profile {
   id: string;
   display_name: string | null;
   bio: string | null;
   avatar_url: string | null;
 }
 
-interface Article {
+export interface Article {
   id: string;
   title: string;
   content: string;
@@ -42,7 +41,7 @@ interface Article {
   is_featured: boolean;
 }
 
-interface OtherPiece {
+export interface OtherPiece {
   id: string;
   title: string;
   type: string;
@@ -62,13 +61,20 @@ interface CommentAuthor {
   avatar_url: string | null;
 }
 
-export default function ArticleView() {
-  const { id } = useParams();
+export default function ArticleView({
+  initialArticle,
+  profile,
+  moreFromWriter,
+}: {
+  initialArticle: Article;
+  profile: Profile | null;
+  moreFromWriter: OtherPiece[];
+}) {
+  const id = initialArticle.id;
   const { showToast } = useToast();
 
-  const [article, setArticle] = useState<Article | null>(null);
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [loading, setLoading] = useState(true);
+  // Kept in state so view count and Editor's Pick can update in place.
+  const [article, setArticle] = useState<Article>(initialArticle);
 
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(
@@ -89,16 +95,13 @@ export default function ArticleView() {
   const [replyText, setReplyText] = useState("");
   const [postingReply, setPostingReply] = useState(false);
 
-  const [moreFromWriter, setMoreFromWriter] = useState<OtherPiece[]>([]);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [showLikeBlot, setShowLikeBlot] = useState(false);
 
   useEffect(() => {
-    if (id) {
-      loadArticle();
-      loadEngagement();
-      loadComments();
-    }
+    incrementViewCount();
+    loadEngagement();
+    loadComments();
   }, [id]);
 
   useEffect(() => {
@@ -245,8 +248,6 @@ export default function ArticleView() {
   }
 
   async function toggleFeatured() {
-    if (!article) return;
-
     const nextFeatured = !article.is_featured;
 
     const { error } = await supabase.rpc("set_featured", {
@@ -357,8 +358,6 @@ export default function ArticleView() {
   }
 
   async function shareArticle() {
-    if (!article) return;
-
     const url = window.location.href;
 
     if (navigator.share) {
@@ -379,119 +378,25 @@ export default function ArticleView() {
   }
 
   function whatsappShareUrl() {
-    if (!article) return "#";
-
-    const text = `${article.title} — ${window.location.href}`;
+    // Rendered on the server too, so it can't read window.location.
+    const text = `${article.title} — https://qalam.ie/journal/${id}`;
     return `https://wa.me/?text=${encodeURIComponent(text)}`;
   }
 
-  async function loadArticle() {
-    /*
-     * Load the published article.
-     */
-    const { data: articleData, error: articleError } = await supabase
-      .from("drafts")
-      .select("*")
-      .eq("id", id)
-      .eq("status", "published")
-      .single();
+  async function incrementViewCount() {
+    const { error } = await supabase.rpc("increment_view_count", {
+      p_draft_id: id,
+    });
 
-    if (articleError || !articleData) {
-      console.error("Error loading article:", articleError);
-      setLoading(false);
+    if (error) {
+      console.error("Error incrementing view count:", error);
       return;
     }
 
-    setArticle(articleData);
-
-    supabase
-      .rpc("increment_view_count", { p_draft_id: articleData.id })
-      .then(({ error: viewError }) => {
-        if (viewError) {
-          console.error("Error incrementing view count:", viewError);
-          return;
-        }
-
-        setArticle((current) =>
-          current
-            ? { ...current, view_count: (current.view_count ?? 0) + 1 }
-            : current
-        );
-      });
-
-    /*
-     * If the article is anonymous, we still load the
-     * author's profile privately for the page logic,
-     * but we NEVER display it publicly.
-     */
-    if (!articleData.is_anonymous) {
-      const { data: profileData, error: profileError } =
-        await supabase
-          .from("profiles")
-          .select("id, display_name, bio, avatar_url")
-          .eq("id", articleData.user_id)
-          .single();
-
-      if (profileError) {
-        console.error(
-          "Error loading writer profile:",
-          profileError
-        );
-      }
-
-      if (profileData) {
-        setProfile(profileData);
-      }
-
-      const { data: otherPieces } = await supabase
-        .from("drafts")
-        .select("id, title, type")
-        .eq("user_id", articleData.user_id)
-        .eq("status", "published")
-        .eq("is_anonymous", false)
-        .neq("id", articleData.id)
-        .order("published_at", { ascending: false })
-        .limit(4);
-
-      if (otherPieces) {
-        setMoreFromWriter(otherPieces);
-      }
-    }
-
-    setLoading(false);
-  }
-
-  if (loading) {
-    return (
-      <main className="min-h-screen bg-[#F7F1E8] px-6 py-20 text-[#46382F]">
-        <div className="mx-auto max-w-3xl">
-          <p className={`${inter.className} text-sm text-[#81766D]`}>
-            Loading...
-          </p>
-        </div>
-      </main>
-    );
-  }
-
-  if (!article) {
-    return (
-      <main className="min-h-screen bg-[#F7F1E8] px-6 py-20 text-[#46382F]">
-        <div className="mx-auto max-w-3xl">
-          <h1
-            className={`${poppins.className} mb-4 text-4xl font-medium`}
-          >
-            Article not found
-          </h1>
-
-          <Link
-            href="/journal"
-            className={`${inter.className} text-[#053400] hover:underline`}
-          >
-            ← Back to Journal
-          </Link>
-        </div>
-      </main>
-    );
+    setArticle((current) => ({
+      ...current,
+      view_count: (current.view_count ?? 0) + 1,
+    }));
   }
 
   const isAnonymous = article.is_anonymous;
@@ -601,6 +506,7 @@ export default function ArticleView() {
                       day: "numeric",
                       month: "short",
                       year: "numeric",
+                      timeZone: "Europe/Dublin",
                     })}
                   </p>
                 )}
@@ -646,6 +552,7 @@ export default function ArticleView() {
                       day: "numeric",
                       month: "short",
                       year: "numeric",
+                      timeZone: "Europe/Dublin",
                     })}
                   </p>
                 )}
