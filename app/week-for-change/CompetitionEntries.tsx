@@ -4,26 +4,48 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "../../lib/supabase/client";
 import { COMPETITION } from "../../lib/competition";
+import { estimateReadingTime } from "../../lib/readingTime";
+import { getGenreColor } from "../../lib/genreColors";
+import CoverImage from "../../components/CoverImage";
 
 const headingFont = "font-[family-name:var(--font-heading)]";
+const bodyFont = "font-[family-name:var(--font-body)]";
 
 interface Entry {
   id: string;
   title: string;
+  content: string;
+  type: string;
+  cover_image_url: string | null;
   user_id: string;
   is_anonymous: boolean;
+  published_at: string | null;
   likes: number;
+}
+
+interface Writer {
+  id: string;
+  display_name: string | null;
+  avatar_url: string | null;
 }
 
 interface EntriesResult {
   entries: Entry[];
-  writerNames: Record<string, string>;
+  writers: Record<string, Writer>;
+}
+
+function HeartIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="currentColor">
+      <path d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.099 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
+    </svg>
+  );
 }
 
 async function fetchEntries(): Promise<EntriesResult> {
   const { data: drafts, error } = await supabase
     .from("drafts")
-    .select("id, title, user_id, is_anonymous, published_at")
+    .select("id, title, content, type, cover_image_url, user_id, is_anonymous, published_at")
     .eq("status", "published")
     .contains("tags", [COMPETITION.tag])
     .order("published_at", { ascending: true });
@@ -31,7 +53,7 @@ async function fetchEntries(): Promise<EntriesResult> {
   if (error) console.error("Error loading competition entries:", error);
 
   if (!drafts || drafts.length === 0) {
-    return { entries: [], writerNames: {} };
+    return { entries: [], writers: {} };
   }
 
   const { data: likeRows } = await supabase
@@ -48,16 +70,16 @@ async function fetchEntries(): Promise<EntriesResult> {
     new Set(drafts.filter((draft) => !draft.is_anonymous).map((draft) => draft.user_id))
   );
 
-  const writerNames: Record<string, string> = {};
+  const writers: Record<string, Writer> = {};
 
   if (authorIds.length > 0) {
     const { data: profiles } = await supabase
       .from("profiles")
-      .select("id, display_name")
+      .select("id, display_name, avatar_url")
       .in("id", authorIds);
 
     for (const profile of profiles ?? []) {
-      writerNames[profile.id] = profile.display_name || "Qalam Writer";
+      writers[profile.id] = profile;
     }
   }
 
@@ -66,7 +88,7 @@ async function fetchEntries(): Promise<EntriesResult> {
     .map((draft) => ({ ...draft, likes: likeCounts[draft.id] ?? 0 }))
     .sort((a, b) => b.likes - a.likes);
 
-  return { entries, writerNames };
+  return { entries, writers };
 }
 
 export default function CompetitionEntries() {
@@ -84,61 +106,89 @@ export default function CompetitionEntries() {
     };
   }, []);
 
-  const loading = result === null;
-  const entries = result?.entries ?? [];
-  const writerNames = result?.writerNames ?? {};
-
-  if (loading) {
+  if (!result) {
     return (
-      <div className="space-y-3">
+      <div className="space-y-4">
         {[0, 1, 2].map((i) => (
-          <div key={i} className="h-[76px] animate-pulse rounded-xl bg-skeleton" />
+          <div key={i} className="h-24 animate-pulse rounded-xl bg-skeleton" />
         ))}
       </div>
     );
   }
 
-  if (entries.length === 0) {
+  if (result.entries.length === 0) {
     return (
-      <div className="border-y border-border py-12 text-center">
-        <p className="text-ink-400">No entries published yet. Be the first.</p>
+      <div className="border border-border py-16 text-center">
+        <p className={`${bodyFont} text-sm text-ink-400`}>
+          No entries yet. Be the first to write one.
+        </p>
       </div>
     );
   }
 
   return (
-    <ol className="space-y-3">
-      {entries.map((entry, index) => (
-        <li key={entry.id}>
+    <div className="space-y-4">
+      {result.entries.map((entry, index) => {
+        const writer = entry.is_anonymous ? null : result.writers[entry.user_id];
+        const genreColor = getGenreColor(entry.type);
+
+        return (
           <Link
+            key={entry.id}
             href={`/journal/${entry.id}`}
-            className="group flex items-center gap-5 rounded-xl border border-border bg-cream-card px-6 py-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+            style={{ animationDelay: `${index * 70}ms` }}
+            className={`animate-fade-in-up group flex items-start gap-5 rounded-xl border border-border border-t-4 ${genreColor.cardBorder} bg-cream-card p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md`}
           >
-            <span className={`${headingFont} w-6 shrink-0 text-lg text-gold-700`}>
-              {index + 1}
-            </span>
+            <CoverImage
+              src={entry.cover_image_url}
+              type={entry.type}
+              alt={entry.title}
+              className="h-20 w-20 shrink-0 rounded-lg sm:h-24 sm:w-24"
+            />
 
             <div className="min-w-0 flex-1">
-              <h3 className={`${headingFont} truncate text-lg font-medium text-ink-900 group-hover:text-brand-900`}>
-                {entry.title || "Untitled"}
-              </h3>
-              <p className="mt-0.5 text-sm text-ink-600">
-                {entry.is_anonymous
-                  ? "Anonymous"
-                  : writerNames[entry.user_id] ?? "Qalam Writer"}
-              </p>
-            </div>
+              <span
+                className={`${bodyFont} inline-block rounded-full ${genreColor.badgeBg} px-3 py-1 text-[11px] font-medium uppercase tracking-[0.15em] ${genreColor.badgeText}`}
+              >
+                {entry.type === "story" ? "Short Story" : entry.type}
+              </span>
 
-            <span className="flex shrink-0 items-center gap-1.5 text-sm text-ink-600">
-              <svg viewBox="0 0 24 24" className="h-4 w-4 text-danger-600" fill="currentColor" aria-hidden="true">
-                <path d="M12 21s-7.5-4.6-10-9.3C.4 8.4 2.3 4.5 6 4.5c2.1 0 3.4 1.1 4 2.2.6-1.1 1.9-2.2 4-2.2 3.7 0 5.6 3.9 4 7.2C19.5 16.4 12 21 12 21z" />
-              </svg>
-              {entry.likes}
-              <span className="sr-only">{entry.likes === 1 ? "like" : "likes"}</span>
-            </span>
+              <h3
+                className={`${headingFont} mt-2 text-2xl font-medium text-ink-900 transition group-hover:text-brand-900`}
+              >
+                {entry.title}
+              </h3>
+
+              <div className="mt-4 flex items-center gap-2.5">
+                {writer?.avatar_url ? (
+                  <img
+                    src={writer.avatar_url}
+                    alt={writer.display_name || "Writer"}
+                    className="h-7 w-7 rounded-full object-cover"
+                  />
+                ) : (
+                  <div
+                    className={`${headingFont} flex h-7 w-7 items-center justify-center rounded-full bg-brand-900 text-[11px] font-medium text-white`}
+                  >
+                    {(writer?.display_name || "Q")[0].toUpperCase()}
+                  </div>
+                )}
+
+                <span className={`${bodyFont} text-[13px] text-ink-600`}>
+                  {writer?.display_name || "Qalam Writer"}
+                  <span className="text-gold-600"> · </span>
+                  {estimateReadingTime(entry.content)} min read
+                  <span className="text-gold-600"> · </span>
+                  <span className="inline-flex items-center gap-1 align-middle">
+                    <HeartIcon className="h-3 w-3" />
+                    {entry.likes}
+                  </span>
+                </span>
+              </div>
+            </div>
           </Link>
-        </li>
-      ))}
-    </ol>
+        );
+      })}
+    </div>
   );
 }

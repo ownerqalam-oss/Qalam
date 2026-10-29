@@ -414,18 +414,22 @@ export default function EditorContent() {
 
         {/* COMPETITION BANNER */}
         {isCompetition && (
-          <div className="mb-8 rounded-xl bg-brand-900 px-6 py-5 text-cream">
-            <p className={`${bodyFont} text-[11px] font-medium uppercase tracking-[0.25em] text-gold-100`}>
-              Qalam × Ireland&apos;s Week for Change · {COMPETITION.title}
-            </p>
-            <p className={`${headingFont} mt-2 text-xl leading-8 md:text-2xl`}>
-              {COMPETITION.prompt}
-            </p>
+          <div className="mb-8 flex items-start justify-between gap-4 rounded-xl border border-border bg-cream-card px-5 py-4">
+            <div>
+              <p className={`${bodyFont} text-xs font-medium uppercase tracking-[0.2em] text-brand-600`}>
+                Week for Change competition
+              </p>
+
+              <p className={`${bodyFont} mt-2 text-[15px] leading-6 text-ink-900`}>
+                {COMPETITION.prompt}
+              </p>
+            </div>
+
             <Link
               href={COMPETITION.path}
-              className={`${bodyFont} mt-3 inline-block text-sm text-cream/80 underline-offset-4 hover:text-cream hover:underline`}
+              className={`${bodyFont} shrink-0 text-xs font-medium text-brand-900 transition hover:underline`}
             >
-              Competition details →
+              Details →
             </Link>
           </div>
         )}
