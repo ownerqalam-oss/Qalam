@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ADMIN_EMAILS } from "../../../lib/admin";
+import { createAdminClient } from "../../../lib/supabase/admin";
+import { COMPETITION, hasCompetitionTag } from "../../../lib/competition";
 
 interface DraftRecord {
   id: number;
@@ -52,6 +54,31 @@ export async function POST(request: NextRequest) {
   const reviewUrl = `https://qalam.ie/admin/review/${record.id}`;
   const title = record.title || "Untitled";
 
+  // The trigger payload doesn't carry tags, so look them up. If the
+  // lookup fails, still send the normal email rather than nothing.
+  const { data: draft, error: draftError } = await createAdminClient()
+    .from("drafts")
+    .select("tags")
+    .eq("id", record.id)
+    .maybeSingle();
+
+  if (draftError) {
+    console.error("Error loading draft tags for submission email:", draftError);
+  }
+
+  const isCompetitionEntry = hasCompetitionTag(draft?.tags);
+
+  const subject = isCompetitionEntry
+    ? `${COMPETITION.title} competition entry: ${title}`
+    : `New submission for review: ${title}`;
+
+  const competitionBanner = isCompetitionEntry
+    ? `
+        <p style="margin:0 0 16px;padding:12px 16px;border-left:4px solid #B8860B;background:#F5E6C8;color:#46382F;">
+          <strong>${COMPETITION.title} competition entry</strong> (Week for Change)
+        </p>`
+    : "";
+
   const emailResponse = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
@@ -61,8 +88,8 @@ export async function POST(request: NextRequest) {
     body: JSON.stringify({
       from: "Qalam <notifications@qalam.ie>",
       to: ADMIN_EMAILS,
-      subject: `New submission for review: ${title}`,
-      html: `
+      subject,
+      html: `${competitionBanner}
         <p>A new ${record.type} was submitted for review on Qalam.</p>
         <p><strong>${title}</strong></p>
         <p><a href="${reviewUrl}">Review it here</a></p>

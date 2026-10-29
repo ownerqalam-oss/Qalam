@@ -9,7 +9,11 @@ import AyahLoader from "../../components/AyahLoader";
 import { Button, ButtonLink } from "../../components/ui/Button";
 import PublishModal from "../../components/PublishModal";
 import { prompts, getRandomPrompt } from "../../lib/prompts";
-import { COMPETITION, isCompetitionEntry } from "../../lib/competition";
+import {
+  COMPETITION,
+  isCompetitionClosed,
+  isCompetitionEntry,
+} from "../../lib/competition";
 import Link from "next/link";
 
 const headingFont = "font-[family-name:var(--font-heading)]";
@@ -220,6 +224,14 @@ export default function EditorContent() {
   }
 
   async function handleConfirmPublish() {
+    if (isCompetitionEntry(tags) && isCompetitionClosed()) {
+      showToast(
+        `The ${COMPETITION.title} competition closed on ${COMPETITION.deadlineLabel}. Remove the "${COMPETITION.tag}" tag to publish this as a regular poem.`,
+        "error"
+      );
+      return;
+    }
+
     setPublishing(true);
 
     const id = await saveDraft();
@@ -422,6 +434,12 @@ export default function EditorContent() {
 
               <p className={`${bodyFont} mt-2 text-[15px] leading-6 text-ink-900`}>
                 {COMPETITION.prompt}
+              </p>
+
+              <p className={`${bodyFont} mt-1 text-[13px] text-ink-600`}>
+                {isCompetitionClosed()
+                  ? `Entries closed on ${COMPETITION.deadlineLabel}. Remove the "${COMPETITION.tag}" tag to publish this as a regular poem.`
+                  : `Entries close at 11:59pm on ${COMPETITION.deadlineLabel}.`}
               </p>
             </div>
 
