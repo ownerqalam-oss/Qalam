@@ -9,6 +9,8 @@ import AyahLoader from "../../components/AyahLoader";
 import { Button, ButtonLink } from "../../components/ui/Button";
 import PublishModal from "../../components/PublishModal";
 import { prompts, getRandomPrompt } from "../../lib/prompts";
+import { COMPETITION, isCompetitionEntry } from "../../lib/competition";
+import Link from "next/link";
 
 const headingFont = "font-[family-name:var(--font-heading)]";
 const bodyFont = "font-[family-name:var(--font-body)]";
@@ -20,13 +22,15 @@ export default function EditorContent() {
 
   const initialId = searchParams.get("id");
   const initialType = searchParams.get("type") ?? "article";
+  const startsAsCompetitionEntry =
+    !initialId && searchParams.get("competition") === COMPETITION.slug;
 
   const [draftId, setDraftId] = useState<string | null>(initialId);
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [type, setType] = useState(initialType);
-  const [tags, setTags] = useState("");
+  const [tags, setTags] = useState(startsAsCompetitionEntry ? COMPETITION.tag : "");
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [coverImageUrl, setCoverImageUrl] = useState<string | null>(null);
   const [uploadingCover, setUploadingCover] = useState(false);
@@ -329,8 +333,14 @@ export default function EditorContent() {
     );
   }
 
+  const isCompetition = isCompetitionEntry(tags);
+
   const showPrompt =
-    !promptDismissed && !title.trim() && !content.trim() && draftStatus !== "submitted";
+    !isCompetition &&
+    !promptDismissed &&
+    !title.trim() &&
+    !content.trim() &&
+    draftStatus !== "submitted";
 
   return (
     <main className="min-h-screen bg-cream text-ink-900">
@@ -399,6 +409,24 @@ export default function EditorContent() {
               This was sent back with feedback:
             </p>
             <p className="text-sm">{feedback}</p>
+          </div>
+        )}
+
+        {/* COMPETITION BANNER */}
+        {isCompetition && (
+          <div className="mb-8 rounded-xl bg-brand-900 px-6 py-5 text-cream">
+            <p className={`${bodyFont} text-[11px] font-medium uppercase tracking-[0.25em] text-gold-100`}>
+              Qalam × Ireland&apos;s Week for Change · {COMPETITION.title}
+            </p>
+            <p className={`${headingFont} mt-2 text-xl leading-8 md:text-2xl`}>
+              {COMPETITION.prompt}
+            </p>
+            <Link
+              href={COMPETITION.path}
+              className={`${bodyFont} mt-3 inline-block text-sm text-cream/80 underline-offset-4 hover:text-cream hover:underline`}
+            >
+              Competition details →
+            </Link>
           </div>
         )}
 

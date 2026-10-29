@@ -13,6 +13,7 @@ const NAV_LINKS = [
   { href: "/journal", label: "Journal" },
   { href: "/explore", label: "Explore" },
   { href: "/writers", label: "Writers" },
+  { href: "/week-for-change", label: "Competition" },
 ];
 
 interface Profile {
