@@ -90,6 +90,30 @@ body {
 
   min-height: 100vh;
 }
+
+/*
+ * Spacing for a piece's body, shared by the editor and every page that
+ * shows a piece so writers see exactly what readers will. Enter starts
+ * a new line and a blank line is an empty paragraph. In the editor an
+ * empty paragraph holds only ProseMirror's trailing <br>.
+ */
+.writing-body p {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.writing-body p:empty {
+  min-height: 1.75em;
+}
+
+/* Stanzas typed as one paragraph with Shift+Enter line breaks. */
+.writing-body p:has(br:not(.ProseMirror-trailingBreak))
+  + p:not(:empty):not(:has(> br.ProseMirror-trailingBreak:only-child)),
+.writing-body p:not(:empty):not(:has(> br.ProseMirror-trailingBreak:only-child))
+  + p:has(br:not(.ProseMirror-trailingBreak)) {
+  margin-top: 1.75em;
+}
+
 @keyframes verseFloat {
   0% {
     transform: translateY(0px);

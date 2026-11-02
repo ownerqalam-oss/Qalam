@@ -37,7 +37,7 @@ export default function RichTextEditor({
       attributes: {
         dir: "auto",
         class:
-  "prose prose-lg max-w-none min-h-[70vh] rounded-xl p-4 outline-none focus:outline-none font-[family-name:var(--font-body)] " +
+  "prose prose-lg writing-body max-w-none min-h-[70vh] rounded-xl p-4 outline-none focus:outline-none font-[family-name:var(--font-body)] " +
   "[&_h1]:text-4xl [&_h1]:font-bold [&_h1]:mt-6 [&_h1]:mb-4 " +
   "[&_h2]:text-3xl [&_h2]:font-bold [&_h2]:mt-5 [&_h2]:mb-3 " +
   "[&_h3]:text-2xl [&_h3]:font-semibold [&_h3]:mt-4 [&_h3]:mb-2 " +
