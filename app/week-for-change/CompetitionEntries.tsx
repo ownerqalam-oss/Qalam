@@ -48,7 +48,7 @@ async function fetchEntries(): Promise<EntriesResult> {
     .select("id, title, content, type, cover_image_url, user_id, is_anonymous, published_at")
     .eq("status", "published")
     .contains("tags", [COMPETITION.tag])
-    .order("published_at", { ascending: true });
+    .order("published_at", { ascending: false });
 
   if (error) console.error("Error loading competition entries:", error);
 
@@ -83,10 +83,10 @@ async function fetchEntries(): Promise<EntriesResult> {
     }
   }
 
-  // Stable sort, so ties keep the earliest-published entry first.
-  const entries = drafts
-    .map((draft) => ({ ...draft, likes: likeCounts[draft.id] ?? 0 }))
-    .sort((a, b) => b.likes - a.likes);
+  const entries = drafts.map((draft) => ({
+    ...draft,
+    likes: likeCounts[draft.id] ?? 0,
+  }));
 
   return { entries, writers };
 }

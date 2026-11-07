@@ -40,9 +40,9 @@ export default function WeekForChangePage() {
             </p>
 
             <p className={`${bodyFont} mt-3 max-w-2xl text-[16px] leading-7 text-ink-600`}>
-              The winning poem, chosen by our judges, will be printed on the
-              thank-you cards at the Week for Change annual dinner and featured
-              on Qalam. The most-liked entry wins People&apos;s Choice.
+              The winning poem, chosen by our judges, will feature on the
+              thank-you cards at the Week for Change annual dinner and on
+              Qalam.
             </p>
 
             <div className="mt-6">
@@ -71,11 +71,8 @@ export default function WeekForChangePage() {
         </div>
 
         {/* ENTRIES */}
-        <div className="mb-6 flex flex-wrap items-end justify-between gap-2 border-b border-border pb-5">
+        <div className="mb-6 border-b border-border pb-5">
           <h2 className={`${headingFont} text-3xl font-medium`}>Entries</h2>
-          <p className={`${bodyFont} text-[13px] text-ink-600`}>
-            Like your favourites to vote for People&apos;s Choice
-          </p>
         </div>
 
         <CompetitionEntries />
