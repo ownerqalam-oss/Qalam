@@ -1,10 +1,20 @@
-import type { CSSProperties } from "react";
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
+import { Cormorant_Garamond, Pinyon_Script } from "next/font/google";
 import { createPublicClient } from "../../../lib/supabase/public";
 import { noIndex } from "../../../lib/seo";
 import { COMPETITION } from "../../../lib/competition";
 import InkFlourish from "../../../components/InkFlourish";
+import StarrySky from "./StarrySky";
+
+// The dinner's own lettering, used only for this page's header.
+const script = Pinyon_Script({ weight: "400", subsets: ["latin"] });
+const serif = Cormorant_Garamond({
+  weight: ["500", "600"],
+  style: ["normal", "italic"],
+  subsets: ["latin"],
+});
 
 const headingFont = "font-[family-name:var(--font-heading)]";
 const bodyFont = "font-[family-name:var(--font-body)]";
@@ -18,45 +28,6 @@ export const metadata: Metadata = {
   title: `${COMPETITION.title}: The Winning Poem`,
   description: `The winning poem of ${COMPETITION.title}, a poetry competition from Qalam and Ireland's Week for Change.`,
   ...noIndex,
-};
-
-// Night sky after the Week for Change dinner's "Legacies Amongst Stars"
-// theme: two tiled star layers of different sizes so the repeat doesn't
-// read as a grid, plus a gold and a Qalam-green glow.
-function stars(points: [number, number, number][], colour: string) {
-  return points.map(
-    ([x, y, size]) =>
-      `radial-gradient(${size}px ${size}px at ${x}px ${y}px, ${colour}, transparent)`
-  );
-}
-
-const smallStars = stars(
-  [
-    [30, 50, 1.5], [120, 20, 1], [205, 95, 1.5], [255, 210, 1],
-    [80, 165, 1], [160, 245, 1.5], [18, 262, 1], [235, 30, 1],
-  ],
-  "rgba(247, 241, 232, 0.85)"
-);
-
-const brightStars = stars(
-  [[60, 300, 2.5], [300, 120, 2], [225, 385, 2]],
-  "rgba(232, 200, 120, 0.9)"
-);
-
-const NIGHT_SKY: CSSProperties = {
-  backgroundColor: "#081630",
-  backgroundImage: [
-    "radial-gradient(ellipse 70% 45% at 78% 0%, rgba(217, 180, 90, 0.18), transparent 70%)",
-    "radial-gradient(ellipse 60% 40% at 0% 100%, rgba(46, 125, 79, 0.22), transparent 70%)",
-    ...smallStars,
-    ...brightStars,
-  ].join(", "),
-  backgroundSize: [
-    "auto",
-    "auto",
-    ...smallStars.map(() => "280px 280px"),
-    ...brightStars.map(() => "410px 410px"),
-  ].join(", "),
 };
 
 interface WinningPoem {
@@ -96,47 +67,51 @@ export default async function WinningPoemPage() {
   const winner = await loadWinner();
 
   return (
-    <main className="min-h-screen text-cream" style={NIGHT_SKY}>
+    <main className="relative isolate min-h-screen overflow-hidden bg-[#00142A] text-[#F3EBDD]">
+      <StarrySky />
+
       <section className="mx-auto max-w-2xl px-5 pt-16 pb-20 md:px-8">
 
-        <header className="text-center">
-          <p className={`${bodyFont} text-[11px] font-medium uppercase tracking-[0.3em] text-[#E8C878]`}>
+        <header className="text-center [text-shadow:0_2px_18px_rgba(0,20,42,0.9)]">
+          <p className={`${serif.className} text-xs font-semibold uppercase tracking-[0.18em] text-[#E8C878] sm:text-sm sm:tracking-[0.3em]`}>
             Week for Change Grand Dinner
           </p>
 
-          <p className={`${headingFont} mt-2 text-lg italic text-cream/80`}>
-            Legacies Amongst Stars
-          </p>
-
-          <h1 className={`${headingFont} mt-8 text-5xl font-medium text-cream md:text-6xl`}>
-            {COMPETITION.title}
+          <h1 className={`${script.className} mt-6 text-7xl leading-[1.1] text-[#FBF6EC] md:text-8xl`}>
+            Change Within
           </h1>
 
-          <p className={`${bodyFont} mt-3 text-[11px] font-medium uppercase tracking-[0.3em] text-cream/70`}>
-            A poetry competition by Qalam
+          <p className={`${serif.className} mt-3 text-xl italic text-[#F3EBDD]/90`}>
+            {winner ? "the winning poem" : "a poetry competition by Qalam"}
           </p>
 
-          <InkFlourish className="mx-auto mt-4 w-[110px] text-[#E8C878]" />
+          <p className={`${serif.className} mt-1 text-base text-[#E8C878]/90`}>
+            Legacies amongst Stars
+          </p>
         </header>
 
-        <article className="mt-12 rounded-2xl bg-cream px-7 py-10 text-ink-900 shadow-[0_30px_80px_rgba(0,0,0,0.45)] md:px-12 md:py-14">
+        <article className="mt-12 rounded-2xl border border-[#E8C878]/40 bg-[#00142A]/80 px-7 py-10 shadow-[0_30px_80px_rgba(0,0,0,0.5)] backdrop-blur-sm md:px-12 md:py-12">
+          <Image
+            src="/logo2.png"
+            alt="Qalam"
+            width={120}
+            height={50}
+            className="h-auto w-[96px] brightness-0 invert opacity-90"
+          />
+
           {winner ? (
             <>
-              <p className={`${bodyFont} text-[11px] font-medium uppercase tracking-[0.3em] text-gold-700`}>
-                The winning poem
-              </p>
-
-              <h2 className={`${headingFont} mt-3 text-4xl font-medium text-brand-900`}>
+              <h2 className={`${headingFont} mt-8 text-4xl font-medium text-[#FBF6EC]`}>
                 {winner.poem.title}
               </h2>
 
-              <p className={`${bodyFont} mt-2 text-[15px] text-ink-600`}>
+              <p className={`${bodyFont} mt-2 text-[15px] text-[#F3EBDD]/75`}>
                 {winner.writerName ? (
                   <>
                     by{" "}
                     <Link
                       href={`/writers/${winner.poem.user_id}`}
-                      className="font-medium text-ink-900 hover:underline"
+                      className="font-medium text-[#FBF6EC] hover:underline"
                     >
                       {winner.writerName}
                     </Link>
@@ -146,19 +121,20 @@ export default async function WinningPoemPage() {
                 )}
               </p>
 
-              <InkFlourish className="mt-3 w-[90px]" />
+              <InkFlourish className="mt-3 w-[90px] text-[#E8C878]" />
 
               <div
-                className={`${bodyFont} prose prose-lg mt-8 max-w-none text-ink-900 writing-body`}
+                className={`${bodyFont} prose prose-lg prose-invert mt-8 max-w-none writing-body [--tw-prose-invert-body:#F3EBDD] [--tw-prose-invert-bold:#FFFFFF]`}
                 dangerouslySetInnerHTML={{ __html: winner.poem.content }}
               />
             </>
           ) : (
-            <div className="py-6 text-center">
-              <p className={`${headingFont} text-2xl font-medium text-brand-900`}>
+            <div className="py-4">
+              <p className={`${headingFont} mt-8 text-2xl font-medium text-[#FBF6EC]`}>
                 The winning poem will appear here soon
               </p>
-              <p className={`${bodyFont} mt-3 text-[15px] leading-7 text-ink-600`}>
+              <InkFlourish className="mt-3 w-[90px] text-[#E8C878]" />
+              <p className={`${bodyFont} mt-4 text-[15px] leading-7 text-[#F3EBDD]/80`}>
                 in shā&apos; Allāh. Thank you for supporting Ireland&apos;s Week
                 for Change.
               </p>
@@ -166,26 +142,26 @@ export default async function WinningPoemPage() {
           )}
         </article>
 
-        <footer className={`${bodyFont} mt-10 text-center text-sm leading-7 text-cream/75`}>
+        <footer className={`${serif.className} mt-10 text-center text-lg leading-8 text-[#F3EBDD]/85 [text-shadow:0_2px_12px_rgba(0,20,42,0.9)]`}>
           {winner && (
-            <p className="mb-4">
-              Thank you for supporting Ireland&apos;s Week for Change. Chosen
-              from the entries to {COMPETITION.title}, written on the theme of
-              change.
+            <p className="mb-4 italic">
+              Chosen from the entries to {COMPETITION.title}, written on the
+              theme of change. Thank you for supporting Ireland&apos;s Week for
+              Change.
             </p>
           )}
 
-          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 font-medium text-[#E8C878]">
+          <div className="flex flex-wrap justify-center gap-x-6 gap-y-1 font-semibold text-[#E8C878]">
             {winner && (
               <Link href={`/journal/${winner.poem.id}`} className="hover:underline">
-                Like or comment on this poem →
+                Like this poem
               </Link>
             )}
             <Link href={COMPETITION.path} className="hover:underline">
-              Read every entry →
+              Read every entry
             </Link>
             <Link href="/" className="hover:underline">
-              Discover Qalam →
+              Discover Qalam
             </Link>
           </div>
         </footer>
