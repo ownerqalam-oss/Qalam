@@ -10,6 +10,10 @@ export const COMPETITION = {
   // End of 12 November in Ireland (GMT in November). Must match the
   // cutoff in supabase/migrations/0013_competition_deadline.sql.
   closesAt: new Date("2026-11-13T00:00:00Z"),
+  // Id of the winning draft (as in /journal/<id>), shown on the unlisted
+  // /week-for-change/winner page printed as a QR code on the dinner
+  // thank-you cards. Leave null until the winner is chosen.
+  winnerId: null as string | null,
 };
 
 export const COMPETITION_EDITOR_URL = `/editor?type=poetry&competition=${COMPETITION.slug}`;
