@@ -20,6 +20,11 @@ interface PublishModalProps {
   publishing: boolean;
   onClose: () => void;
   onConfirm: () => void;
+  // Competition entries only: how to reach the writer if they win
+  isCompetition?: boolean;
+  contact?: string;
+  onContactChange?: (value: string) => void;
+  contactError?: string | null;
 }
 
 export default function PublishModal({
@@ -37,6 +42,10 @@ export default function PublishModal({
   publishing,
   onClose,
   onConfirm,
+  isCompetition = false,
+  contact = "",
+  onContactChange,
+  contactError = null,
 }: PublishModalProps) {
   if (!open) return null;
 
@@ -170,6 +179,35 @@ export default function PublishModal({
             />
           </button>
         </div>
+
+        {/* COMPETITION CONTACT */}
+        {isCompetition && (
+          <div className="mt-5 rounded-xl border border-gold-600/40 bg-white px-4 py-3.5">
+            <label htmlFor="competition-contact" className={`${bodyFont} block text-sm font-medium text-ink-900`}>
+              How can we reach you if you win?
+            </label>
+            <p id="competition-contact-help" className={`${bodyFont} mt-1 text-xs leading-5 text-ink-400`}>
+              An email address or phone number. Only the Qalam team sees this, even if you publish anonymously.
+            </p>
+            <input
+              id="competition-contact"
+              value={contact}
+              onChange={(e) => onContactChange?.(e.target.value)}
+              placeholder="name@example.com or 083 123 4567"
+              autoComplete="email"
+              aria-invalid={Boolean(contactError)}
+              aria-describedby={contactError ? "competition-contact-error" : "competition-contact-help"}
+              className={`${bodyFont} mt-3 w-full rounded-lg border bg-white px-4 py-2.5 text-base outline-none focus:border-brand-900 sm:text-sm ${
+                contactError ? "border-danger-600" : "border-border"
+              }`}
+            />
+            {contactError && (
+              <p id="competition-contact-error" className={`${bodyFont} mt-2 text-xs text-danger-600`}>
+                {contactError}
+              </p>
+            )}
+          </div>
+        )}
 
         {/* ACTIONS */}
         <div className="mt-7 flex justify-end gap-3">

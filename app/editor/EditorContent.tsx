@@ -46,6 +46,8 @@ export default function EditorContent() {
   const [loading, setLoading] = useState(true);
 
   const [publishModalOpen, setPublishModalOpen] = useState(false);
+  const [competitionContact, setCompetitionContact] = useState("");
+  const [contactError, setContactError] = useState<string | null>(null);
   const [publishing, setPublishing] = useState(false);
 
   const [promptIndex, setPromptIndex] = useState(0);
@@ -216,11 +218,27 @@ export default function EditorContent() {
       return;
     }
 
-    if (!draftId) {
-      await saveDraft();
+    const id = draftId ?? (await saveDraft());
+
+    // Competition entries: prefill how to reach them with what they gave before, or their account email
+    if (isCompetitionEntry(tags) && !competitionContact) {
+      const { data: existing } = id
+        ? await supabase.from("competition_contacts").select("contact").eq("draft_id", id).maybeSingle()
+        : { data: null };
+      const { data: { user } } = await supabase.auth.getUser();
+      setCompetitionContact(existing?.contact ?? user?.email ?? "");
     }
 
     setPublishModalOpen(true);
+  }
+
+  // An email address, or a phone number with at least 7 digits
+  function contactProblem(value: string): string | null {
+    const v = value.trim();
+    if (!v) return "Add an email address or phone number so we can reach you if you win.";
+    const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+    const isPhone = /^\+?[\d\s()-]+$/.test(v) && v.replace(/\D/g, "").length >= 7;
+    return isEmail || isPhone ? null : "Enter an email address like name@example.com, or a phone number.";
   }
 
   async function handleConfirmPublish() {
@@ -232,6 +250,13 @@ export default function EditorContent() {
       return;
     }
 
+    const competition = isCompetitionEntry(tags);
+    if (competition) {
+      const problem = contactProblem(competitionContact);
+      setContactError(problem);
+      if (problem) return;
+    }
+
     setPublishing(true);
 
     const id = await saveDraft();
@@ -239,6 +264,14 @@ export default function EditorContent() {
     if (!id) {
       setPublishing(false);
       return;
+    }
+
+    if (competition) {
+      const { error } = await supabase
+        .from("competition_contacts")
+        .upsert({ draft_id: id, contact: competitionContact.trim(), updated_at: new Date().toISOString() });
+      // Never block an entry over this; the account email is still on file
+      if (error) console.error("Could not save competition contact:", error);
     }
 
     await submitForReview(id);
@@ -528,6 +561,10 @@ export default function EditorContent() {
         publishing={publishing}
         onClose={() => setPublishModalOpen(false)}
         onConfirm={handleConfirmPublish}
+        isCompetition={isCompetitionEntry(tags)}
+        contact={competitionContact}
+        onContactChange={(value) => { setCompetitionContact(value); setContactError(null); }}
+        contactError={contactError}
       />
     </main>
   );
