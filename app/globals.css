@@ -35,6 +35,10 @@
   --rust-600: #B5651D;
   --mauve-600: #8B5A78;
 
+  /* Action: the one colour for things people press */
+  --maroon-700: #8A2E2A;
+  --maroon-800: #73231F;
+
   /* Semantic */
   --danger-600: #B3261E;
 }
@@ -70,6 +74,8 @@
   --color-mauve-600: var(--mauve-600);
 
   --color-danger-600: var(--danger-600);
+  --color-maroon-700: var(--maroon-700);
+  --color-maroon-800: var(--maroon-800);
 
   --font-sans: var(--font-inter);
   --font-heading: var(--font-poppins);
@@ -246,3 +252,80 @@ body {
 .animate-ink-blot {
   animation: inkBlot 0.6s ease-out forwards;
 }
+
+
+/* ---------- Homepage book intro (components/home/BookIntro.tsx) ---------- */
+html[data-intro="skip"] .book-intro { display: none; }
+html[data-intro="on"] #hero-plate { visibility: hidden; }
+
+.book-intro {
+  position: fixed; inset: 0; z-index: 100; overflow: hidden;
+  background: var(--cream);
+  /* failsafe: if JavaScript never runs, get out of the way */
+  animation: bi-failsafe 0s linear 6s forwards;
+}
+.book-intro.bi-running { animation: none; }
+@keyframes bi-failsafe { to { visibility: hidden; opacity: 0; } }
+
+.bi-cam { position: absolute; inset: 0; transform-origin: 0 0; }
+.bi-stage { position: absolute; left: 50%; top: 50%; width: 0; height: 0; perspective: 2600px; }
+.bi-ground {
+  position: absolute; left: calc(var(--P, 300px) * -1); width: calc(var(--P, 300px) * 2);
+  top: calc(var(--H, 390px) / 2 - 18px); height: 46px;
+  background: radial-gradient(50% 50% at 50% 50%, rgba(60,40,15,.42), rgba(60,40,15,0) 70%);
+  filter: blur(10px);
+}
+.bi-book {
+  position: absolute; width: var(--P, 300px); height: var(--H, 390px);
+  left: calc(var(--P, 300px) / -2); top: calc(var(--H, 390px) / -2); transform-style: preserve-3d;
+}
+.bi-book > * { position: absolute; transform-style: preserve-3d; }
+.bi-page { inset: 0; transform: translateZ(-6px); }
+.bi-paper {
+  position: absolute; inset: 0;
+  background: linear-gradient(90deg, rgba(70,50,20,.22), rgba(70,50,20,0) 9%),
+    linear-gradient(270deg, rgba(70,50,20,.08), rgba(70,50,20,0) 4%), #F3EBDB;
+}
+.bi-page svg { position: absolute; left: 7%; width: 86%; top: 50%; transform: translateY(-50%); }
+.bi-edge-r {
+  left: 100%; top: 0; width: var(--T, 20px); height: 100%; transform-origin: left center; transform: rotateY(90deg);
+  background: linear-gradient(90deg, #0A3306 0 3px, transparent 3px calc(100% - 3px), #0A3306 calc(100% - 3px)),
+    repeating-linear-gradient(90deg, #EFE4CE 0 1px, #D9CBB0 1px 2px, #F3EAD8 2px 3px);
+}
+.bi-edge-b {
+  left: 0; top: 100%; width: 100%; height: var(--T, 20px); transform-origin: center top; transform: rotateX(-90deg);
+  background: linear-gradient(0deg, #0A3306 0 3px, transparent 3px calc(100% - 3px), #0A3306 calc(100% - 3px)),
+    repeating-linear-gradient(0deg, #EFE4CE 0 1px, #D6C7AA 1px 2px, #F3EAD8 2px 3px);
+}
+.bi-leaf, .bi-cover { transform-origin: left center; }
+.bi-leaf { inset: 0; }
+.bi-face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; overflow: hidden; }
+.bi-face-back, .bi-back { transform: rotateY(180deg); }
+.bi-leaf .bi-face { background: linear-gradient(90deg, rgba(70,50,20,.16), rgba(70,50,20,0) 10%), #F5EEDF; }
+.bi-leaf .bi-face-back { background: linear-gradient(270deg, rgba(70,50,20,.16), rgba(70,50,20,0) 10%), #F2EAD9; }
+.bi-shade { position: absolute; inset: 0; background: #2a1d08; opacity: 0; }
+.bi-cast { inset: 0; transform: translateZ(-1px); background: linear-gradient(90deg, rgba(30,18,4,.55), rgba(30,18,4,0) 75%); opacity: 0; pointer-events: none; }
+.bi-cover { top: -5px; bottom: -5px; left: 0; right: -7px; }
+.bi-cover .bi-face { border-radius: 0 6px 6px 0; }
+.bi-cover svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.bi-foil {
+  position: absolute; left: 55%; top: 79%; width: 40%; aspect-ratio: 1; transform: translate(-50%, -50%);
+  background: linear-gradient(115deg, #7a5410 0%, #e9c977 32%, #b8860b 52%, #f5df9a 68%, #8c6312 100%);
+  -webkit-mask: url(/logo2.png) center / contain no-repeat; mask: url(/logo2.png) center / contain no-repeat;
+  filter: drop-shadow(.6px 1px 0 rgba(0,0,0,.55));
+}
+.bi-sheen {
+  position: absolute; inset: 0; mix-blend-mode: screen;
+  background: linear-gradient(105deg, rgba(255,240,200,0) 30%, rgba(255,240,200,.22) 45%, rgba(255,240,200,0) 60%) no-repeat;
+  background-size: 300% 100%; background-position: 120% 0;
+}
+.bi-endpaper { position: absolute; left: 14px; top: 12px; right: 10px; bottom: 12px; }
+.bi-endpaper canvas { width: 100%; height: 100%; display: block; }
+.bi-endpaper::after { content: ""; position: absolute; inset: 0; background: linear-gradient(270deg, rgba(40,25,5,.35), rgba(40,25,5,0) 12%); }
+.bi-cedge { top: 0; left: 100%; width: 4px; height: 100%; transform-origin: left center; transform: rotateY(90deg); background: #062904; }
+.bi-skip {
+  position: absolute; right: 28px; bottom: 24px; padding: 8px 4px; cursor: pointer;
+  font-size: 14px; font-weight: 500; color: var(--ink-600); border-bottom: 1px solid transparent;
+}
+@media (hover: hover) { .bi-skip:hover { color: var(--brand-900); border-bottom-color: currentColor; } }
+@media (prefers-reduced-motion: reduce) { .book-intro { display: none; } }

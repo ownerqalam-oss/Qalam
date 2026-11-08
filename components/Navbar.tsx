@@ -205,7 +205,7 @@ export default function Navbar() {
                   Log in
                 </ButtonLink>
 
-                <ButtonLink href="/signup" variant="primary">
+                <ButtonLink href="/signup" variant="action">
                   Sign up
                 </ButtonLink>
               </div>
@@ -295,7 +295,7 @@ export default function Navbar() {
                 </div>
               ) : !loading ? (
                 <div className="flex flex-col gap-2">
-                  <ButtonLink href="/signup" variant="primary" className="w-full">
+                  <ButtonLink href="/signup" variant="action" className="w-full">
                     Sign up
                   </ButtonLink>
 

@@ -1,12 +1,15 @@
 import { ButtonHTMLAttributes, AnchorHTMLAttributes } from "react";
 import Link from "next/link";
 
-type Variant = "primary" | "secondary" | "ghost";
+type Variant = "primary" | "action" | "secondary" | "ghost";
 type Shape = "pill" | "block";
 
 const VARIANT_CLASSES: Record<Variant, string> = {
   primary:
     "bg-brand-900 text-white hover:bg-brand-700 active:scale-95 shadow-sm",
+  // Maroon is reserved for the main thing to press on a page (Start writing, Sign up).
+  action:
+    "bg-maroon-700 text-white hover:bg-maroon-800 active:scale-[0.96] shadow-sm",
   secondary:
     "border border-border text-brand-900 hover:bg-brand-50 active:scale-95",
   ghost: "text-brand-900 hover:text-brand-700",

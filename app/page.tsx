@@ -12,10 +12,13 @@ import CoverImage from "../components/CoverImage";
 import { ButtonLink } from "../components/ui/Button";
 import { Card, CardLink } from "../components/ui/Card";
 import { prompts, getRandomPrompt } from "../lib/prompts";
+import BookIntro from "../components/home/BookIntro";
+import IlluminatedPlate from "../components/home/IlluminatedPlate";
+import { serif } from "../components/home/fonts";
 
 const headingFont = "font-[family-name:var(--font-heading)]";
 const bodyFont = "font-[family-name:var(--font-body)]";
-const arabicFont = "font-[family-name:var(--font-arabic)]";
+const serifFont = "font-[family-name:var(--font-serif)]";
 
 const GENRE_BORDER_CLASSES = [
   "",
@@ -149,105 +152,63 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-cream text-ink-900">
 
-      {/* HERO */}
-      <section className="mx-auto w-full max-w-[1540px] px-6 md:px-10 lg:px-12">
+      <BookIntro targetId="hero-plate" />
 
-        <div className="flex flex-col items-center border-b border-border py-10 md:grid md:min-h-[440px] md:grid-cols-2 md:py-0">
+      {/* HERO: the Al-Qalam verse in its illuminated frame */}
+      <section className={`${serif.variable} mx-auto w-full max-w-[1240px] px-5 md:px-12`}>
+        <div className="grid items-center gap-7 border-b border-border pb-14 pt-3 md:grid-cols-[minmax(0,440px)_minmax(0,1fr)] md:gap-16 md:pb-20 md:pt-9 lg:grid-cols-[480px_minmax(0,1fr)] lg:gap-20">
 
-          {/* Illustration */}
-          <div className="animate-fade-in-up order-2 flex flex-col items-center justify-center gap-6 py-8 md:order-1">
-            <div
-              dir="rtl"
-              className={`${arabicFont} animate-verse flex max-w-[480px] flex-col items-center pt-3 text-[34px] font-bold leading-[2.1] drop-shadow-[0_2px_3px_rgba(5,52,0,0.18)] sm:max-w-[560px] sm:text-[46px] md:max-w-[640px] md:text-[56px]`}
-            >
-              <div className="relative w-fit">
-                <div className="bg-gradient-to-br from-brand-900 to-[#0E5C33] bg-clip-text text-transparent">
-                  ن ۚ وَالْقَلَمِ وَمَا يَسْطُرُونَ{" "}
-                  <span className="align-middle text-[0.45em] text-gold-600">۝١</span>
-                </div>
-                <div
-                  aria-hidden="true"
-                  className="animate-ink-cover absolute inset-y-0 left-0 bg-cream"
-                  style={{ animationDelay: "300ms" }}
-                />
-              </div>
-
-              <div className="relative mt-2 w-fit">
-                <div className="bg-gradient-to-br from-brand-900 to-[#0E5C33] bg-clip-text text-transparent">
-                  مَا أَنتَ بِنِعْمَةِ رَبِّكَ بِمَجْنُونٍ{" "}
-                  <span className="align-middle text-[0.45em] text-gold-600">۝٢</span>
-                </div>
-                <div
-                  aria-hidden="true"
-                  className="animate-ink-cover absolute inset-y-0 left-0 bg-cream"
-                  style={{ animationDelay: "1.7s" }}
-                />
-              </div>
-            </div>
-
-            <InkFlourish className="w-[200px] sm:w-[260px]" animate />
-
-            <div className="max-w-[360px] text-center">
-              <p
-                className={`${bodyFont} text-[13px] italic leading-6 text-ink-600 sm:text-sm`}
-              >
-                &ldquo;By the pen and what they inscribe, you are not, by the
-                favor of your Lord, a madman.&rdquo;
-              </p>
-
-              <p
-                className={`${bodyFont} mt-2 text-[10px] font-medium uppercase tracking-[0.2em] text-ink-600 sm:text-xs`}
-              >
-                Surah Al-Qalam 68:1&ndash;2
-              </p>
-            </div>
+          <div className="mx-auto w-full max-w-[200px] md:max-w-none">
+            <IlluminatedPlate
+              id="hero-plate"
+              uid="hero"
+              className="block h-auto w-full drop-shadow-[0_18px_30px_rgba(40,30,10,0.18)]"
+            />
+            <p className={`${serifFont} mx-auto mt-4 max-w-[27em] text-balance text-center text-[16px] font-medium italic leading-[1.5] text-ink-900 md:mt-8 md:text-[21px]`}>
+              &ldquo;Nūn. By the pen and what they inscribe, you are not,
+              [O&nbsp;Muhammad], by the favour of your Lord, a&nbsp;madman.&rdquo;
+            </p>
+            <p className={`${bodyFont} mt-1 text-center text-[13px] text-ink-600`}>
+              Surah Al-Qalam 68:1&ndash;2, Sahih International
+            </p>
           </div>
 
-          {/* Hero copy */}
-          <div className="order-1 text-center md:order-2 md:pl-10 md:text-left lg:pl-14">
-
-            <p
-              style={{ animationDelay: "80ms" }}
-              className={`${bodyFont} animate-fade-in-up text-[11px] font-medium uppercase tracking-[0.45em] text-brand-600`}
-            >
-              REVIVING THE PEN
-            </p>
-
-            <h1
-              style={{ animationDelay: "140ms" }}
-              className={`${headingFont} animate-fade-in-up mt-5 text-[36px] font-medium leading-[1.08] tracking-[-1px] text-brand-900 sm:text-[46px] md:max-w-[620px] md:text-[58px] md:leading-[1.04] md:tracking-[-2.5px]`}
-            >
+          <div>
+            <h1 className={`${serifFont} text-balance text-[46px] font-semibold leading-[1.05] tracking-[-0.015em] text-brand-900 md:text-[64px] lg:text-[74px]`}>
               A place to write,
               <br />
               rooted in Allah
             </h1>
 
-            <p
-              style={{ animationDelay: "220ms" }}
-              className={`${bodyFont} animate-fade-in-up mx-auto mt-7 max-w-[420px] text-[16px] leading-[1.55] text-[#62574F] md:mx-0 md:max-w-[570px] md:text-[17px]`}
-            >
-              A home for Muslim writers and readers, sharing articles, poetry,
-              reflections and short stories written with sincerity.
+            <p className={`${bodyFont} mt-4 max-w-[30em] text-[17px] leading-[1.7] text-ink-900 md:mt-6 md:text-[18px]`}>
+              A home for Muslim writers and readers, sharing poetry, reflections,
+              articles and short stories written with sincerity.
             </p>
 
-            <ButtonLink
-              href="/editor"
-              variant="primary"
-              style={{ animationDelay: "300ms" }}
-              className={`${bodyFont} animate-fade-in-up mt-7 gap-3 hover:-translate-y-0.5 hover:shadow-md`}
-            >
-              START WRITING NOW
-              <span className="text-base">→</span>
-            </ButtonLink>
+            <div className="mt-6 flex flex-wrap items-center gap-7 md:mt-8">
+              <ButtonLink href="/editor" variant="action" shape="block" className={`${bodyFont} text-[15px]`}>
+                Start writing
+              </ButtonLink>
+              <Link
+                href="/journal"
+                className={`${bodyFont} py-3 text-[15px] font-medium text-brand-900 underline decoration-[1.5px] underline-offset-[5px]`}
+              >
+                Read the journal
+              </Link>
+            </div>
 
-            <Link
-              href="/editor"
-              style={{ animationDelay: "340ms" }}
-              className={`${bodyFont} animate-fade-in-up mt-4 block text-[13px] italic leading-6 text-ink-600 transition hover:text-brand-900`}
-            >
-              Today&apos;s prompt: &ldquo;{prompts[promptIndex]}&rdquo;
-            </Link>
-
+            <div className="mt-10 max-w-[30em] border-l-2 border-[#D9B45A] pl-5 md:mt-12">
+              <p className={`${bodyFont} text-[14px] text-ink-600`}>Today&rsquo;s prompt</p>
+              <p className={`${serifFont} mt-0.5 text-[24px] leading-[1.3] text-brand-900`}>
+                {prompts[promptIndex]}
+              </p>
+              <Link
+                href="/editor"
+                className={`${bodyFont} mt-2 inline-block border-b-[1.5px] border-maroon-700 text-[15px] font-medium text-maroon-700`}
+              >
+                Write about this
+              </Link>
+            </div>
           </div>
         </div>
       </section>
