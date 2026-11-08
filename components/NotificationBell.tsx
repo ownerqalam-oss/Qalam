@@ -203,7 +203,7 @@ export default function NotificationBell() {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-12 z-50 max-h-[70vh] w-80 overflow-y-auto rounded-xl border border-[#DCD4C9] bg-white shadow-lg">
+        <div className="fixed inset-x-4 top-[84px] z-50 max-h-[70vh] overflow-y-auto md:absolute md:inset-x-auto md:right-0 md:top-12 md:w-80 rounded-xl border border-[#DCD4C9] bg-white shadow-lg">
           {notifications.length === 0 ? (
             <p
               className={`${inter.className} p-5 text-sm text-[#81766D]`}
