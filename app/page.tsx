@@ -171,6 +171,16 @@ export default function Home() {
             <p className={`${bodyFont} mt-1 text-center text-[13px] text-ink-600`}>
               Surah Al-Qalam 68:1&ndash;2, Sahih International
             </p>
+            <p className="mt-3 text-center">
+              {/* a full reload, so the intro's pre-paint check runs again */}
+              <button
+                type="button"
+                onClick={() => window.location.assign("/?intro")}
+                className={`${bodyFont} text-[13px] text-ink-600 underline decoration-border underline-offset-4 transition hover:text-brand-900`}
+              >
+                Open the book again
+              </button>
+            </p>
           </div>
 
           <div>

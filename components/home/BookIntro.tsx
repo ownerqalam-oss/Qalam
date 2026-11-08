@@ -8,7 +8,7 @@ import { drawCoverTooling, drawEbru, drawLeather } from "./ornaments";
  * The homepage opens as a closed, gold-tooled book. The cover swings open, two flyleaves turn,
  * and the camera glides onto the illuminated page until it sits exactly where the hero's plate is.
  *
- * - Plays once per visitor (localStorage), never under reduced motion. Add ?intro to replay.
+ * - Plays once per browsing session (sessionStorage), never under reduced motion. ?intro replays it.
  * - Any click, key, scroll, touch or window resize skips straight to the page.
  * - The overlay is in the server HTML so there's no flash; an inline script hides it before paint
  *   for returning visitors, and a CSS failsafe hides it if JavaScript never runs.
@@ -16,7 +16,7 @@ import { drawCoverTooling, drawEbru, drawLeather } from "./ornaments";
 
 const SEEN_KEY = "qalam:intro-seen";
 
-const DECIDE_SCRIPT = `(function(){try{var q=location.search.indexOf('intro')>-1;var s=localStorage.getItem('${SEEN_KEY}')==='1';var r=matchMedia('(prefers-reduced-motion: reduce)').matches;document.documentElement.dataset.intro=(r||(s&&!q))?'skip':'on';}catch(e){document.documentElement.dataset.intro='skip';}})();`;
+const DECIDE_SCRIPT = `(function(){try{var q=location.search.indexOf('intro')>-1;var s=sessionStorage.getItem('${SEEN_KEY}')==='1';var r=matchMedia('(prefers-reduced-motion: reduce)').matches;document.documentElement.dataset.intro=(r||(s&&!q))?'skip':'on';}catch(e){document.documentElement.dataset.intro='skip';}})();`;
 
 const OPEN = 800, OPEN_D = 1300, EASE_OPEN = "cubic-bezier(.55,.05,.22,1)";
 const LEAF_AT = 550, LEAF_GAP = 220, LEAF_D = 850;
@@ -130,7 +130,7 @@ export default function BookIntro({ targetId }: { targetId: string }) {
       INTERRUPTS.forEach((ev) => removeEventListener(ev, interrupt));
       removeEventListener("resize", interrupt);
       timers.forEach(clearTimeout);
-      try { localStorage.setItem(SEEN_KEY, "1"); } catch {}
+      try { sessionStorage.setItem(SEEN_KEY, "1"); } catch {}
       locked.forEach((n) => (n.inert = false));
       html.dataset.intro = "done";
       const tidy = () => { anims.forEach((a) => a.cancel()); intro?.remove(); };
