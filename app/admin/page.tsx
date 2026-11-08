@@ -113,12 +113,20 @@ export default function AdminPage() {
             Admin Dashboard
           </h1>
 
-          <Link
-            href="/admin/collections"
-            className={`${inter.className} text-sm font-medium text-[#053400] hover:underline`}
-          >
-            Manage Collections →
-          </Link>
+          <div className="flex items-center gap-5">
+            <Link
+              href="/admin/competition"
+              className={`${inter.className} text-sm font-medium text-[#053400] hover:underline`}
+            >
+              Competition entries
+            </Link>
+            <Link
+              href="/admin/collections"
+              className={`${inter.className} text-sm font-medium text-[#053400] hover:underline`}
+            >
+              Manage Collections →
+            </Link>
+          </div>
         </div>
 
         <InkFlourish className="mb-10 mt-2 w-[90px]" />
