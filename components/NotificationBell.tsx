@@ -14,7 +14,7 @@ const inter = Inter({
 
 interface NotificationRow {
   id: number;
-  type: "like" | "comment" | "follow";
+  type: "like" | "comment" | "follow" | "published" | "returned";
   draft_id: number | null;
   actor_id: string;
   actor_count: number;
@@ -160,8 +160,17 @@ export default function NotificationBell() {
     return { name, others, action };
   }
 
+  // Review outcomes come from the Qalam team, not another reader
+  function reviewMessage(n: NotificationRow) {
+    const title = getDraft(n.draft_id)?.title || "your piece";
+    return n.type === "published"
+      ? `\u201c${title}\u201d has been published. Thank you for writing it.`
+      : `\u201c${title}\u201d needs a few changes before it\u2019s published. Open it to see the feedback.`;
+  }
+
   function notificationHref(n: NotificationRow) {
     if (n.type === "follow") return "/dashboard";
+    if (n.type === "returned") return n.draft_id ? `/editor?id=${n.draft_id}` : "/dashboard";
 
     const draft = getDraft(n.draft_id);
     return draft ? `/journal/${draft.id}` : "/dashboard";
@@ -237,17 +246,23 @@ export default function NotificationBell() {
                     <p
                       className={`${inter.className} text-sm text-[#46382F]`}
                     >
-                      <Link
-                        href={`/writers/${n.actor_id}`}
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          setOpen(false);
-                        }}
-                        className="font-medium hover:underline"
-                      >
-                        {name}
-                      </Link>
-                      {others} {action}
+                      {n.type === "published" || n.type === "returned" ? (
+                        reviewMessage(n)
+                      ) : (
+                        <>
+                          <Link
+                            href={`/writers/${n.actor_id}`}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              setOpen(false);
+                            }}
+                            className="font-medium hover:underline"
+                          >
+                            {name}
+                          </Link>
+                          {others} {action}
+                        </>
+                      )}
                     </p>
 
                     <p

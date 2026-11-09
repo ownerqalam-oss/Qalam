@@ -86,6 +86,20 @@ export default function ReviewPage() {
     setLoading(false);
   }
 
+  // Email the writer about the decision. Never blocks the review itself.
+  async function emailWriter(id: number | string) {
+    try {
+      const res = await fetch("/api/notify-review", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ draftId: id }),
+      });
+      return res.ok;
+    } catch {
+      return false;
+    }
+  }
+
   async function publish() {
     if (!draft) return;
 
@@ -98,7 +112,8 @@ export default function ReviewPage() {
       return;
     }
 
-    showToast("Article published!", "success");
+    const emailed = await emailWriter(draft.id);
+    showToast(emailed ? "Published. The writer has been emailed." : "Published. The email to the writer didn't send.", emailed ? "success" : "error");
     router.push("/admin");
   }
 
@@ -120,7 +135,8 @@ export default function ReviewPage() {
       return;
     }
 
-    showToast("Sent back to the writer with feedback.", "success");
+    const emailed = await emailWriter(draft.id);
+    showToast(emailed ? "Sent back. The writer has been emailed your feedback." : "Sent back, but the email to the writer didn't send.", emailed ? "success" : "error");
     router.push("/admin");
   }
 
