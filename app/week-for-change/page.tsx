@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { pageMetadata } from "../../lib/seo";
-import { COMPETITION } from "../../lib/competition";
+import { COMPETITION, isWinnerRevealed } from "../../lib/competition";
 import InkFlourish from "../../components/InkFlourish";
 import EnterButton from "./EnterButton";
 import CompetitionEntries from "./CompetitionEntries";
@@ -16,7 +17,13 @@ export const metadata: Metadata = pageMetadata({
   path: COMPETITION.path,
 });
 
+// Regenerated every few minutes so the winner tab appears on its own once
+// COMPETITION.winnerRevealsAt has passed.
+export const revalidate = 300;
+
 export default function WeekForChangePage() {
+  const winnerRevealed = isWinnerRevealed();
+
   return (
     <main className="min-h-screen bg-cream text-ink-900">
       <section className="mx-auto max-w-[1180px] px-6 py-16 md:px-8">
@@ -70,10 +77,39 @@ export default function WeekForChangePage() {
           </div>
         </div>
 
-        {/* ENTRIES */}
-        <div className="mb-6 border-b border-border pb-5">
-          <h2 className={`${headingFont} text-3xl font-medium`}>Entries</h2>
-        </div>
+        {winnerRevealed && (
+          <Link
+            href={COMPETITION.winnerPath}
+            className={`${bodyFont} mb-8 flex items-center justify-between gap-4 rounded-xl border border-gold-600/50 bg-white px-5 py-4 text-[15px] text-brand-900 transition hover:border-gold-600 hover:shadow-sm`}
+          >
+            <span>
+              <span className="font-medium">The winner is revealed.</span>{" "}
+              <span className="text-ink-600">Read the winning poem.</span>
+            </span>
+            <span aria-hidden="true">&rarr;</span>
+          </Link>
+        )}
+
+        {/* TABS */}
+        <nav
+          aria-label="Competition sections"
+          className={`${bodyFont} mb-6 flex gap-7 border-b border-border`}
+        >
+          <span
+            aria-current="page"
+            className="-mb-px border-b-2 border-brand-900 pb-3 text-[15px] font-medium text-brand-900"
+          >
+            Entries
+          </span>
+          {winnerRevealed && (
+            <Link
+              href={COMPETITION.winnerPath}
+              className="-mb-px border-b-2 border-transparent pb-3 text-[15px] font-medium text-ink-600 transition hover:text-brand-900"
+            >
+              The winner
+            </Link>
+          )}
+        </nav>
 
         <CompetitionEntries />
 

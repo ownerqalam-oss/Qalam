@@ -14,7 +14,17 @@ export const COMPETITION = {
   // /week-for-change/winner page printed as a QR code on the dinner
   // thank-you cards. Leave null until the winner is chosen.
   winnerId: "93" as string | null,
+  // From this moment the competition page shows a "The winner" tab and a
+  // banner linking to winnerPath. The Grand Dinner is on 29 November; this
+  // is the start of that day in Ireland (GMT in November). The page is
+  // regenerated every few minutes, so it appears shortly after this time.
+  winnerRevealsAt: new Date("2026-11-29T00:00:00Z"),
+  winnerPath: "/week-for-change/winner",
 };
+
+export function isWinnerRevealed(now = new Date()) {
+  return !!COMPETITION.winnerId && now >= COMPETITION.winnerRevealsAt;
+}
 
 export const COMPETITION_EDITOR_URL = `/editor?type=poetry&competition=${COMPETITION.slug}`;
 
