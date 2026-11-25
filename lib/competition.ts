@@ -13,7 +13,7 @@ export const COMPETITION = {
   // Id of the winning draft (as in /journal/<id>), shown on the unlisted
   // /week-for-change/winner page printed as a QR code on the dinner
   // thank-you cards. Leave null until the winner is chosen.
-  winnerId: null as string | null,
+  winnerId: "93" as string | null,
 };
 
 export const COMPETITION_EDITOR_URL = `/editor?type=poetry&competition=${COMPETITION.slug}`;
